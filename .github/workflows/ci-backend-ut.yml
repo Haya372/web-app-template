@@ -12,8 +12,8 @@ permissions:
   # pull-requests: read
 
 jobs:
-  golangci:
-    name: lint
+  unit-test:
+    name: Unit test
     runs-on: ubuntu-latest
     defaults:
       run:
