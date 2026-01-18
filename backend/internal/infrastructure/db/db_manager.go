@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Haya372/go-template/backend/internal/infrastructure/sqlc"
 	"github.com/jackc/pgx/v5"
@@ -11,6 +12,7 @@ import (
 
 type DbManager interface {
 	QueriesFunc(ctx context.Context, fn func(ctx context.Context, queries sqlc.Queries) error) error
+	PoolFunc(ctx context.Context, fn func(ctx context.Context, conn *pgxpool.Conn) error) error
 }
 
 type dbManagerImpl struct {
@@ -37,8 +39,38 @@ func (m *dbManagerImpl) QueriesFunc(ctx context.Context, fn func(ctx context.Con
 	return fn(ctx, *queries)
 }
 
-func NewDbManager(pool *pgxpool.Pool) DbManager {
-	return &dbManagerImpl{
-		pool: pool,
+func (m *dbManagerImpl) PoolFunc(ctx context.Context, fn func(ctx context.Context, conn *pgxpool.Conn) error) error {
+	conn, err := m.pool.Acquire(ctx)
+	if err != nil {
+		return err
 	}
+
+	defer conn.Release()
+	return fn(ctx, conn)
+}
+
+type DbInfo struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Database string
+	Dsn      string
+}
+
+func (info *DbInfo) GetDatabaseUrl() string {
+	if len(info.Dsn) > 0 {
+		return info.Dsn
+	}
+	return fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", info.User, info.Password, info.Host, info.Port, info.Database)
+}
+
+func NewDbManager(ctx context.Context, info DbInfo) (DbManager, error) {
+	dbpool, err := pgxpool.New(ctx, info.GetDatabaseUrl())
+	if err != nil {
+		return nil, err
+	}
+	return &dbManagerImpl{
+		pool: dbpool,
+	}, nil
 }
