@@ -1,0 +1,50 @@
+name: ci-backend-it
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend-it.yml"
+      - "!**.md"
+
+permissions:
+  contents: read
+  # Optional: allow read access to pull requests. Use with `only-new-issues` option.
+  # pull-requests: read
+
+jobs:
+  integration-test:
+    name: Integration test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:18.1
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: it
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup golang
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: Setup sqlc
+        uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: '1.30.0'
+      - name: generate sqlc client
+        run: make generate-db-client
+      - name: Integration test
+        run: make test-integration
+        env:
+          CI: true
+          DATABASE_DSN: postgres://postgres:postgres@localhost:5432/it
