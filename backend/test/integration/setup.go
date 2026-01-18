@@ -21,15 +21,43 @@ type TestDbProps struct {
 	DdlPath  string
 }
 
-type TestDb struct {
-	DbManager db.DbManager
-	Container testcontainers.Container
+type TestDb interface {
+	DbManager() db.DbManager
+	Cleanup() error
+	Terminate() error
+}
+
+type localTestDb struct {
+	manager   db.DbManager
+	container testcontainers.Container
+}
+
+type ciTestDb struct {
+	manager db.DbManager
 }
 
 const wailOccurrence = 2
 
-func NewTestDb(props TestDbProps) (*TestDb, error) {
+func NewTestDb(props TestDbProps) (TestDb, error) {
 	ctx := context.Background()
+
+	if os.Getenv("CI") == "true" {
+		manager, err := db.NewDbManager(ctx, db.DbInfo{
+			Dsn: os.Getenv("DATABASE_DSN"),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+			return runSQLDir(ctx, conn, props.DdlPath)
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return &ciTestDb{manager: manager}, nil
+	}
 
 	container, err := postgres.Run(ctx,
 		"postgres:18.1",
@@ -64,18 +92,42 @@ func NewTestDb(props TestDbProps) (*TestDb, error) {
 		return nil, err
 	}
 
-	return &TestDb{
-		DbManager: manager,
-		Container: container,
+	return &localTestDb{
+		manager:   manager,
+		container: container,
 	}, nil
 }
 
-func (db *TestDb) Cleanup() error {
-	return db.DbManager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
+func (db *localTestDb) DbManager() db.DbManager {
+	return db.manager
+}
+
+func (db *localTestDb) Cleanup() error {
+	return db.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
 		_, err := conn.Exec(ctx, "truncate table users")
 
 		return err
 	})
+}
+
+func (db *localTestDb) Terminate() error {
+	return db.container.Terminate(context.Background())
+}
+
+func (db *ciTestDb) DbManager() db.DbManager {
+	return db.manager
+}
+
+func (db *ciTestDb) Cleanup() error {
+	return db.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "truncate table users")
+
+		return err
+	})
+}
+
+func (db *ciTestDb) Terminate() error {
+	return nil
 }
 
 func runSQLDir(ctx context.Context, conn *pgxpool.Conn, dir string) error {

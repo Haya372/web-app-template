@@ -3,7 +3,6 @@
 package repository_test
 
 import (
-	"context"
 	"log"
 	"testing"
 
@@ -13,7 +12,6 @@ import (
 var testDb integration.TestDb
 
 func TestMain(m *testing.M) {
-	ctx := context.Background()
 	db, err := integration.NewTestDb(integration.TestDbProps{
 		User:     "postgres",
 		Password: "postgres",
@@ -23,9 +21,9 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("failed to create db, err=%v", err)
 	}
-	defer db.Container.Terminate(ctx)
+	defer db.Terminate()
 
-	testDb = *db
+	testDb = db
 
 	m.Run()
 }

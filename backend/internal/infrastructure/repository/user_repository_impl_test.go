@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/Haya372/go-template/backend/internal/domain"
+	"github.com/Haya372/go-template/backend/internal/infrastructure/repository"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreate_HappyCase(t *testing.T) {
-	target := NewUserRepository(testDb.DbManager)
+	target := repository.NewUserRepository(testDb.DbManager())
 	tests := []struct {
 		name string
 		user domain.User
@@ -50,7 +51,7 @@ func TestCreate_HappyCase(t *testing.T) {
 }
 
 func TestCreate_ErrorCase(t *testing.T) {
-	target := NewUserRepository(testDb.DbManager)
+	target := repository.NewUserRepository(testDb.DbManager())
 	tests := []struct {
 		name string
 		user domain.User
@@ -88,7 +89,7 @@ func TestFindByEmail_HappyCase(t *testing.T) {
 		"Test User",
 		time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
 	)
-	target := NewUserRepository(testDb.DbManager)
+	target := repository.NewUserRepository(testDb.DbManager())
 
 	_, err := target.Create(context.Background(), seedUser)
 	if err != nil {
@@ -121,7 +122,7 @@ func TestFindByEmail_HappyCase(t *testing.T) {
 }
 
 func TestFindByEmail_ErrorCase(t *testing.T) {
-	target := NewUserRepository(testDb.DbManager)
+	target := repository.NewUserRepository(testDb.DbManager())
 
 	tests := []struct {
 		name  string
