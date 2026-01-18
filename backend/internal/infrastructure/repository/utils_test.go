@@ -6,7 +6,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/Haya372/go-template/backend/test/integration"
+	"github.com/Haya372/web-app-template/backend/test/integration"
 )
 
 var testDb integration.TestDb

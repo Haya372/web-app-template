@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 
-	"github.com/Haya372/go-template/backend/internal/common"
-	"github.com/Haya372/go-template/backend/internal/domain"
-	"github.com/Haya372/go-template/backend/internal/domain/repository"
-	"github.com/Haya372/go-template/backend/internal/infrastructure/db"
-	"github.com/Haya372/go-template/backend/internal/infrastructure/sqlc"
+	"github.com/Haya372/web-app-template/backend/internal/common"
+	"github.com/Haya372/web-app-template/backend/internal/domain"
+	"github.com/Haya372/web-app-template/backend/internal/domain/repository"
+	"github.com/Haya372/web-app-template/backend/internal/infrastructure/db"
+	"github.com/Haya372/web-app-template/backend/internal/infrastructure/sqlc"
 )
 
 type userRepositoryImpl struct {

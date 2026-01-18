@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/Haya372/go-template/backend/internal/infrastructure/db"
+	"github.com/Haya372/web-app-template/backend/internal/infrastructure/db"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"

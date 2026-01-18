@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Haya372/go-template/backend/internal/domain"
-	"github.com/Haya372/go-template/backend/internal/infrastructure/repository"
+	"github.com/Haya372/web-app-template/backend/internal/domain"
+	"github.com/Haya372/web-app-template/backend/internal/infrastructure/repository"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )

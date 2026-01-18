@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Haya372/go-template/backend/internal/domain"
+	"github.com/Haya372/web-app-template/backend/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"

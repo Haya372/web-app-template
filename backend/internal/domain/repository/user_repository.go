@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/Haya372/go-template/backend/internal/domain"
+	"github.com/Haya372/web-app-template/backend/internal/domain"
 )
 
 type UserRepository interface {
