@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	"github.com/Haya372/go-template/backend/internal/common"
+	"github.com/Haya372/web-app-template/backend/internal/common"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

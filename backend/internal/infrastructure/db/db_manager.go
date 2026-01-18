@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Haya372/go-template/backend/internal/infrastructure/sqlc"
+	"github.com/Haya372/web-app-template/backend/internal/infrastructure/sqlc"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

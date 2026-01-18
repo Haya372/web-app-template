@@ -1,4 +1,4 @@
-module github.com/Haya372/go-template/backend
+module github.com/Haya372/web-app-template/backend
 
 go 1.24.5
 
