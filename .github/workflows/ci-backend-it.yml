@@ -47,4 +47,4 @@ jobs:
         run: make test-integration
         env:
           CI: true
-          DATABASE_DSN: postgres://postgres:postgres@localhost:5432/db
+          DATABASE_DSN: postgres://postgres:postgres@localhost:5432/it
