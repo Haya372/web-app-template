@@ -36,6 +36,7 @@ func (l *loggerImpl) Error(ctx context.Context, msg string, args ...any) {
 
 func NewLogger() Logger {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	return &loggerImpl{
 		logger: *logger,
 	}

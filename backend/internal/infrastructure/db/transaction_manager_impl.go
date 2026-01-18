@@ -13,10 +13,13 @@ type transactionManagerImpl struct {
 	pool   *pgxpool.Pool
 }
 
-const txKey = "transaction"
+type txKeyStruct struct{}
+
+var txKey = txKeyStruct{}
 
 func (txm *transactionManagerImpl) Do(ctx context.Context, f func(ctx context.Context) error) error {
 	txm.logger.Debug(ctx, "start transaction")
+
 	conn, err := txm.pool.Acquire(ctx)
 	if err != nil {
 		return err
@@ -27,12 +30,19 @@ func (txm *transactionManagerImpl) Do(ctx context.Context, f func(ctx context.Co
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil {
+			txm.logger.Warn(ctx, "transaction rollback failed", "err", err)
+		}
+	}()
 
 	childCtx := context.WithValue(ctx, txKey, tx)
 
 	if err := f(childCtx); err != nil {
 		txm.logger.Debug(childCtx, "rollback transaction")
+
 		return err
 	}
 

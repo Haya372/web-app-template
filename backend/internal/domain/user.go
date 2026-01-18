@@ -48,10 +48,12 @@ func NewUser(email, password, name string, createdAt time.Time) (User, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
+
 	return &userImpl{
 		id:           id,
 		email:        email,

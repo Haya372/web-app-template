@@ -26,12 +26,7 @@ type TestDb struct {
 	Container testcontainers.Container
 }
 
-func (db *TestDb) Cleanup() error {
-	return db.DbManager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
-		_, err := conn.Exec(ctx, "truncate table users")
-		return err
-	})
-}
+const wailOccurrence = 2
 
 func NewTestDb(props TestDbProps) (*TestDb, error) {
 	ctx := context.Background()
@@ -42,7 +37,7 @@ func NewTestDb(props TestDbProps) (*TestDb, error) {
 		postgres.WithUsername(props.User),
 		postgres.WithPassword(props.Password),
 		testcontainers.WithAdditionalWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").WithOccurrence(2),
+			wait.ForLog("database system is ready to accept connections").WithOccurrence(wailOccurrence),
 			wait.ForListeningPort("5432/tcp"),
 		),
 	)
@@ -75,6 +70,14 @@ func NewTestDb(props TestDbProps) (*TestDb, error) {
 	}, nil
 }
 
+func (db *TestDb) Cleanup() error {
+	return db.DbManager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "truncate table users")
+
+		return err
+	})
+}
+
 func runSQLDir(ctx context.Context, conn *pgxpool.Conn, dir string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
@@ -82,24 +85,29 @@ func runSQLDir(ctx context.Context, conn *pgxpool.Conn, dir string) error {
 	}
 
 	var files []string
+
 	for _, e := range entries {
 		if e.IsDir() {
 			continue
 		}
+
 		if filepath.Ext(e.Name()) == ".sql" {
 			files = append(files, filepath.Join(dir, e.Name()))
 		}
 	}
+
 	sort.Strings(files)
 
 	for _, f := range files {
-		b, err := os.ReadFile(f)
+		b, err := os.ReadFile(filepath.Clean(f))
 		if err != nil {
 			return fmt.Errorf("read %s: %w", f, err)
 		}
+
 		if _, err := conn.Exec(ctx, string(b)); err != nil {
 			return fmt.Errorf("exec %s: %w", f, err)
 		}
 	}
+
 	return nil
 }

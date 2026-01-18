@@ -28,22 +28,27 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user domain.User) (doma
 	if err != nil {
 		return nil, err
 	}
+
 	return user, nil
 }
 
 func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (domain.User, error) {
 	var user *sqlc.User
+
 	err := r.dbManager.QueriesFunc(ctx, func(ctx context.Context, queries sqlc.Queries) error {
 		u, err := queries.FindUserByEmail(ctx, email)
 		if err != nil {
 			return err
 		}
+
 		user = &u
+
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
+
 	if user == nil {
 		return nil, err
 	}

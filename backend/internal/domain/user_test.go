@@ -1,10 +1,12 @@
-package domain
+package domain_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/Haya372/go-template/backend/internal/domain"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,15 +28,15 @@ func TestUser_HappyCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			user, err := NewUser(tt.email, tt.password, tt.name, tt.createdAt)
+			user, err := domain.NewUser(tt.email, tt.password, tt.name, tt.createdAt)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, user.Name(), tt.name)
 			assert.Equal(t, user.Email(), tt.email)
 			assert.Equal(t, user.CreatedAt(), tt.createdAt)
 
 			err = bcrypt.CompareHashAndPassword(user.PasswordHash(), []byte(tt.password))
-			assert.Nil(t, err)
+			require.NoError(t, err)
 		})
 	}
 }
