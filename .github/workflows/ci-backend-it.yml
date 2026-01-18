@@ -26,6 +26,9 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
           POSTGRES_DB: it
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
 
     steps:
       - name: Checkout repository
@@ -44,4 +47,4 @@ jobs:
         run: make test-integration
         env:
           CI: true
-          DATABASE_DSN: postgres://postgres:postgres@postgres:5432/db
+          DATABASE_DSN: postgres://postgres:postgres@localhost:5432/db
