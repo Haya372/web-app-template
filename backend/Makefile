@@ -13,3 +13,7 @@ test-unit:
 .PHONY: test-integration
 test-integration:
 	go test ./... -tags=integration
+
+.PHONY: generate-db-client
+generate-db-client:
+	sqlc generate
