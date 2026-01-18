@@ -16,4 +16,4 @@ test-integration:
 
 .PHONY: generate-db-client
 generate-db-client:
-	sqlc generate
+	sqlc generate -f db/sqlc.yaml
