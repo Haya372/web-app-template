@@ -8,7 +8,7 @@ import (
 )
 
 type User interface {
-	Id() string
+	Id() uuid.UUID
 	Email() string
 	PasswordHash() []byte
 	Name() string
@@ -16,14 +16,14 @@ type User interface {
 }
 
 type userImpl struct {
-	id           string
+	id           uuid.UUID
 	email        string
 	passwordHash []byte
 	name         string
 	createdAt    time.Time
 }
 
-func (u *userImpl) Id() string {
+func (u *userImpl) Id() uuid.UUID {
 	return u.id
 }
 
@@ -53,10 +53,20 @@ func NewUser(email, password, name string, createdAt time.Time) (User, error) {
 		return nil, err
 	}
 	return &userImpl{
-		id:           id.String(),
+		id:           id,
 		email:        email,
 		passwordHash: passwordHash,
 		name:         name,
 		createdAt:    createdAt,
 	}, nil
+}
+
+func ReconstructUser(id uuid.UUID, email string, passwordHash []byte, name string, createdAt time.Time) User {
+	return &userImpl{
+		id:           id,
+		email:        email,
+		passwordHash: passwordHash,
+		name:         name,
+		createdAt:    createdAt,
+	}
 }
