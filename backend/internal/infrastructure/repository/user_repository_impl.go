@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/Haya372/web-app-template/backend/internal/common"
-	"github.com/Haya372/web-app-template/backend/internal/domain"
-	"github.com/Haya372/web-app-template/backend/internal/domain/repository"
+	"github.com/Haya372/web-app-template/backend/internal/domain/entity"
+	"github.com/Haya372/web-app-template/backend/internal/domain/entity/repository"
 	"github.com/Haya372/web-app-template/backend/internal/infrastructure/db"
 	"github.com/Haya372/web-app-template/backend/internal/infrastructure/sqlc"
 )
@@ -15,7 +15,7 @@ type userRepositoryImpl struct {
 	dbManager db.DbManager
 }
 
-func (r *userRepositoryImpl) Create(ctx context.Context, user domain.User) (domain.User, error) {
+func (r *userRepositoryImpl) Create(ctx context.Context, user entity.User) (entity.User, error) {
 	err := r.dbManager.QueriesFunc(ctx, func(ctx context.Context, queries sqlc.Queries) error {
 		return queries.CreateUser(ctx, sqlc.CreateUserParams{
 			ID:           toPgtypeUuid(user.Id()),
@@ -32,7 +32,7 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user domain.User) (doma
 	return user, nil
 }
 
-func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (domain.User, error) {
+func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (entity.User, error) {
 	var user *sqlc.User
 
 	err := r.dbManager.QueriesFunc(ctx, func(ctx context.Context, queries sqlc.Queries) error {
@@ -53,7 +53,7 @@ func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (dom
 		return nil, err
 	}
 
-	return domain.ReconstructUser(
+	return entity.ReconstructUser(
 		user.ID.Bytes,
 		user.Email,
 		user.PasswordHash,
