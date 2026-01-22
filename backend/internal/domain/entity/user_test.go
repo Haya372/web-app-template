@@ -1,10 +1,10 @@
-package domain_test
+package entity_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/Haya372/web-app-template/backend/internal/domain"
+	"github.com/Haya372/web-app-template/backend/internal/domain/entity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
@@ -28,7 +28,7 @@ func TestUser_HappyCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			user, err := domain.NewUser(tt.email, tt.password, tt.name, tt.createdAt)
+			user, err := entity.NewUser(tt.email, tt.password, tt.name, tt.createdAt)
 
 			require.NoError(t, err)
 			assert.Equal(t, user.Name(), tt.name)

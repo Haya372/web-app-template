@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Haya372/web-app-template/backend/internal/domain"
+	"github.com/Haya372/web-app-template/backend/internal/domain/entity"
 	"github.com/Haya372/web-app-template/backend/internal/infrastructure/repository"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -18,11 +18,11 @@ func TestCreate_HappyCase(t *testing.T) {
 	target := repository.NewUserRepository(testDb.DbManager())
 	tests := []struct {
 		name string
-		user domain.User
+		user entity.User
 	}{
 		{
 			name: "Create Success",
-			user: domain.ReconstructUser(
+			user: entity.ReconstructUser(
 				uuid.New(),
 				"test@example.com",
 				[]byte("password"),
@@ -54,11 +54,11 @@ func TestCreate_ErrorCase(t *testing.T) {
 	target := repository.NewUserRepository(testDb.DbManager())
 	tests := []struct {
 		name string
-		user domain.User
+		user entity.User
 	}{
 		{
 			name: "Create Error",
-			user: domain.ReconstructUser(
+			user: entity.ReconstructUser(
 				uuid.New(),
 				"test@example.com",
 				[]byte("password"),
@@ -82,7 +82,7 @@ func TestCreate_ErrorCase(t *testing.T) {
 }
 
 func TestFindByEmail_HappyCase(t *testing.T) {
-	seedUser := domain.ReconstructUser(
+	seedUser := entity.ReconstructUser(
 		uuid.New(),
 		"test@example.com",
 		[]byte("password"),
@@ -99,7 +99,7 @@ func TestFindByEmail_HappyCase(t *testing.T) {
 	tests := []struct {
 		name   string
 		email  string
-		expect domain.User
+		expect entity.User
 	}{
 		{
 			name:   "Found user",
