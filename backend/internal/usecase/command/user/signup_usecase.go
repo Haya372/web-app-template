@@ -8,7 +8,6 @@ import (
 	"github.com/Haya372/web-app-template/backend/internal/domain/entity"
 	"github.com/Haya372/web-app-template/backend/internal/domain/entity/repository"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type SingupUseCase interface {
@@ -39,7 +38,7 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*S
 	if err != nil {
 		uc.logger.Error(ctx, "failed to create User", "error", err)
 
-		return nil, errors.Wrap(err, "signupUseCaseImpl: failed to create User")
+		return nil, err
 	}
 
 	err = uc.txManager.Do(ctx, func(ctx context.Context) error {
@@ -47,7 +46,7 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*S
 		if err != nil {
 			uc.logger.Error(ctx, "failed to save User", "error", err)
 
-			return errors.Wrap(err, "signupUseCaseImpl: failed to save user")
+			return err
 		}
 
 		return nil
@@ -55,7 +54,7 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*S
 	if err != nil {
 		uc.logger.Error(ctx, "transaction error", "error", err)
 
-		return nil, errors.Wrap(err, "signupUseCaseImpl: Transaction error")
+		return nil, err
 	}
 
 	return &SignupOutput{
