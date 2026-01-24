@@ -19,6 +19,7 @@ func TestUser_HappyCase(t *testing.T) {
 		createdAt time.Time
 	}{
 		{
+			testName:  "Success to create User",
 			email:     "test@example.com",
 			password:  "password",
 			name:      "Test",
@@ -37,6 +38,33 @@ func TestUser_HappyCase(t *testing.T) {
 
 			err = bcrypt.CompareHashAndPassword(user.PasswordHash(), []byte(tt.password))
 			require.NoError(t, err)
+		})
+	}
+}
+
+func TestUser_FailureCase(t *testing.T) {
+	tests := []struct {
+		testName  string
+		email     string
+		password  string
+		name      string
+		createdAt time.Time
+	}{
+		{
+			testName:  "password length under 8 characters",
+			email:     "test@example.com",
+			password:  "passwor",
+			name:      "Test",
+			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			user, err := entity.NewUser(tt.email, tt.password, tt.name, tt.createdAt)
+
+			assert.NotNil(t, err)
+			assert.Nil(t, user)
 		})
 	}
 }
