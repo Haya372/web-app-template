@@ -1,3 +1,3 @@
 # web-app-template
 
-Haya372's Golang backend template.
+Haya372's web application template.
