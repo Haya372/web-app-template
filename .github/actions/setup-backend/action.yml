@@ -23,3 +23,4 @@ runs:
     - name: Generate sqlc client
       run: make generate-db-client
       shell: bash
+      working-directory: backend
