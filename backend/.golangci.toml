@@ -27,5 +27,14 @@ paths = [
 [[linters.exclusions.rules]]
 path = "_test\\.go"
 linters = [
-  "err113"
+  "err113",
+  "errcheck",
+  "funlen",
+  "noctx"
+]
+
+[[linters.exclusions.rules]]
+path = "internal/domain/vo/error.go"
+linters = [
+  "mnd",
 ]

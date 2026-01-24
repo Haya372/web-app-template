@@ -1,4 +1,6 @@
 # Auto generated
 internal/infrastructure/sqlc
+internal/infrastructure/di/wire_gen.go
 test/mock
 !/test/mock/common/mock_transaction.go
+test/integration/wire_gen.go
