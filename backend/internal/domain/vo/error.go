@@ -43,7 +43,7 @@ func (e *baseError) Details() map[string]any {
 	return e.details
 }
 
-func NewValidationError(message string, details map[string]any, err error) Error {
+func NewValidationError(message string, details map[string]any, err error) error {
 	return &baseError{
 		status:  400,
 		code:    ValidationErrorCode,
