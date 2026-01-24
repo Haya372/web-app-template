@@ -1,3 +1,5 @@
+//go:generate mockgen -source=user.go -destination=../../../test/mock/domain/entity/mock_user.go
+
 package entity
 
 import (
