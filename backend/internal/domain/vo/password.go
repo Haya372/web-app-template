@@ -14,5 +14,6 @@ func NewPassword(raw string) (*Password, error) {
 	}
 
 	password := Password(raw)
+
 	return &password, nil
 }

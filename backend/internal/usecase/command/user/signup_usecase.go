@@ -38,6 +38,7 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*S
 	user, err := entity.NewUser(input.Email, input.Password, input.Name, time.Now())
 	if err != nil {
 		uc.logger.Error(ctx, "failed to create User", "error", err)
+
 		return nil, errors.Wrap(err, "signupUseCaseImpl: failed to create User")
 	}
 
@@ -45,14 +46,15 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*S
 		_, err := uc.userRepository.Create(ctx, user)
 		if err != nil {
 			uc.logger.Error(ctx, "failed to save User", "error", err)
+
 			return errors.Wrap(err, "signupUseCaseImpl: failed to save user")
 		}
 
 		return nil
 	})
-
 	if err != nil {
 		uc.logger.Error(ctx, "transaction error", "error", err)
+
 		return nil, errors.Wrap(err, "signupUseCaseImpl: Transaction error")
 	}
 

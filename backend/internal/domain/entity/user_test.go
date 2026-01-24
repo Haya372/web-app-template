@@ -63,7 +63,7 @@ func TestUser_FailureCase(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			user, err := entity.NewUser(tt.email, tt.password, tt.name, tt.createdAt)
 
-			assert.NotNil(t, err)
+			assert.Error(t, err)
 			assert.Nil(t, user)
 		})
 	}

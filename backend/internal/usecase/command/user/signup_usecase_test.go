@@ -43,7 +43,7 @@ func TestSignupUseCase_HappyCase(t *testing.T) {
 
 			output, err := usecase.Execute(ctx, tt.input)
 
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, output.Name, tt.input.Name)
 			assert.Equal(t, output.Email, tt.input.Email)
 		})
@@ -104,7 +104,7 @@ func TestSignupUseCase_FailureCase(t *testing.T) {
 
 			output, err := usecase.Execute(ctx, tt.input)
 
-			assert.NotNil(t, err)
+			assert.Error(t, err)
 			assert.Nil(t, output)
 		})
 	}

@@ -22,7 +22,7 @@ func TestPassword_HappyCase(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			password, err := vo.NewPassword(tt.input)
 
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, *password, vo.Password(tt.input))
 		})
 	}
@@ -43,7 +43,7 @@ func TestPassword_FailureCase(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			password, err := vo.NewPassword(tt.input)
 
-			assert.NotNil(t, err)
+			assert.Error(t, err)
 			assert.Nil(t, password)
 		})
 	}

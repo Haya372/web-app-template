@@ -14,6 +14,7 @@ func (tx *mockTransactionManager) Do(ctx context.Context, f func(ctx context.Con
 	if tx.err != nil {
 		return tx.err
 	}
+
 	return f(ctx)
 }
 
