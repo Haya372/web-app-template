@@ -1,2 +1,4 @@
 # Auto generated
 internal/infrastructure/sqlc
+test/mock
+!/test/mock/common/mock_transaction.go

@@ -21,7 +21,10 @@ runs:
       uses: sqlc-dev/setup-sqlc@c0209b9199cd1cce6a14fc27cabcec491b651761 # v4
       with:
         sqlc-version: ${{ inputs.sqlc-version }}
-    - name: Generate sqlc client
-      run: make generate-db-client
+    - name: Install mockgen
+      run: go install go.uber.org/mock/mockgen@v0.6.0
+      shell: bash
+    - name: Generate
+      run: make generate
       shell: bash
       working-directory: backend
