@@ -17,3 +17,15 @@ disable = [
   "paralleltest",
   "varnamelen"
 ]
+
+[linters.exclusions]
+paths = [
+  "internal/infrastructure/sqlc",
+  "test/mock"
+]
+
+[[linters.exclusions.rules]]
+path = "_test\\.go"
+linters = [
+  "err113"
+]

@@ -1,16 +1,19 @@
 package vo
 
-import "errors"
+import (
+	"fmt"
+)
 
 type Password string
 
-var (
-	illegalPasswordLength = errors.New("illegal password length")
+const (
+	minimumPasswordLength = 8
 )
 
 func NewPassword(raw string) (*Password, error) {
-	if len(raw) < 8 {
-		return nil, NewValidationError("password must be at least 8 characters long", nil, illegalPasswordLength)
+	if len(raw) < minimumPasswordLength {
+		return nil, NewValidationError(
+			fmt.Sprintf("password must be at least %d characters long", minimumPasswordLength), nil, nil)
 	}
 
 	password := Password(raw)

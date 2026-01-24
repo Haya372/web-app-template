@@ -13,31 +13,31 @@ type Error interface {
 	Details() map[string]any
 }
 
-type errorImpl struct {
+type baseError struct {
 	code    ErrorCode
 	message string
 	err     error
 	details map[string]any
 }
 
-func (e *errorImpl) Error() string {
+func (e *baseError) Error() string {
 	return e.err.Error()
 }
 
-func (e *errorImpl) Code() ErrorCode {
+func (e *baseError) Code() ErrorCode {
 	return e.code
 }
 
-func (e *errorImpl) Message() string {
+func (e *baseError) Message() string {
 	return e.message
 }
 
-func (e *errorImpl) Details() map[string]any {
+func (e *baseError) Details() map[string]any {
 	return e.details
 }
 
 func NewValidationError(message string, details map[string]any, err error) Error {
-	return &errorImpl{
+	return &baseError{
 		code:    ValidationErrorCode,
 		message: message,
 		err:     err,

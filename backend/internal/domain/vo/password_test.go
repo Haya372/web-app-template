@@ -5,6 +5,7 @@ import (
 
 	"github.com/Haya372/web-app-template/backend/internal/domain/vo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPassword_HappyCase(t *testing.T) {
@@ -22,7 +23,7 @@ func TestPassword_HappyCase(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			password, err := vo.NewPassword(tt.input)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, *password, vo.Password(tt.input))
 		})
 	}
@@ -43,7 +44,7 @@ func TestPassword_FailureCase(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			password, err := vo.NewPassword(tt.input)
 
-			assert.Error(t, err)
+			require.Error(t, err)
 			assert.Nil(t, password)
 		})
 	}

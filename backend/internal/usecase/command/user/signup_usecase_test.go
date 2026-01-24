@@ -10,6 +10,7 @@ import (
 	mock_entity "github.com/Haya372/web-app-template/backend/test/mock/domain/entity"
 	mock_repository "github.com/Haya372/web-app-template/backend/test/mock/domain/entity/repository"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -43,7 +44,7 @@ func TestSignupUseCase_HappyCase(t *testing.T) {
 
 			output, err := usecase.Execute(ctx, tt.input)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, output.Name, tt.input.Name)
 			assert.Equal(t, output.Email, tt.input.Email)
 		})
@@ -104,7 +105,7 @@ func TestSignupUseCase_FailureCase(t *testing.T) {
 
 			output, err := usecase.Execute(ctx, tt.input)
 
-			assert.Error(t, err)
+			require.Error(t, err)
 			assert.Nil(t, output)
 		})
 	}
