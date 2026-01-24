@@ -21,16 +21,11 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Setup golang
-        uses: actions/setup-go@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - name: Setup backend
+        uses: ./.github/actions/setup-backend
         with:
-          go-version: stable
-      - name: Setup sqlc
-        uses: sqlc-dev/setup-sqlc@v4
-        with:
+          go-version: '1.25.6'
           sqlc-version: '1.30.0'
-      - name: generate sqlc client
-        run: make generate-db-client
       - name: Unit test
         run: make test-unit

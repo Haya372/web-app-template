@@ -21,19 +21,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Setup golang
-        uses: actions/setup-go@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - name: Setup backend
+        uses: ./.github/actions/setup-backend
         with:
-          go-version: stable
-      - name: Setup sqlc
-        uses: sqlc-dev/setup-sqlc@v4
-        with:
+          go-version: '1.25.6'
           sqlc-version: '1.30.0'
-      - name: generate sqlc client
-        run: make generate-db-client
       - name: Setup golang-ci
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
         with:
           version: v2.8
           install-only: true
