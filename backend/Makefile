@@ -23,6 +23,6 @@ test-integration:
 generate-db-client:
 	sqlc generate -f db/sqlc.yaml
 
-.PHONY: generate
-generate:
+.PHONY: generate generate-db-client
+generate: generate-db-client
 	go generate ./...
