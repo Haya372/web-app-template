@@ -1,0 +1,44 @@
+# Basic `dependabot.yml` file with
+# minimum configuration for two package managers
+
+version: 2
+updates:
+  # TODO: fix　to suit your requirements
+  - package-ecosystem: "gomod"
+    directory: "/backend"
+    open-pull-requests-limit: 2
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "dependabot"
+    commit-message:
+      prefix: "chore(backend)"
+
+  # TODO: fix　to suit your requirements
+  - package-ecosystem: "docker-compose"
+    directory: "/backend"
+    open-pull-requests-limit: 1
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "dependabot"
+    commit-message:
+      prefix: "chore(backend docker)"
+
+  # TODO: fix　to suit your requirements
+  - package-ecosystem: "github-actions"
+    directory: "/.github"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 1
+    labels:
+      - "dependencies"
+      - "dependabot"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore(github-actions)"

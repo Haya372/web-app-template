@@ -1,0 +1,27 @@
+name: setup backend
+description: Setup Go backend CI
+inputs:
+  go-version:
+    description: golang version
+    required: true
+    default: stable
+  sqlc-version:
+    description: sqlc version
+    required: true
+    default: '1.30.0'
+runs:
+  using: composite
+  steps:
+    - name: Setup golang
+      uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+      with:
+        go-version: ${{ inputs.go-version }}
+        cache-dependency-path: backend/go.sum
+    - name: Setup sqlc
+      uses: sqlc-dev/setup-sqlc@c0209b9199cd1cce6a14fc27cabcec491b651761 # v4
+      with:
+        sqlc-version: ${{ inputs.sqlc-version }}
+    - name: Generate sqlc client
+      run: make generate-db-client
+      shell: bash
+      working-directory: backend
