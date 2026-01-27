@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 
 	"github.com/Haya372/web-app-template/backend/internal/infrastructure/sqlc"
 	"github.com/jackc/pgx/v5"
@@ -70,6 +71,14 @@ type DbInfo struct {
 	Dsn      string
 }
 
+func NewDbInfo() DbInfo {
+	dsn := os.Getenv("DATABASE_DSN")
+
+	return DbInfo{
+		Dsn: dsn,
+	}
+}
+
 func (info *DbInfo) GetDatabaseUrl() string {
 	if len(info.Dsn) > 0 {
 		return info.Dsn
@@ -80,13 +89,8 @@ func (info *DbInfo) GetDatabaseUrl() string {
 		info.User, info.Password, net.JoinHostPort(info.Host, info.Port), info.Database)
 }
 
-func NewDbManager(ctx context.Context, info DbInfo) (DbManager, error) {
-	dbpool, err := pgxpool.New(ctx, info.GetDatabaseUrl())
-	if err != nil {
-		return nil, err
-	}
-
+func NewDbManager(pool *pgxpool.Pool) DbManager {
 	return &dbManagerImpl{
-		pool: dbpool,
-	}, nil
+		pool: pool,
+	}
 }

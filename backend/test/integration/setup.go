@@ -3,12 +3,15 @@ package integration
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"sort"
 
 	"github.com/Haya372/web-app-template/backend/internal/infrastructure/db"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/labstack/echo/v5"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -25,29 +28,36 @@ type TestDb interface {
 	DbManager() db.DbManager
 	Cleanup() error
 	Terminate() error
+	Pool() *pgxpool.Pool
 }
 
 type localTestDb struct {
+	pool      *pgxpool.Pool
 	manager   db.DbManager
 	container testcontainers.Container
 }
 
 type ciTestDb struct {
+	pool    *pgxpool.Pool
 	manager db.DbManager
 }
 
 const wailOccurrence = 2
 
+func NewTestServer(e *echo.Echo) *httptest.Server {
+	return httptest.NewServer(e)
+}
+
 func NewTestDb(props TestDbProps) (TestDb, error) {
 	ctx := context.Background()
 
 	if os.Getenv("CI") == "true" {
-		manager, err := db.NewDbManager(ctx, db.DbInfo{
-			Dsn: os.Getenv("DATABASE_DSN"),
-		})
+		pool, err := db.NewDbPool(ctx)
 		if err != nil {
 			return nil, err
 		}
+
+		manager := db.NewDbManager(pool)
 
 		err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
 			return runSQLDir(ctx, conn, props.DdlPath)
@@ -56,7 +66,7 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 			return nil, err
 		}
 
-		return &ciTestDb{manager: manager}, nil
+		return &ciTestDb{manager: manager, pool: pool}, nil
 	}
 
 	container, err := postgres.Run(ctx,
@@ -78,12 +88,12 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 		return nil, err
 	}
 
-	manager, err := db.NewDbManager(ctx, db.DbInfo{
-		Dsn: dsn,
-	})
+	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
 		return nil, err
 	}
+
+	manager := db.NewDbManager(pool)
 
 	err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
 		return runSQLDir(ctx, conn, props.DdlPath)
@@ -95,6 +105,7 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 	return &localTestDb{
 		manager:   manager,
 		container: container,
+		pool:      pool,
 	}, nil
 }
 
@@ -111,7 +122,22 @@ func (db *localTestDb) Cleanup() error {
 }
 
 func (db *localTestDb) Terminate() error {
+	ctx := context.Background()
+
+	err := db.manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "drop table users")
+
+		return err
+	})
+	if err != nil {
+		slog.Warn("failed to terminate table", "error", err)
+	}
+
 	return db.container.Terminate(context.Background())
+}
+
+func (db *localTestDb) Pool() *pgxpool.Pool {
+	return db.pool
 }
 
 func (db *ciTestDb) DbManager() db.DbManager {
@@ -127,7 +153,17 @@ func (db *ciTestDb) Cleanup() error {
 }
 
 func (db *ciTestDb) Terminate() error {
-	return nil
+	ctx := context.Background()
+
+	return db.manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "drop table users")
+
+		return err
+	})
+}
+
+func (db *ciTestDb) Pool() *pgxpool.Pool {
+	return db.pool
 }
 
 func runSQLDir(ctx context.Context, conn *pgxpool.Conn, dir string) error {

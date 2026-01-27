@@ -4,9 +4,11 @@ type ErrorCode string
 
 const (
 	ValidationErrorCode = ErrorCode("VALIDATION_ERROR")
+	InternalErrorCode   = ErrorCode("INTERNAL_ERROR")
 )
 
 type Error interface {
+	Status() int
 	Error() string
 	Code() ErrorCode
 	Message() string
@@ -14,10 +16,15 @@ type Error interface {
 }
 
 type baseError struct {
+	status  int
 	code    ErrorCode
 	message string
 	err     error
 	details map[string]any
+}
+
+func (e *baseError) Status() int {
+	return e.status
 }
 
 func (e *baseError) Error() string {
@@ -36,8 +43,9 @@ func (e *baseError) Details() map[string]any {
 	return e.details
 }
 
-func NewValidationError(message string, details map[string]any, err error) Error {
+func NewValidationError(message string, details map[string]any, err error) error {
 	return &baseError{
+		status:  400,
 		code:    ValidationErrorCode,
 		message: message,
 		err:     err,
