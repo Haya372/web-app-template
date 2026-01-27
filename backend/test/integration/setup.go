@@ -121,6 +121,11 @@ func (db *localTestDb) Cleanup() error {
 }
 
 func (db *localTestDb) Terminate() error {
+	ctx := context.Background()
+	db.manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "drop table users")
+		return err
+	})
 	return db.container.Terminate(context.Background())
 }
 
@@ -141,7 +146,11 @@ func (db *ciTestDb) Cleanup() error {
 }
 
 func (db *ciTestDb) Terminate() error {
-	return nil
+	ctx := context.Background()
+	return db.manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "drop table users")
+		return err
+	})
 }
 
 func (db *ciTestDb) Pool() *pgxpool.Pool {
