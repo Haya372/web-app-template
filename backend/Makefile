@@ -16,9 +16,10 @@ fmt:
 test-unit:
 	go test ./...
 
+# TODO: remove -p option
 .PHONY: test-integration
 test-integration:
-	go test ./... -tags=integration
+	go test ./... -tags=integration -p 1
 
 .PHONY: generate-db-client
 generate-db-client:
