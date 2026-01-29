@@ -1,9 +1,9 @@
-package common_mock
+package shared_mock
 
 import (
 	"context"
 
-	"github.com/Haya372/web-app-template/backend/internal/common"
+	"github.com/Haya372/web-app-template/backend/internal/usecase/shared"
 )
 
 type mockTransactionManager struct {
@@ -18,7 +18,7 @@ func (tx *mockTransactionManager) Do(ctx context.Context, f func(ctx context.Con
 	return f(ctx)
 }
 
-func NewMockTransactionManager(err error) common.TransactionManager {
+func NewMockTransactionManager(err error) shared.TransactionManager {
 	return &mockTransactionManager{
 		err: err,
 	}
