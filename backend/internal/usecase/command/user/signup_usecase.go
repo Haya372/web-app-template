@@ -7,6 +7,7 @@ import (
 	"github.com/Haya372/web-app-template/backend/internal/common"
 	"github.com/Haya372/web-app-template/backend/internal/domain/entity"
 	"github.com/Haya372/web-app-template/backend/internal/domain/entity/repository"
+	"github.com/Haya372/web-app-template/backend/internal/usecase/shared"
 	"github.com/google/uuid"
 )
 
@@ -30,7 +31,7 @@ type SignupOutput struct {
 type signupUseCaseImpl struct {
 	logger         common.Logger
 	userRepository repository.UserRepository
-	txManager      common.TransactionManager
+	txManager      shared.TransactionManager
 }
 
 func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*SignupOutput, error) {
@@ -65,7 +66,7 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*S
 	}, nil
 }
 
-func NewSignupUseCase(userRepository repository.UserRepository, txManager common.TransactionManager) SingupUseCase {
+func NewSignupUseCase(userRepository repository.UserRepository, txManager shared.TransactionManager) SingupUseCase {
 	return &signupUseCaseImpl{
 		logger:         common.NewLogger(),
 		userRepository: userRepository,

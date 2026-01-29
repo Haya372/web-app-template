@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Haya372/web-app-template/backend/internal/common"
+	"github.com/Haya372/web-app-template/backend/internal/usecase/shared"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -49,7 +50,7 @@ func (txm *transactionManagerImpl) Do(ctx context.Context, f func(ctx context.Co
 	return tx.Commit(ctx)
 }
 
-func NewTransactionManger(pool *pgxpool.Pool) common.TransactionManager {
+func NewTransactionManger(pool *pgxpool.Pool) shared.TransactionManager {
 	return &transactionManagerImpl{
 		logger: common.NewLogger(),
 		pool:   pool,

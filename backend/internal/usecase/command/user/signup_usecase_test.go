@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/Haya372/web-app-template/backend/internal/usecase/command/user"
-	mock_common "github.com/Haya372/web-app-template/backend/test/mock/common"
 	mock_entity "github.com/Haya372/web-app-template/backend/test/mock/domain/entity"
 	mock_repository "github.com/Haya372/web-app-template/backend/test/mock/domain/entity/repository"
+	mock_shared "github.com/Haya372/web-app-template/backend/test/mock/usecase/shared"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -34,7 +34,7 @@ func TestSignupUseCase_HappyCase(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			ctx := context.Background()
 
-			txManager := mock_common.NewMockTransactionManager(nil)
+			txManager := mock_shared.NewMockTransactionManager(nil)
 
 			userRepository := mock_repository.NewMockUserRepository(ctrl)
 			mockUser := mock_entity.NewMockUser(ctrl)
@@ -95,7 +95,7 @@ func TestSignupUseCase_FailureCase(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			ctx := context.Background()
 
-			txManager := mock_common.NewMockTransactionManager(tt.txError)
+			txManager := mock_shared.NewMockTransactionManager(tt.txError)
 
 			userRepository := mock_repository.NewMockUserRepository(ctrl)
 			mockUser := mock_entity.NewMockUser(ctrl)
