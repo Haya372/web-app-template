@@ -16,7 +16,7 @@ runs:
       uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
       with:
         go-version: ${{ inputs.go-version }}
-        cache-dependency-path: backend/go.sum
+        cache-dependency-path: go-backend/go.sum
     - name: Setup sqlc
       uses: sqlc-dev/setup-sqlc@c0209b9199cd1cce6a14fc27cabcec491b651761 # v4
       with:
@@ -30,4 +30,4 @@ runs:
     - name: Generate
       run: make generate
       shell: bash
-      working-directory: backend
+      working-directory: go-backend

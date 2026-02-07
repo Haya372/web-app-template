@@ -1,0 +1,6 @@
+# Auto generated
+internal/infrastructure/sqlc
+internal/infrastructure/di/wire_gen.go
+test/mock
+!test/mock/usecase/shared/mock_transaction.go
+test/integration/wire_gen.go

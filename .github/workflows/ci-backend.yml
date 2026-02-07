@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: go-backend
 
     steps:
       - name: Checkout repository
@@ -41,7 +41,7 @@ jobs:
     needs: lint
     defaults:
       run:
-        working-directory: backend
+        working-directory: go-backend
 
     steps:
       - name: Checkout repository
@@ -60,7 +60,7 @@ jobs:
     needs: lint
     defaults:
       run:
-        working-directory: backend
+        working-directory: go-backend
 
     services:
       postgres:
