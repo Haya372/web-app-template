@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/di"
+	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/telemetry"
 )
 
 func main() {
@@ -20,6 +21,18 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	shutdown, err := telemetry.SetupOTelSDK(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		err := shutdown(ctx)
+		if err != nil {
+			slog.Error("failed to shutdown telemetry", "error", err)
+		}
+	}()
 
 	if err := server.Start(ctx); err != nil {
 		slog.Error("failed to start server", "error", err)

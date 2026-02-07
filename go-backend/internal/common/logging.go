@@ -2,9 +2,9 @@ package common
 
 import (
 	"context"
-	"os"
+	"log/slog"
 
-	"golang.org/x/exp/slog"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
 
 type Logger interface {
@@ -19,23 +19,23 @@ type loggerImpl struct {
 }
 
 func (l *loggerImpl) Debug(ctx context.Context, msg string, args ...any) {
-	l.logger.Debug(msg, args...)
+	l.logger.DebugContext(ctx, msg, args...)
 }
 
 func (l *loggerImpl) Info(ctx context.Context, msg string, args ...any) {
-	l.logger.Info(msg, args...)
+	l.logger.InfoContext(ctx, msg, args...)
 }
 
 func (l *loggerImpl) Warn(ctx context.Context, msg string, args ...any) {
-	l.logger.Warn(msg, args...)
+	l.logger.WarnContext(ctx, msg, args...)
 }
 
 func (l *loggerImpl) Error(ctx context.Context, msg string, args ...any) {
-	l.logger.Error(msg, args...)
+	l.logger.ErrorContext(ctx, msg, args...)
 }
 
 func NewLogger() Logger {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := otelslog.NewLogger("go-backend")
 
 	return &loggerImpl{
 		logger: *logger,

@@ -8,6 +8,8 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	"github.com/labstack/echo/v5"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 )
 
 type Router struct {
@@ -16,9 +18,13 @@ type Router struct {
 
 func (r *Router) AddRoute(e *echo.Echo) {
 	logger := common.NewLogger()
+	tracer := otel.Tracer("root")
 
 	e.POST("/signup", func(c *echo.Context) error {
 		ctx := c.Request().Context()
+
+		ctx, span := tracer.Start(ctx, "signup")
+		defer span.End()
 
 		var req struct {
 			Email    string `form:"email"    json:"email"`
@@ -43,6 +49,8 @@ func (r *Router) AddRoute(e *echo.Echo) {
 		})
 		if err != nil {
 			status, res := handleError(err)
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 
 			return c.JSON(status, res)
 		}

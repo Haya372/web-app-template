@@ -2,7 +2,7 @@ name: ci-backend
 on:
   pull_request:
     paths:
-      - "backend/**"
+      - "go-backend/**"
       - ".github/workflows/ci-backend-lint.yml"
       - "!**.md"
 
