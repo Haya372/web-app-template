@@ -5,7 +5,7 @@ version: 2
 updates:
   # TODO: fix　to suit your requirements
   - package-ecosystem: "gomod"
-    directory: "/backend"
+    directory: "/go-backend"
     open-pull-requests-limit: 2
     schedule:
       interval: "weekly"
@@ -13,11 +13,11 @@ updates:
       - "dependencies"
       - "dependabot"
     commit-message:
-      prefix: "chore(backend)"
+      prefix: "chore(go-backend)"
 
   # TODO: fix　to suit your requirements
   - package-ecosystem: "docker-compose"
-    directory: "/backend"
+    directory: "/go-backend"
     open-pull-requests-limit: 1
     schedule:
       interval: "weekly"
@@ -25,7 +25,7 @@ updates:
       - "dependencies"
       - "dependabot"
     commit-message:
-      prefix: "chore(backend docker)"
+      prefix: "chore(go-backend docker)"
 
   # TODO: fix　to suit your requirements
   - package-ecosystem: "github-actions"
