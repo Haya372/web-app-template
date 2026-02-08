@@ -165,6 +165,7 @@ func (db *ciTestDb) Terminate() error {
 		}
 
 		_, err := conn.Exec(ctx, "drop table user_statuses")
+
 		return err
 	})
 }

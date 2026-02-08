@@ -80,7 +80,14 @@ func NewUser(email, rawPassword, name string, createdAt time.Time) (User, error)
 	}, nil
 }
 
-func ReconstructUser(id uuid.UUID, email string, passwordHash []byte, name string, status vo.UserStatus, createdAt time.Time) User {
+func ReconstructUser(
+	id uuid.UUID,
+	email string,
+	passwordHash []byte,
+	name string,
+	status vo.UserStatus,
+	createdAt time.Time,
+) User {
 	return &userImpl{
 		id:           id,
 		email:        email,

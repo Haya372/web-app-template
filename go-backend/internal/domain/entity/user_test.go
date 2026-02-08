@@ -37,7 +37,7 @@ func TestUser_HappyCase(t *testing.T) {
 			assert.Equal(t, user.Name(), tt.name)
 			assert.Equal(t, user.Email(), tt.email)
 			assert.Equal(t, user.CreatedAt(), tt.createdAt)
-			assert.Equal(t, user.Status(), vo.UserStatusActive)
+			assert.Equal(t, vo.UserStatusActive, user.Status())
 
 			err = bcrypt.CompareHashAndPassword(user.PasswordHash(), []byte(tt.password))
 			require.NoError(t, err)
@@ -130,6 +130,7 @@ func TestUser_UpdateStatus(t *testing.T) {
 			if tt.shouldError {
 				require.Error(t, err)
 				assert.Nil(t, updated)
+
 				return
 			}
 
