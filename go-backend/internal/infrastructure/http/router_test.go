@@ -5,10 +5,12 @@ package http_test
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSignup(t *testing.T) {
@@ -74,6 +76,20 @@ func TestSignup(t *testing.T) {
 			}()
 
 			assert.Equal(t, resp.StatusCode, tt.responseCode)
+
+			if resp.StatusCode == http.StatusCreated {
+				payload, err := io.ReadAll(resp.Body)
+				if err != nil {
+					assert.FailNow(t, "fail to read body", err)
+				}
+
+				var got struct {
+					Status string `json:"status"`
+				}
+
+				require.NoError(t, json.Unmarshal(payload, &got))
+				assert.Equal(t, "ACTIVE", got.Status)
+			}
 
 			err = testDb.Cleanup()
 			if err != nil {

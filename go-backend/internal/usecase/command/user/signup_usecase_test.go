@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	mock_entity "github.com/Haya372/web-app-template/go-backend/test/mock/domain/entity"
 	mock_repository "github.com/Haya372/web-app-template/go-backend/test/mock/domain/entity/repository"
@@ -47,6 +48,7 @@ func TestSignupUseCase_HappyCase(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, output.Name, tt.input.Name)
 			assert.Equal(t, output.Email, tt.input.Email)
+			assert.Equal(t, vo.UserStatusActive, output.Status)
 		})
 	}
 }

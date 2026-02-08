@@ -7,6 +7,7 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/entity"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/entity/repository"
+	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/shared"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
@@ -29,6 +30,7 @@ type SignupOutput struct {
 	Name      string
 	Email     string
 	CreatedAt time.Time
+	Status    vo.UserStatus
 }
 
 type signupUseCaseImpl struct {
@@ -74,6 +76,7 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*S
 		Name:      user.Name(),
 		Email:     user.Email(),
 		CreatedAt: user.CreatedAt(),
+		Status:    user.Status(),
 	}, nil
 }
 

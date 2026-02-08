@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/entity"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/entity/repository"
+	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/sqlc"
 	"go.opentelemetry.io/otel"
@@ -29,6 +31,7 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user entity.User) (enti
 			Email:        user.Email(),
 			PasswordHash: user.PasswordHash(),
 			Name:         user.Name(),
+			StatusCode:   user.Status().String(),
 			CreatedAt:    toPgtypeTimestamp(user.CreatedAt()),
 		})
 	})
@@ -46,7 +49,7 @@ func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (ent
 	ctx, span := r.tracer.Start(ctx, "FindByEmail")
 	defer span.End()
 
-	var user *sqlc.User
+	var dbUser *sqlc.User
 
 	err := r.dbManager.QueriesFunc(ctx, func(ctx context.Context, queries sqlc.Queries) error {
 		u, err := queries.FindUserByEmail(ctx, email)
@@ -54,7 +57,7 @@ func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (ent
 			return err
 		}
 
-		user = &u
+		dbUser = &u
 
 		return nil
 	})
@@ -65,12 +68,22 @@ func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (ent
 		return nil, err
 	}
 
+	// NOTE: schema guarantees FK integrity, but keep this guard defensive to surface unexpected records.
+	status, err := vo.UserStatusFromString(dbUser.StatusCode)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return nil, fmt.Errorf("parse user status: %w", err)
+	}
+
 	return entity.ReconstructUser(
-		user.ID.Bytes,
-		user.Email,
-		user.PasswordHash,
-		user.Name,
-		user.CreatedAt.Time,
+		dbUser.ID.Bytes,
+		dbUser.Email,
+		dbUser.PasswordHash,
+		dbUser.Name,
+		status,
+		dbUser.CreatedAt.Time,
 	), nil
 }
 
