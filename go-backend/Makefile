@@ -33,3 +33,6 @@ generate-di-container:
 generate: generate-db-client generate-di-container
 	go generate ./...
 
+.PHONY: migrate-local
+migrate-local:
+	psqldef -U postgres -W postgres -h localhost -p 55432 backend --apply < db/schema/schema.sql
