@@ -111,7 +111,7 @@ func TestSignup(t *testing.T) {
 
 			err = testDb.Cleanup()
 			if err != nil {
-				assert.Fail(t, "fail to cleanup testDb")
+				assert.Fail(t, "fail to cleanup testDb", err)
 			}
 		})
 	}
@@ -159,6 +159,6 @@ func TestSignup_DuplicateRequest(t *testing.T) {
 
 	err = testDb.Cleanup()
 	if err != nil {
-		assert.Fail(t, "fail to cleanup testDb")
+		assert.Fail(t, "fail to cleanup testDb", err)
 	}
 }
