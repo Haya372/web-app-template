@@ -6,6 +6,7 @@ services:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql
+      - ./db/seeds:/seeds
     ports:
       - 55432:5432
     environment:

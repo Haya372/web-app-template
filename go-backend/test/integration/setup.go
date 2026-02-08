@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http/httptest"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 
@@ -18,10 +19,10 @@ import (
 )
 
 type TestDbProps struct {
-	User     string
-	Password string
-	Database string
-	DdlPath  string
+	User      string
+	Password  string
+	Database  string
+	DbDirPath string
 }
 
 type TestDb interface {
@@ -60,7 +61,13 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 		manager := db.NewDbManager(pool)
 
 		err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-			return runSQLDir(ctx, conn, props.DdlPath)
+			// running migration
+			if err := runSQLDir(ctx, conn, path.Join(props.DbDirPath, "schema")); err != nil {
+				return err
+			}
+
+			// running seed generation
+			return runSQLDir(ctx, conn, path.Join(props.DbDirPath, "seeds", "master"))
 		})
 		if err != nil {
 			return nil, err
@@ -96,7 +103,13 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 	manager := db.NewDbManager(pool)
 
 	err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-		return runSQLDir(ctx, conn, props.DdlPath)
+		// running migration
+		if err := runSQLDir(ctx, conn, path.Join(props.DbDirPath, "schema")); err != nil {
+			return err
+		}
+
+		// running seed generation
+		return runSQLDir(ctx, conn, path.Join(props.DbDirPath, "seeds", "master"))
 	})
 	if err != nil {
 		return nil, err

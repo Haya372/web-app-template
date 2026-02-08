@@ -11,6 +11,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	errIllegalName = errors.New("illegal name")
+)
+
 type User interface {
 	Id() uuid.UUID
 	Email() string
@@ -59,6 +63,12 @@ func NewUser(email, rawPassword, name string, createdAt time.Time) (User, error)
 	if err != nil {
 		return nil, err
 	}
+
+	if len(name) == 0 {
+		return nil, vo.NewValidationError("name is required", nil, errIllegalName)
+	}
+
+	// TODO: implement email validation
 
 	password, err := vo.NewPassword(rawPassword)
 	if err != nil {

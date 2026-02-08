@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -13,6 +14,19 @@ import (
 const (
 	gracefulTimeout = 5 * time.Second
 )
+
+type customValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *customValidator) Validate(i any) error {
+	if err := cv.validator.Struct(i); err != nil {
+		// Optionally, you could return the error to give each route more control over the status code
+		return echo.ErrBadRequest.Wrap(err)
+	}
+
+	return nil
+}
 
 type Server struct {
 	Config echo.StartConfig
@@ -23,8 +37,10 @@ func (s *Server) Start(ctx context.Context) error {
 	return s.Config.Start(ctx, s.Echo)
 }
 
-func NewServer(r *Router) *echo.Echo {
+func NewServer(r Router) *echo.Echo {
 	e := echo.New()
+
+	e.Validator = &customValidator{validator: validator.New()}
 
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
