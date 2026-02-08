@@ -5,6 +5,8 @@ on:
       - "go-backend/**"
       - ".github/workflows/ci-backend-lint.yml"
       - "!**.md"
+      - "!Makefile"
+      - "!docker-compose.yml"
 
 permissions:
   contents: read
