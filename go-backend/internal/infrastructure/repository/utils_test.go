@@ -13,10 +13,10 @@ var testDb integration.TestDb
 
 func TestMain(m *testing.M) {
 	db, err := integration.NewTestDb(integration.TestDbProps{
-		User:     "postgres",
-		Password: "postgres",
-		Database: "repository_it",
-		DdlPath:  "../../../db/schema",
+		User:      "postgres",
+		Password:  "postgres",
+		Database:  "repository_it",
+		DbDirPath: "../../../db",
 	})
 	if err != nil {
 		log.Fatalf("failed to create db, err=%v", err)
