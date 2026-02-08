@@ -31,6 +31,7 @@ web-app-template を含む各バックエンド実装で共通して守るべき
 ## 実装例 (Good vs Bad)
 
 ### Domain 層
+- **Immutable を徹底する:** Entity/VO を直接 mutate せず、状態変更メソッドは常に新しいインスタンスを返す（例: `func (u User) UpdateStatus(...) (User, error)`). これによりテスタビリティとスレッドセーフティを保ち、副作用をユースケース層に閉じ込める。
 - **Good:** Value Object で検証を担わせ、永続化やフレームワークに依存しない純粋な構造にする
 
 ```go
