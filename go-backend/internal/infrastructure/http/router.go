@@ -59,11 +59,13 @@ func (r *Router) AddRoute(e *echo.Echo) {
 			Id        string `json:"id"`
 			Name      string `json:"name"`
 			Email     string `json:"email"`
+			Status    string `json:"status"`
 			CreatedAt string `json:"createdAt"`
 		}{
 			Id:        output.Id.URN(),
 			Name:      output.Name,
 			Email:     output.Email,
+			Status:    output.Status.String(),
 			CreatedAt: output.CreatedAt.Format(time.RFC3339),
 		}
 

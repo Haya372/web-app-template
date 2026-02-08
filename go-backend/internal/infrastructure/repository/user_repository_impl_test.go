@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/entity"
+	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/repository"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -27,6 +28,7 @@ func TestCreate_HappyCase(t *testing.T) {
 				"test@example.com",
 				[]byte("password"),
 				"Test User",
+				vo.UserStatusActive,
 				time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
 			),
 		},
@@ -44,6 +46,7 @@ func TestCreate_HappyCase(t *testing.T) {
 			assert.Equal(t, user.PasswordHash(), tt.user.PasswordHash())
 			assert.Equal(t, user.Name(), tt.user.Name())
 			assert.Equal(t, user.CreatedAt(), tt.user.CreatedAt())
+			assert.Equal(t, user.Status(), tt.user.Status())
 		})
 	}
 
@@ -63,6 +66,7 @@ func TestCreate_ErrorCase(t *testing.T) {
 				"test@example.com",
 				[]byte("password"),
 				strings.Repeat("a", 257),
+				vo.UserStatusActive,
 				time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
 			),
 		},
@@ -87,6 +91,7 @@ func TestFindByEmail_HappyCase(t *testing.T) {
 		"test@example.com",
 		[]byte("password"),
 		"Test User",
+		vo.UserStatusActive,
 		time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
 	)
 	target := repository.NewUserRepository(testDb.DbManager())
