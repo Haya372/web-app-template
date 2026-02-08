@@ -12,7 +12,7 @@ lint:
 fmt:
 	golangci-lint run -c .golangci.toml --fix
 
-.PHONY: test
+.PHONY: test-unit
 test-unit:
 	go test ./...
 
@@ -20,6 +20,11 @@ test-unit:
 .PHONY: test-integration
 test-integration:
 	go test ./... -tags=integration -p 1
+
+# TODO: remove -p option
+.PHONY: test-coverage
+test-coverage:
+	go test ./... -tags=integration -p 1 -coverprofile=coverage.out
 
 .PHONY: generate-db-client
 generate-db-client:
