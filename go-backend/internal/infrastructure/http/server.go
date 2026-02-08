@@ -24,6 +24,7 @@ func (cv *customValidator) Validate(i any) error {
 		// Optionally, you could return the error to give each route more control over the status code
 		return echo.ErrBadRequest.Wrap(err)
 	}
+
 	return nil
 }
 
@@ -36,7 +37,7 @@ func (s *Server) Start(ctx context.Context) error {
 	return s.Config.Start(ctx, s.Echo)
 }
 
-func NewServer(r *Router) *echo.Echo {
+func NewServer(r Router) *echo.Echo {
 	e := echo.New()
 
 	e.Validator = &customValidator{validator: validator.New()}

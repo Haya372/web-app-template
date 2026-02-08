@@ -28,7 +28,7 @@ var dbSet = wire.NewSet(
 )
 
 var httpSet = wire.NewSet(
-	wire.Struct(new(http.Router), "*"),
+	http.NewRouter,
 	http.NewEchoConfig,
 	http.NewServer,
 	wire.Struct(new(http.Server), "*"),
