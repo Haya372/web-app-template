@@ -75,7 +75,7 @@ jobs:
           name: backend-code-coverage
           path: go-backend/coverage.out
 
-  code_coverage:
+  coverage-report:
     name: "Code coverage report"
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -88,6 +88,8 @@ jobs:
       actions:       read  # to download code coverage results from "test" job
       pull-requests: write # write permission needed to comment on PR
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - uses: fgrosse/go-coverage-report@8c1d1a09864211d258937b1b1a5b849f7e4f2682 # v1.2.0
         with:
           coverage-artifact-name: "backend-code-coverage"
