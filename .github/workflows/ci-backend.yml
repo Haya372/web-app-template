@@ -5,11 +5,20 @@ on:
       - "go-backend/**"
       - ".github/workflows/ci-backend-lint.yml"
       - "!**.md"
+      - "!Makefile"
+      - "!docker-compose.yml"
+  push:
+    branches:
+      - 'main'
+    paths:
+      - "go-backend/**"
+      - ".github/workflows/ci-backend-lint.yml"
+      - "!**.md"
+      - "!Makefile"
+      - "!docker-compose.yml"
 
 permissions:
-  contents: read
-  # Optional: allow read access to pull requests. Use with `only-new-issues` option.
-  # pull-requests: read
+  contents:      read
 
 jobs:
   lint:
@@ -35,27 +44,8 @@ jobs:
       - name: Lint
         run: make lint
 
-  unit-test:
-    name: Unit test
-    runs-on: ubuntu-latest
-    needs: lint
-    defaults:
-      run:
-        working-directory: go-backend
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-      - name: Setup backend
-        uses: ./.github/actions/setup-backend
-        with:
-          go-version: '1.25.6'
-          sqlc-version: '1.30.0'
-      - name: Unit test
-        run: make test-unit
-  
-  integration-test:
-    name: Integration test
+  test-coverage:
+    name: Test coverage
     runs-on: ubuntu-latest
     needs: lint
     defaults:
@@ -81,8 +71,13 @@ jobs:
         with:
           go-version: '1.25.6'
           sqlc-version: '1.30.0'
-      - name: Integration test
-        run: make test-integration
+      - name: Run test
+        run: make test-coverage
         env:
           CI: true
           DATABASE_DSN: postgres://postgres:postgres@localhost:5432/it
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: backend-code-coverage
+          path: go-backend/coverage.out

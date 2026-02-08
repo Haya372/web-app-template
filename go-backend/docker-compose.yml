@@ -5,7 +5,9 @@ services:
     image: postgres:18.1
     restart: always
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - 55432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

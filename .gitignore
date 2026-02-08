@@ -3,3 +3,6 @@
 
 # golang
 .gocache
+
+# test
+coverage.out
