@@ -25,6 +25,7 @@ web-app-template を含む各バックエンド実装で共通して守るべき
 - 依存注入は interface/port を介して行い、DI コンテナ（例: Wire, Fx, Uber Dig 等）で束ねる
 - ドメイン層は不変条件の保持とビジネスルールに集中し、永続化や API 形式に関する知識を持たせない
 - UseCase 層は「何をいつ実行するか」を記述し、副作用を TransactionManager や Repository を通じて制御する
+- Command と Query を分離する CQRS パターンを採用し、読み取り系と書き込み系のユースケース・モデルを明確に分離することで責務とスケーラビリティを最適化する
 - Infrastructure 層は `*_impl` 等で実装を明示し、テストではモックや Testcontainers などで差し替えやすくする
 
 ## 実装例 (Good vs Bad)
