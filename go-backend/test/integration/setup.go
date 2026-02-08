@@ -61,7 +61,13 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 		manager := db.NewDbManager(pool)
 
 		err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-			return runSQLDir(ctx, conn, props.DbDirPath)
+			// running migration
+			if err := runSQLDir(ctx, conn, path.Join(props.DbDirPath, "schema")); err != nil {
+				return err
+			}
+
+			// running seed generation
+			return runSQLDir(ctx, conn, path.Join(props.DbDirPath, "seeds", "master"))
 		})
 		if err != nil {
 			return nil, err
