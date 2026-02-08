@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - "go-backend/**"
-      - ".github/workflows/ci-backend-lint.yml"
+      - ".github/workflows/ci-backend.yml"
       - "!**.md"
       - "!Makefile"
       - "!docker-compose.yml"
