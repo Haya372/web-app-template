@@ -47,10 +47,28 @@ func TestSignup(t *testing.T) {
 			responseCode: http.StatusBadRequest,
 		},
 		{
-			name: "Illegal Request",
+			name: "Illegal Password",
 			request: map[string]any{
+				"name":     "Test",
 				"email":    "test@example.com",
 				"password": "passwor",
+			},
+			responseCode: http.StatusBadRequest,
+		},
+		{
+			name: "Illegal Email Format",
+			request: map[string]any{
+				"name":     "Test",
+				"email":    "test",
+				"password": "password",
+			},
+			responseCode: http.StatusBadRequest,
+		},
+		{
+			name: "Empty Name",
+			request: map[string]any{
+				"email":    "test",
+				"password": "password",
 			},
 			responseCode: http.StatusBadRequest,
 		},

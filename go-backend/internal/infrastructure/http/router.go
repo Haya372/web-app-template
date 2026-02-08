@@ -27,9 +27,9 @@ func (r *Router) AddRoute(e *echo.Echo) {
 		defer span.End()
 
 		var req struct {
-			Email    string `form:"email"    json:"email"`
-			Password string `form:"password" json:"password"`
-			Name     string `form:"name"     json:"name"`
+			Email    string `form:"email"    json:"email" validate:"required,email"`
+			Password string `form:"password" json:"password" validate:"required"`
+			Name     string `form:"name"     json:"name" validate:"required"`
 		}
 
 		if err := c.Bind(&req); err != nil {
@@ -38,6 +38,20 @@ func (r *Router) AddRoute(e *echo.Echo) {
 			res := map[string]string{
 				"code": string(vo.ValidationErrorCode),
 			}
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+
+			return c.JSON(http.StatusBadRequest, res)
+		}
+
+		if err := c.Validate(&req); err != nil {
+			logger.Error(ctx, "failed to validate input", "error", err)
+
+			res := map[string]string{
+				"code": string(vo.ValidationErrorCode),
+			}
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 
 			return c.JSON(http.StatusBadRequest, res)
 		}
