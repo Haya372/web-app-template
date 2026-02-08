@@ -68,6 +68,7 @@ func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (ent
 		return nil, err
 	}
 
+	// NOTE: schema guarantees FK integrity, but keep this guard defensive to surface unexpected records.
 	status, err := vo.UserStatusFromString(dbUser.StatusCode)
 	if err != nil {
 		span.RecordError(err)
