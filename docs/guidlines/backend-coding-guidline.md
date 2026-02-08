@@ -92,6 +92,8 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user entity.User) (enti
 }
 ```
 
+- **NOTE:** スキーマで外部キーや CHECK 制約を張っていても、永続化層では Value Object への変換時に防御的なバリデーションを残すこと。DB から予期せぬ値が返ってきた場合に早期検知ができ、ログやトレースに兆候が残せる。
+
 - **Bad:** UseCase や Domain から直接呼び出されるグローバル変数的な実装、または interface を介さず依存が固定化された実装
 
 ```go
@@ -109,6 +111,7 @@ func SaveUser(ctx context.Context, u *entity.User) error {
 - エラーハンドリングは `errors.Is/As` や `%w` によるラップを徹底し、HTTP レイヤーではエラーコードとレスポンスボディのマッピングを一箇所に集約する
 - Value Object を積極的に使い、入力検証や型安全性をドメイン層に閉じ込める
 - コンフィグ値・秘密情報は環境変数や Secrets Manager から受け取り、リポジトリにハードコードしない
+- ソースコード内のコメント・テストケース名・テスト文言は英語で記述し、国際化や他チーム連携時も一貫して理解できるようにする
 
 ## テストと品質
 - Domain/UseCase 層はユニットテストを必須とし、テーブルドリブンで境界条件・例外系を明示する
