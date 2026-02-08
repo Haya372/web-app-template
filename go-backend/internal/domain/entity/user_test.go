@@ -60,6 +60,13 @@ func TestUser_FailureCase(t *testing.T) {
 			name:      "Test",
 			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
 		},
+		{
+			testName:  "empty name",
+			email:     "test@example.com",
+			password:  "password",
+			name:      "",
+			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+		},
 	}
 
 	for _, tt := range tests {
