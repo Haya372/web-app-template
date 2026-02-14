@@ -178,12 +178,27 @@ func TestLogin(t *testing.T) {
 			responseCode: http.StatusOK,
 		},
 		{
+			name: "User not found",
+			request: map[string]any{
+				"email":    "unknown@example.com",
+				"password": "password",
+			},
+			responseCode: http.StatusUnauthorized,
+		},
+		{
 			name: "Wrong password",
 			request: map[string]any{
 				"email":    "login@example.com",
 				"password": "wrongpass",
 			},
 			responseCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Missing password",
+			request: map[string]any{
+				"email": "login@example.com",
+			},
+			responseCode: http.StatusBadRequest,
 		},
 		{
 			name: "Invalid email",
@@ -197,20 +212,22 @@ func TestLogin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			signupBody, err := json.Marshal(map[string]any{
-				"name":     "Login User",
-				"email":    "login@example.com",
-				"password": "password",
-			})
-			if err != nil {
-				assert.FailNow(t, "fail to marshal signup json", err)
-			}
+			if tt.name != "User not found" {
+				signupBody, err := json.Marshal(map[string]any{
+					"name":     "Login User",
+					"email":    "login@example.com",
+					"password": "password",
+				})
+				if err != nil {
+					assert.FailNow(t, "fail to marshal signup json", err)
+				}
 
-			signupResp, err := http.Post(testServer.URL+"/signup", "application/json", bytes.NewBuffer(signupBody))
-			if err != nil {
-				assert.FailNow(t, "fail to signup", err)
+				signupResp, err := http.Post(testServer.URL+"/signup", "application/json", bytes.NewBuffer(signupBody))
+				if err != nil {
+					assert.FailNow(t, "fail to signup", err)
+				}
+				_ = signupResp.Body.Close()
 			}
-			_ = signupResp.Body.Close()
 
 			body, err := json.Marshal(tt.request)
 			if err != nil {

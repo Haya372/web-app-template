@@ -117,6 +117,49 @@ func TestLoginUseCase_FailureCase(t *testing.T) {
 			assertError: assertUnauthorizedError,
 		},
 		{
+			name: "password compare error",
+			setupMocks: func(ctrl *gomock.Controller) (*mock_repository.MockUserRepository, *mock_service.MockJwtService) {
+				userRepository := mock_repository.NewMockUserRepository(ctrl)
+				mockUser := mock_entity.NewMockUser(ctrl)
+				userRepository.EXPECT().FindByEmail(gomock.Any(), "test@example.com").Return(mockUser, nil).Times(1)
+				mockUser.EXPECT().Status().Return(vo.UserStatusActive).Times(1)
+				mockUser.EXPECT().ComparePassword("password").Return(false, errors.New("compare error")).Times(1)
+
+				return userRepository, mock_service.NewMockJwtService(ctrl)
+			},
+			input: user.LoginInput{
+				Email:    "test@example.com",
+				Password: "password",
+			},
+			assertError: func(t *testing.T, err error) {
+				t.Helper()
+				require.Error(t, err)
+
+				var baseErr vo.Error
+				assert.NotErrorAs(t, err, &baseErr)
+			},
+		},
+		{
+			name: "repository error",
+			setupMocks: func(ctrl *gomock.Controller) (*mock_repository.MockUserRepository, *mock_service.MockJwtService) {
+				userRepository := mock_repository.NewMockUserRepository(ctrl)
+				userRepository.EXPECT().FindByEmail(gomock.Any(), "test@example.com").Return(nil, errors.New("db error")).Times(1)
+
+				return userRepository, mock_service.NewMockJwtService(ctrl)
+			},
+			input: user.LoginInput{
+				Email:    "test@example.com",
+				Password: "password",
+			},
+			assertError: func(t *testing.T, err error) {
+				t.Helper()
+				require.Error(t, err)
+
+				var baseErr vo.Error
+				assert.NotErrorAs(t, err, &baseErr)
+			},
+		},
+		{
 			name: "token generation error",
 			setupMocks: func(ctrl *gomock.Controller) (*mock_repository.MockUserRepository, *mock_service.MockJwtService) {
 				userRepository := mock_repository.NewMockUserRepository(ctrl)
