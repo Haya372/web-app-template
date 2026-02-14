@@ -9,6 +9,7 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/http"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/repository"
+	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/service"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	"github.com/google/wire"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,8 +19,13 @@ var repositorySet = wire.NewSet(
 	repository.NewUserRepository,
 )
 
+var authSet = wire.NewSet(
+	service.NewJwtService,
+)
+
 var usecaseSet = wire.NewSet(
 	user.NewSignupUseCase,
+	user.NewLoginUseCase,
 )
 
 var dbSet = wire.NewSet(
@@ -39,6 +45,7 @@ var testServerSet = wire.NewSet(
 func InitializeTestServer(ctx context.Context, pool *pgxpool.Pool) (*httptest.Server, error) {
 	wire.Build(
 		repositorySet,
+		authSet,
 		usecaseSet,
 		dbSet,
 		httpSet,
