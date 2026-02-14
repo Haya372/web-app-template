@@ -148,3 +148,21 @@ func TestUser_UpdateStatus(t *testing.T) {
 		})
 	}
 }
+
+func TestUser_ComparePassword(t *testing.T) {
+	createdAt := time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC)
+	user, err := entity.NewUser("test@example.com", "password", "Test", createdAt)
+	require.NoError(t, err)
+
+	ok, err := user.ComparePassword("password")
+	require.NoError(t, err)
+	assert.True(t, ok)
+
+	ok, err = user.ComparePassword("not-password")
+	require.NoError(t, err)
+	assert.False(t, ok)
+
+	ok, err = user.ComparePassword("short")
+	require.Error(t, err)
+	assert.False(t, ok)
+}

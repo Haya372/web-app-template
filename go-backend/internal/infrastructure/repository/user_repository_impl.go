@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
@@ -10,6 +11,7 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/sqlc"
+	"github.com/jackc/pgx/v5"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -62,6 +64,10 @@ func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (ent
 		return nil
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, repository.ErrUserNotFound
+		}
+
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
