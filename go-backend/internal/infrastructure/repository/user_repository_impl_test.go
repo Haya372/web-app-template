@@ -4,11 +4,13 @@ package repository_test
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/entity"
+	domain_repository "github.com/Haya372/web-app-template/go-backend/internal/domain/entity/repository"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/repository"
 	"github.com/google/uuid"
@@ -144,7 +146,8 @@ func TestFindByEmail_ErrorCase(t *testing.T) {
 			ctx := context.Background()
 			user, err := target.FindByEmail(ctx, tt.email)
 
-			assert.NotNil(t, err)
+			assert.Error(t, err)
+			assert.True(t, errors.Is(err, domain_repository.ErrUserNotFound))
 			assert.Nil(t, user)
 		})
 	}

@@ -162,3 +162,112 @@ func TestSignup_DuplicateRequest(t *testing.T) {
 		assert.Fail(t, "fail to cleanup testDb", err)
 	}
 }
+
+func TestLogin(t *testing.T) {
+	tests := []struct {
+		name         string
+		request      map[string]any
+		responseCode int
+	}{
+		{
+			name: "Success login",
+			request: map[string]any{
+				"email":    "login@example.com",
+				"password": "password",
+			},
+			responseCode: http.StatusOK,
+		},
+		{
+			name: "User not found",
+			request: map[string]any{
+				"email":    "unknown@example.com",
+				"password": "password",
+			},
+			responseCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Wrong password",
+			request: map[string]any{
+				"email":    "login@example.com",
+				"password": "wrongpass",
+			},
+			responseCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Missing password",
+			request: map[string]any{
+				"email": "login@example.com",
+			},
+			responseCode: http.StatusBadRequest,
+		},
+		{
+			name: "Invalid email",
+			request: map[string]any{
+				"email":    "invalid",
+				"password": "password",
+			},
+			responseCode: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name != "User not found" {
+				signupBody, err := json.Marshal(map[string]any{
+					"name":     "Login User",
+					"email":    "login@example.com",
+					"password": "password",
+				})
+				if err != nil {
+					assert.FailNow(t, "fail to marshal signup json", err)
+				}
+
+				signupResp, err := http.Post(testServer.URL+"/signup", "application/json", bytes.NewBuffer(signupBody))
+				if err != nil {
+					assert.FailNow(t, "fail to signup", err)
+				}
+				_ = signupResp.Body.Close()
+			}
+
+			body, err := json.Marshal(tt.request)
+			if err != nil {
+				assert.FailNow(t, "fail to marshal login json", err)
+			}
+
+			resp, err := http.Post(testServer.URL+"/v1/users/login", "application/json", bytes.NewBuffer(body))
+			if err != nil {
+				assert.FailNow(t, "fail to request", err)
+			}
+
+			defer func() {
+				err := resp.Body.Close()
+				if err != nil {
+					assert.Fail(t, "failed to close body", err)
+				}
+			}()
+
+			assert.Equal(t, resp.StatusCode, tt.responseCode)
+
+			if resp.StatusCode == http.StatusOK {
+				payload, err := io.ReadAll(resp.Body)
+				if err != nil {
+					assert.FailNow(t, "fail to read body", err)
+				}
+
+				var got struct {
+					Token     string `json:"token"`
+					ExpiresAt string `json:"expiresAt"`
+				}
+
+				require.NoError(t, json.Unmarshal(payload, &got))
+				assert.NotEmpty(t, got.Token)
+				assert.NotEmpty(t, got.ExpiresAt)
+			}
+
+			err = testDb.Cleanup()
+			if err != nil {
+				assert.Fail(t, "fail to cleanup testDb", err)
+			}
+		})
+	}
+}

@@ -4,6 +4,7 @@ type ErrorCode string
 
 const (
 	ValidationErrorCode = ErrorCode("VALIDATION_ERROR")
+	InvalidCredentialErrorCode = ErrorCode("INVALID_CREDENTIAL")
 	InternalErrorCode   = ErrorCode("INTERNAL_ERROR")
 )
 
@@ -47,6 +48,16 @@ func NewValidationError(message string, details map[string]any, err error) error
 	return &baseError{
 		status:  400,
 		code:    ValidationErrorCode,
+		message: message,
+		err:     err,
+		details: details,
+	}
+}
+
+func NewUnauthorizedError(message string, details map[string]any, err error) error {
+	return &baseError{
+		status:  401,
+		code:    InvalidCredentialErrorCode,
 		message: message,
 		err:     err,
 		details: details,

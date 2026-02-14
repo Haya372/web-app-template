@@ -4,9 +4,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/entity"
 )
+
+var ErrUserNotFound = errors.New("user not found")
 
 type UserRepository interface {
 	Create(ctx context.Context, user entity.User) (entity.User, error)

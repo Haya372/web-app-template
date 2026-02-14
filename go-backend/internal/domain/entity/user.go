@@ -19,6 +19,7 @@ type User interface {
 	Id() uuid.UUID
 	Email() string
 	PasswordHash() []byte
+	ComparePassword(raw string) (bool, error)
 	Name() string
 	CreatedAt() time.Time
 	Status() vo.UserStatus
@@ -44,6 +45,24 @@ func (u *userImpl) Email() string {
 
 func (u *userImpl) PasswordHash() []byte {
 	return u.passwordHash
+}
+
+func (u *userImpl) ComparePassword(raw string) (bool, error) {
+	password, err := vo.NewPassword(raw)
+	if err != nil {
+		return false, err
+	}
+
+	err = bcrypt.CompareHashAndPassword(u.passwordHash, []byte(*password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (u *userImpl) Name() string {
