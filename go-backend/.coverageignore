@@ -1,0 +1,4 @@
+go-backend/test
+go-backend/internal/infrastructure/di/wire_gen.go
+go-backend/cmd/server
+go-backend/internal/infrastructure/sqlc

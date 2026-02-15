@@ -1,3 +1,5 @@
+COVERAGE_IGNORE_FILE=.coverageignore
+
 .PHONY: setup
 setup:
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
@@ -25,6 +27,8 @@ test-integration:
 .PHONY: test-coverage
 test-coverage:
 	go test ./... -tags=integration -p 1 -coverprofile=coverage.out
+	grep -F -v -f $(COVERAGE_IGNORE_FILE) coverage.out > coverage.tmp
+	mv coverage.tmp coverage.out
 
 .PHONY: generate-db-client
 generate-db-client:
