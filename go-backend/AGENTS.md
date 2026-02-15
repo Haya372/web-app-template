@@ -5,7 +5,7 @@ This module contains the Go backend that powers the template. Keep business logi
 ## Module Structure & Ownership
 - `cmd/` defines binaries (e.g., `cmd/api`); wire dependencies here and keep each entry point minimal.
 - `internal/` hosts domain packages (transport, service, repository, etc.). Enforce acyclic dependencies and favor interfaces near the consumer.
-- `db/schema` manages DDL, `db/query` manages sqlc inputs, and generated code lives under `internal` (checked in for reproducibility).
+- `db/schema` manages DDL, `db/query` manages sqlc inputs, and generated code lives under `internal` (ignored from Git; regenerate via `make generate`).
 - `test/` is for integration helpers and fixtures. Colocated unit tests (`*_test.go`) sit beside their source files.
 
 ## Development Commands
@@ -25,5 +25,5 @@ This module contains the Go backend that powers the template. Keep business logi
 - Update `coverage.out` only when intentionally refreshing coverage data; avoid committing stale profiles.
 
 ## Review Checklist
-- Commits should stay focused (schema + generated + code changes together). Reference root `AGENTS.md` for repo-wide expectations.
+- Commits should stay focused (schema/query + handwritten code changes together, with generation commands run locally). Reference root `AGENTS.md` for repo-wide expectations.
 - PR descriptions must state the user problem, summarize changes, and list `make` targets executed. Attach logs or screenshots when behavior is visible externally.
