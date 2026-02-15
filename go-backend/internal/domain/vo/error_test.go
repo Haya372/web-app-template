@@ -31,3 +31,38 @@ func TestNewUnauthorizedError(t *testing.T) {
 		assert.Nil(t, baseErr.Details())
 	}
 }
+
+func TestErrorCode_Title(t *testing.T) {
+	tests := []struct {
+		name     string
+		code     vo.ErrorCode
+		expected string
+	}{
+		{
+			name:     "validation",
+			code:     vo.ValidationErrorCode,
+			expected: "validation error",
+		},
+		{
+			name:     "invalid credential",
+			code:     vo.InvalidCredentialErrorCode,
+			expected: "invalid credential",
+		},
+		{
+			name:     "internal",
+			code:     vo.InternalErrorCode,
+			expected: "internal server error",
+		},
+		{
+			name:     "unknown",
+			code:     vo.ErrorCode("UNKNOWN"),
+			expected: "application error",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.code.Title())
+		})
+	}
+}

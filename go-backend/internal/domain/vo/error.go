@@ -3,10 +3,23 @@ package vo
 type ErrorCode string
 
 const (
-	ValidationErrorCode = ErrorCode("VALIDATION_ERROR")
+	ValidationErrorCode        = ErrorCode("VALIDATION_ERROR")
 	InvalidCredentialErrorCode = ErrorCode("INVALID_CREDENTIAL")
-	InternalErrorCode   = ErrorCode("INTERNAL_ERROR")
+	InternalErrorCode          = ErrorCode("INTERNAL_ERROR")
 )
+
+func (c ErrorCode) Title() string {
+	switch c {
+	case ValidationErrorCode:
+		return "validation error"
+	case InvalidCredentialErrorCode:
+		return "invalid credential"
+	case InternalErrorCode:
+		return "internal server error"
+	default:
+		return "application error"
+	}
+}
 
 type Error interface {
 	Status() int
