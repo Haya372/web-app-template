@@ -24,6 +24,13 @@ This module contains the Go backend that powers the template. Keep business logi
 - `make test-integration` and `make test-coverage` include the `integration` tag (`-tags=integration -p 1`); ensure the Postgres container is running first.
 - Update `coverage.out` only when intentionally refreshing coverage data; avoid committing stale profiles.
 
+## ADR Guardrails
+- Treat accepted ADRs in `../docs/decisions` as mandatory implementation constraints; reflect behavior changes in code, tests, and docs together.
+- API routes must follow `ADR-0005`: expose public endpoints with URI major versioning (`/v{major}/...`), keep route naming consistent, and document breaking-change decisions in PRs.
+- Error responses must follow `ADR-0006`: use `application/problem+json`, preserve stable `type/title/status`, and avoid leaking internal diagnostics in public payloads.
+- Transaction handling must follow `ADR-0007`: start boundaries in use cases via `TransactionManager`, propagate through context, and reject nested `TransactionManager.Do` usage.
+- When deprecating an API major version or changing error/transaction contracts, update the corresponding runbook in `../docs/operations` and link the ADR in the PR.
+
 ## Review Checklist
 - Commits should stay focused (schema/query + handwritten code changes together, with generation commands run locally). Reference root `AGENTS.md` for repo-wide expectations.
 - PR descriptions must state the user problem, summarize changes, and list `make` targets executed. Attach logs or screenshots when behavior is visible externally.
