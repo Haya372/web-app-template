@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -81,7 +82,7 @@ func TestSignup(t *testing.T) {
 				assert.FailNow(t, "fail to marshal json", err)
 			}
 
-			resp, err := http.Post(testServer.URL+"/signup", "application/json", bytes.NewBuffer(body))
+			resp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(body))
 			if err != nil {
 				assert.FailNow(t, "fail to request", err)
 			}
@@ -93,7 +94,7 @@ func TestSignup(t *testing.T) {
 				}
 			}()
 
-			assert.Equal(t, resp.StatusCode, tt.responseCode)
+			assert.Equal(t, tt.responseCode, resp.StatusCode)
 
 			if resp.StatusCode == http.StatusCreated {
 				payload, err := io.ReadAll(resp.Body)
@@ -107,6 +108,10 @@ func TestSignup(t *testing.T) {
 
 				require.NoError(t, json.Unmarshal(payload, &got))
 				assert.Equal(t, "ACTIVE", got.Status)
+			} else {
+				problem := readProblemResponse(t, resp)
+				assert.Equal(t, tt.responseCode, problem.Status)
+				assert.Equal(t, "VALIDATION_ERROR", problem.Type)
 			}
 
 			err = testDb.Cleanup()
@@ -129,7 +134,7 @@ func TestSignup_DuplicateRequest(t *testing.T) {
 		assert.FailNow(t, "fail to marshal json", err)
 	}
 
-	resp, err := http.Post(testServer.URL+"/signup", "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		assert.FailNow(t, "fail to request", err)
 	}
@@ -143,7 +148,7 @@ func TestSignup_DuplicateRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
-	resp2, err := http.Post(testServer.URL+"/signup", "application/json", bytes.NewBuffer(body))
+	resp2, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		assert.FailNow(t, "fail to request", err)
 	}
@@ -155,7 +160,9 @@ func TestSignup_DuplicateRequest(t *testing.T) {
 		}
 	}()
 
-	assert.Equal(t, http.StatusInternalServerError, resp2.StatusCode)
+	problem := readProblemResponse(t, resp2)
+	assert.Equal(t, http.StatusInternalServerError, problem.Status)
+	assert.Equal(t, "INTERNAL_ERROR", problem.Type)
 
 	err = testDb.Cleanup()
 	if err != nil {
@@ -222,7 +229,7 @@ func TestLogin(t *testing.T) {
 					assert.FailNow(t, "fail to marshal signup json", err)
 				}
 
-				signupResp, err := http.Post(testServer.URL+"/signup", "application/json", bytes.NewBuffer(signupBody))
+				signupResp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(signupBody))
 				if err != nil {
 					assert.FailNow(t, "fail to signup", err)
 				}
@@ -246,7 +253,7 @@ func TestLogin(t *testing.T) {
 				}
 			}()
 
-			assert.Equal(t, resp.StatusCode, tt.responseCode)
+			assert.Equal(t, tt.responseCode, resp.StatusCode)
 
 			if resp.StatusCode == http.StatusOK {
 				payload, err := io.ReadAll(resp.Body)
@@ -262,6 +269,15 @@ func TestLogin(t *testing.T) {
 				require.NoError(t, json.Unmarshal(payload, &got))
 				assert.NotEmpty(t, got.Token)
 				assert.NotEmpty(t, got.ExpiresAt)
+			} else {
+				problem := readProblemResponse(t, resp)
+				assert.Equal(t, tt.responseCode, problem.Status)
+				if tt.responseCode == http.StatusBadRequest {
+					assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+				}
+				if tt.responseCode == http.StatusUnauthorized {
+					assert.Equal(t, "INVALID_CREDENTIAL", problem.Type)
+				}
 			}
 
 			err = testDb.Cleanup()
@@ -270,4 +286,26 @@ func TestLogin(t *testing.T) {
 			}
 		})
 	}
+}
+
+type problemResponse struct {
+	Type   string `json:"type"`
+	Title  string `json:"title"`
+	Status int    `json:"status"`
+}
+
+func readProblemResponse(t *testing.T, resp *http.Response) problemResponse {
+	t.Helper()
+
+	assert.True(t, strings.HasPrefix(resp.Header.Get("Content-Type"), "application/problem+json"))
+
+	payload, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+
+	var got problemResponse
+	require.NoError(t, json.Unmarshal(payload, &got))
+	assert.NotEmpty(t, got.Type)
+	assert.NotEmpty(t, got.Title)
+
+	return got
 }

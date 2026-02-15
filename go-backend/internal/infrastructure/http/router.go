@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
-	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	"github.com/labstack/echo/v5"
 	"go.opentelemetry.io/otel"
@@ -25,8 +24,9 @@ type routerImpl struct {
 }
 
 func (r *routerImpl) AddRoute(e *echo.Echo) {
-	e.POST("/signup", r.handleSignup)
-	e.POST("/v1/users/login", r.handleLogin)
+	v1 := e.Group("/v1")
+	v1.POST("/users/signup", r.handleSignup)
+	v1.POST("/users/login", r.handleLogin)
 }
 
 func (r *routerImpl) handleSignup(c *echo.Context) error {
@@ -43,28 +43,22 @@ func (r *routerImpl) handleSignup(c *echo.Context) error {
 
 	if err := c.Bind(&req); err != nil {
 		r.logger.Error(ctx, "failed to bind signup input", "error", err)
-
-		res := map[string]string{
-			"code": string(vo.ValidationErrorCode),
-		}
+		status, res := handleError(err)
 
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
-		return c.JSON(http.StatusBadRequest, res)
+		return writeProblem(c, status, res)
 	}
 
 	if err := c.Validate(&req); err != nil {
 		r.logger.Error(ctx, "failed to validate input", "error", err)
-
-		res := map[string]string{
-			"code": string(vo.ValidationErrorCode),
-		}
+		status, res := handleError(err)
 
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
-		return c.JSON(http.StatusBadRequest, res)
+		return writeProblem(c, status, res)
 	}
 
 	output, err := r.SignupUseCase.Execute(ctx, user.SignupInput{
@@ -77,7 +71,7 @@ func (r *routerImpl) handleSignup(c *echo.Context) error {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
-		return c.JSON(status, res)
+		return writeProblem(c, status, res)
 	}
 
 	res := struct {
@@ -110,28 +104,22 @@ func (r *routerImpl) handleLogin(c *echo.Context) error {
 
 	if err := c.Bind(&req); err != nil {
 		r.logger.Error(ctx, "failed to bind login input", "error", err)
-
-		res := map[string]string{
-			"code": string(vo.ValidationErrorCode),
-		}
+		status, res := handleError(err)
 
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
-		return c.JSON(http.StatusBadRequest, res)
+		return writeProblem(c, status, res)
 	}
 
 	if err := c.Validate(&req); err != nil {
 		r.logger.Error(ctx, "failed to validate input", "error", err)
-
-		res := map[string]string{
-			"code": string(vo.ValidationErrorCode),
-		}
+		status, res := handleError(err)
 
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
-		return c.JSON(http.StatusBadRequest, res)
+		return writeProblem(c, status, res)
 	}
 
 	output, err := r.LoginUseCase.Execute(ctx, user.LoginInput{
@@ -143,7 +131,7 @@ func (r *routerImpl) handleLogin(c *echo.Context) error {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
-		return c.JSON(status, res)
+		return writeProblem(c, status, res)
 	}
 
 	res := struct {
@@ -178,4 +166,10 @@ func NewRouter(signupUseCase user.SingupUseCase, loginUseCase user.LoginUseCase)
 		SignupUseCase: signupUseCase,
 		LoginUseCase:  loginUseCase,
 	}
+}
+
+func writeProblem(c *echo.Context, status int, res problemDetails) error {
+	c.Response().Header().Set(echo.HeaderContentType, problemContentType)
+
+	return c.JSON(status, res)
 }
