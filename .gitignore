@@ -6,3 +6,7 @@
 
 # test
 coverage.out
+
+# claude
+.claude/settings.local.json
+.claude/agent-memory/*
