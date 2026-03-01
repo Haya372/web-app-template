@@ -2,6 +2,7 @@ package integration
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http/httptest"
@@ -50,62 +51,44 @@ type ciTestDb struct {
 
 const wailOccurrence = 2
 
+var errEmptySchema = errors.New("TestDbProps.Schema must not be empty")
+
 func NewTestServer(e *echo.Echo) *httptest.Server {
 	return httptest.NewServer(e)
 }
 
 func NewTestDb(props TestDbProps) (TestDb, error) {
+	if props.Schema == "" {
+		return nil, errEmptySchema
+	}
+
 	ctx := context.Background()
 
-	if props.Schema == "" {
-		return nil, fmt.Errorf("TestDbProps.Schema must not be empty")
-	}
-
 	if os.Getenv("CI") == "true" {
-		dsn := os.Getenv("DATABASE_DSN")
-
-		// Step 1: create the schema using a temporary connection.
-		tmpPool, err := pgxpool.New(ctx, dsn)
-		if err != nil {
-			return nil, err
-		}
-		if _, err = tmpPool.Exec(ctx, fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", pgx.Identifier{props.Schema}.Sanitize())); err != nil {
-			tmpPool.Close()
-			return nil, fmt.Errorf("create schema %s: %w", props.Schema, err)
-		}
-		tmpPool.Close()
-
-		// Step 2: create pool with search_path set to the schema.
-		config, err := pgxpool.ParseConfig(dsn)
-		if err != nil {
-			return nil, err
-		}
-		config.ConnConfig.RuntimeParams["search_path"] = props.Schema
-
-		pool, err := pgxpool.NewWithConfig(ctx, config)
-		if err != nil {
-			return nil, err
-		}
-
-		manager := db.NewDbManager(pool)
-
-		err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-			// running migration
-			if err := runSQLDir(ctx, conn, path.Join(props.DbDirPath, "schema")); err != nil {
-				return err
-			}
-
-			// running seed generation
-			return runSQLDir(ctx, conn, path.Join(props.DbDirPath, "seeds", "master"))
-		})
-		if err != nil {
-			pool.Close()
-			return nil, err
-		}
-
-		return &ciTestDb{manager: manager, pool: pool, schema: props.Schema}, nil
+		return newCITestDb(ctx, props)
 	}
 
+	return newLocalTestDb(ctx, props)
+}
+
+func newCITestDb(ctx context.Context, props TestDbProps) (TestDb, error) {
+	pool, err := createSchemaPool(ctx, os.Getenv("DATABASE_DSN"), props.Schema)
+	if err != nil {
+		return nil, err
+	}
+
+	manager := db.NewDbManager(pool)
+
+	if err = runMigrations(ctx, manager, props.DbDirPath); err != nil {
+		pool.Close()
+
+		return nil, err
+	}
+
+	return &ciTestDb{manager: manager, pool: pool, schema: props.Schema}, nil
+}
+
+func newLocalTestDb(ctx context.Context, props TestDbProps) (TestDb, error) {
 	container, err := postgres.Run(ctx,
 		"postgres:18.1",
 		postgres.WithDatabase(props.Database),
@@ -122,46 +105,25 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 
 	dsn, err := container.ConnectionString(ctx, "sslmode=disable")
 	if err != nil {
+		_ = container.Terminate(ctx)
+
 		return nil, err
 	}
 
-	// Step 1: create the schema using a temporary connection.
-	tmpPool, err := pgxpool.New(ctx, dsn)
+	pool, err := createSchemaPool(ctx, dsn, props.Schema)
 	if err != nil {
-		return nil, err
-	}
-	if _, err = tmpPool.Exec(ctx, fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", pgx.Identifier{props.Schema}.Sanitize())); err != nil {
-		tmpPool.Close()
-		return nil, fmt.Errorf("create schema %s: %w", props.Schema, err)
-	}
-	tmpPool.Close()
+		_ = container.Terminate(ctx)
 
-	// Step 2: create pool with search_path set to the schema.
-	config, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		return nil, err
-	}
-	config.ConnConfig.RuntimeParams["search_path"] = props.Schema
-
-	pool, err := pgxpool.NewWithConfig(ctx, config)
-	if err != nil {
 		return nil, err
 	}
 
 	manager := db.NewDbManager(pool)
 
-	err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-		// running migration
-		if err := runSQLDir(ctx, conn, path.Join(props.DbDirPath, "schema")); err != nil {
-			return err
-		}
-
-		// running seed generation
-		return runSQLDir(ctx, conn, path.Join(props.DbDirPath, "seeds", "master"))
-	})
-	if err != nil {
+	if err = runMigrations(ctx, manager, props.DbDirPath); err != nil {
 		pool.Close()
+
 		_ = container.Terminate(ctx)
+
 		return nil, err
 	}
 
@@ -171,6 +133,41 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 		pool:      pool,
 		schema:    props.Schema,
 	}, nil
+}
+
+// createSchemaPool creates the given schema if it does not exist, then returns
+// a pool whose connections have search_path set to that schema.
+func createSchemaPool(ctx context.Context, dsn, schema string) (*pgxpool.Pool, error) {
+	tmpPool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = tmpPool.Exec(ctx, "CREATE SCHEMA IF NOT EXISTS "+pgx.Identifier{schema}.Sanitize())
+	tmpPool.Close()
+
+	if err != nil {
+		return nil, fmt.Errorf("create schema %s: %w", schema, err)
+	}
+
+	config, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	config.ConnConfig.RuntimeParams["search_path"] = schema
+
+	return pgxpool.NewWithConfig(ctx, config)
+}
+
+func runMigrations(ctx context.Context, manager db.DbManager, dbDirPath string) error {
+	return manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+		if err := runSQLDir(ctx, conn, path.Join(dbDirPath, "schema")); err != nil {
+			return err
+		}
+
+		return runSQLDir(ctx, conn, path.Join(dbDirPath, "seeds", "master"))
+	})
 }
 
 // WithTx begins a transaction on the given TestDb's pool and registers a
@@ -231,7 +228,7 @@ func (d *ciTestDb) Terminate() error {
 	ctx := context.Background()
 
 	err := d.manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-		_, err := conn.Exec(ctx, fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE", pgx.Identifier{d.schema}.Sanitize()))
+		_, err := conn.Exec(ctx, "DROP SCHEMA IF EXISTS "+pgx.Identifier{d.schema}.Sanitize()+" CASCADE")
 
 		return err
 	})
