@@ -2,6 +2,7 @@ package integration
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http/httptest"
@@ -11,6 +12,7 @@ import (
 	"sort"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v5"
 	"github.com/testcontainers/testcontainers-go"
@@ -23,6 +25,7 @@ type TestDbProps struct {
 	Password  string
 	Database  string
 	DbDirPath string
+	Schema    string
 }
 
 type TestDb interface {
@@ -32,50 +35,74 @@ type TestDb interface {
 	Pool() *pgxpool.Pool
 }
 
+type baseTestDb struct {
+	pool    *pgxpool.Pool
+	manager db.DbManager
+	schema  string
+}
+
+func (b *baseTestDb) DbManager() db.DbManager { return b.manager }
+
+func (b *baseTestDb) Pool() *pgxpool.Pool { return b.pool }
+
+func (b *baseTestDb) Cleanup() error {
+	return b.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "truncate table users")
+
+		return err
+	})
+}
+
 type localTestDb struct {
-	pool      *pgxpool.Pool
-	manager   db.DbManager
+	baseTestDb
+
 	container testcontainers.Container
 }
 
 type ciTestDb struct {
-	pool    *pgxpool.Pool
-	manager db.DbManager
+	baseTestDb
 }
 
 const wailOccurrence = 2
+
+var errEmptySchema = errors.New("TestDbProps.Schema must not be empty")
 
 func NewTestServer(e *echo.Echo) *httptest.Server {
 	return httptest.NewServer(e)
 }
 
 func NewTestDb(props TestDbProps) (TestDb, error) {
+	if props.Schema == "" {
+		return nil, errEmptySchema
+	}
+
 	ctx := context.Background()
 
 	if os.Getenv("CI") == "true" {
-		pool, err := db.NewDbPool(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		manager := db.NewDbManager(pool)
-
-		err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-			// running migration
-			if err := runSQLDir(ctx, conn, path.Join(props.DbDirPath, "schema")); err != nil {
-				return err
-			}
-
-			// running seed generation
-			return runSQLDir(ctx, conn, path.Join(props.DbDirPath, "seeds", "master"))
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return &ciTestDb{manager: manager, pool: pool}, nil
+		return newCITestDb(ctx, props)
 	}
 
+	return newLocalTestDb(ctx, props)
+}
+
+func newCITestDb(ctx context.Context, props TestDbProps) (TestDb, error) {
+	pool, err := createSchemaPool(ctx, os.Getenv("DATABASE_DSN"), props.Schema)
+	if err != nil {
+		return nil, err
+	}
+
+	manager := db.NewDbManager(pool)
+
+	if err = runMigrations(ctx, manager, props.DbDirPath); err != nil {
+		pool.Close()
+
+		return nil, err
+	}
+
+	return &ciTestDb{baseTestDb: baseTestDb{manager: manager, pool: pool, schema: props.Schema}}, nil
+}
+
+func newLocalTestDb(ctx context.Context, props TestDbProps) (TestDb, error) {
 	container, err := postgres.Run(ctx,
 		"postgres:18.1",
 		postgres.WithDatabase(props.Database),
@@ -92,99 +119,91 @@ func NewTestDb(props TestDbProps) (TestDb, error) {
 
 	dsn, err := container.ConnectionString(ctx, "sslmode=disable")
 	if err != nil {
+		_ = container.Terminate(ctx)
+
 		return nil, err
 	}
 
-	pool, err := pgxpool.New(ctx, dsn)
+	pool, err := createSchemaPool(ctx, dsn, props.Schema)
 	if err != nil {
+		_ = container.Terminate(ctx)
+
 		return nil, err
 	}
 
 	manager := db.NewDbManager(pool)
 
-	err = manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-		// running migration
-		if err := runSQLDir(ctx, conn, path.Join(props.DbDirPath, "schema")); err != nil {
-			return err
-		}
+	if err = runMigrations(ctx, manager, props.DbDirPath); err != nil {
+		pool.Close()
 
-		// running seed generation
-		return runSQLDir(ctx, conn, path.Join(props.DbDirPath, "seeds", "master"))
-	})
-	if err != nil {
+		_ = container.Terminate(ctx)
+
 		return nil, err
 	}
 
 	return &localTestDb{
-		manager:   manager,
-		container: container,
-		pool:      pool,
+		baseTestDb: baseTestDb{manager: manager, pool: pool, schema: props.Schema},
+		container:  container,
 	}, nil
 }
 
-func (db *localTestDb) DbManager() db.DbManager {
-	return db.manager
+// createSchemaPool creates the given schema if it does not exist, then returns
+// a pool whose connections have search_path set to that schema.
+func createSchemaPool(ctx context.Context, dsn, schema string) (*pgxpool.Pool, error) {
+	tmpPool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = tmpPool.Exec(ctx, "CREATE SCHEMA IF NOT EXISTS "+pgx.Identifier{schema}.Sanitize())
+	tmpPool.Close()
+
+	if err != nil {
+		return nil, fmt.Errorf("create schema %s: %w", schema, err)
+	}
+
+	config, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	config.ConnConfig.RuntimeParams["search_path"] = schema
+
+	return pgxpool.NewWithConfig(ctx, config)
 }
 
-func (db *localTestDb) Cleanup() error {
-	return db.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
-		_, err := conn.Exec(ctx, "truncate table users")
-
-		return err
-	})
-}
-
-func (db *localTestDb) Terminate() error {
-	ctx := context.Background()
-
-	err := db.manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-		if _, err := conn.Exec(ctx, "drop table users"); err != nil {
+func runMigrations(ctx context.Context, manager db.DbManager, dbDirPath string) error {
+	return manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+		if err := runSQLDir(ctx, conn, path.Join(dbDirPath, "schema")); err != nil {
 			return err
 		}
 
-		_, err := conn.Exec(ctx, "drop table user_statuses")
+		return runSQLDir(ctx, conn, path.Join(dbDirPath, "seeds", "master"))
+	})
+}
+
+
+func (d *localTestDb) Terminate() error {
+	d.pool.Close()
+
+	return d.container.Terminate(context.Background())
+}
+
+func (d *ciTestDb) Terminate() error {
+	ctx := context.Background()
+
+	err := d.manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "DROP SCHEMA IF EXISTS "+pgx.Identifier{d.schema}.Sanitize()+" CASCADE")
 
 		return err
 	})
 	if err != nil {
-		slog.Warn("failed to terminate table", "error", err)
+		slog.Warn("failed to drop schema", "schema", d.schema, "error", err)
 	}
 
-	return db.container.Terminate(context.Background())
-}
+	d.pool.Close()
 
-func (db *localTestDb) Pool() *pgxpool.Pool {
-	return db.pool
-}
-
-func (db *ciTestDb) DbManager() db.DbManager {
-	return db.manager
-}
-
-func (db *ciTestDb) Cleanup() error {
-	return db.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
-		_, err := conn.Exec(ctx, "truncate table users")
-
-		return err
-	})
-}
-
-func (db *ciTestDb) Terminate() error {
-	ctx := context.Background()
-
-	return db.manager.PoolFunc(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-		if _, err := conn.Exec(ctx, "drop table users"); err != nil {
-			return err
-		}
-
-		_, err := conn.Exec(ctx, "drop table user_statuses")
-
-		return err
-	})
-}
-
-func (db *ciTestDb) Pool() *pgxpool.Pool {
-	return db.pool
+	return nil
 }
 
 func runSQLDir(ctx context.Context, conn *pgxpool.Conn, dir string) error {
