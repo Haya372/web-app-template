@@ -36,17 +36,32 @@ type TestDb interface {
 	Pool() *pgxpool.Pool
 }
 
-type localTestDb struct {
-	pool      *pgxpool.Pool
-	manager   db.DbManager
-	container testcontainers.Container
-	schema    string
-}
-
-type ciTestDb struct {
+type baseTestDb struct {
 	pool    *pgxpool.Pool
 	manager db.DbManager
 	schema  string
+}
+
+func (b *baseTestDb) DbManager() db.DbManager { return b.manager }
+
+func (b *baseTestDb) Pool() *pgxpool.Pool { return b.pool }
+
+func (b *baseTestDb) Cleanup() error {
+	return b.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
+		_, err := conn.Exec(ctx, "truncate table users")
+
+		return err
+	})
+}
+
+type localTestDb struct {
+	baseTestDb
+
+	container testcontainers.Container
+}
+
+type ciTestDb struct {
+	baseTestDb
 }
 
 const wailOccurrence = 2
@@ -85,7 +100,7 @@ func newCITestDb(ctx context.Context, props TestDbProps) (TestDb, error) {
 		return nil, err
 	}
 
-	return &ciTestDb{manager: manager, pool: pool, schema: props.Schema}, nil
+	return &ciTestDb{baseTestDb: baseTestDb{manager: manager, pool: pool, schema: props.Schema}}, nil
 }
 
 func newLocalTestDb(ctx context.Context, props TestDbProps) (TestDb, error) {
@@ -128,10 +143,8 @@ func newLocalTestDb(ctx context.Context, props TestDbProps) (TestDb, error) {
 	}
 
 	return &localTestDb{
-		manager:   manager,
-		container: container,
-		pool:      pool,
-		schema:    props.Schema,
+		baseTestDb: baseTestDb{manager: manager, pool: pool, schema: props.Schema},
+		container:  container,
 	}, nil
 }
 
@@ -190,38 +203,10 @@ func WithTx(t *testing.T, testDb TestDb) context.Context {
 	return db.WithTx(context.Background(), tx)
 }
 
-func (d *localTestDb) DbManager() db.DbManager {
-	return d.manager
-}
-
-func (d *localTestDb) Cleanup() error {
-	return d.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
-		_, err := conn.Exec(ctx, "truncate table users")
-
-		return err
-	})
-}
-
 func (d *localTestDb) Terminate() error {
 	d.pool.Close()
 
 	return d.container.Terminate(context.Background())
-}
-
-func (d *localTestDb) Pool() *pgxpool.Pool {
-	return d.pool
-}
-
-func (d *ciTestDb) DbManager() db.DbManager {
-	return d.manager
-}
-
-func (d *ciTestDb) Cleanup() error {
-	return d.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
-		_, err := conn.Exec(ctx, "truncate table users")
-
-		return err
-	})
 }
 
 func (d *ciTestDb) Terminate() error {
@@ -239,10 +224,6 @@ func (d *ciTestDb) Terminate() error {
 	d.pool.Close()
 
 	return nil
-}
-
-func (d *ciTestDb) Pool() *pgxpool.Pool {
-	return d.pool
 }
 
 func runSQLDir(ctx context.Context, conn *pgxpool.Conn, dir string) error {
