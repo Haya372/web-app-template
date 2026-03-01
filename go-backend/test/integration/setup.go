@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
-	"testing"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
 	"github.com/jackc/pgx/v5"
@@ -183,25 +182,6 @@ func runMigrations(ctx context.Context, manager db.DbManager, dbDirPath string) 
 	})
 }
 
-// WithTx begins a transaction on the given TestDb's pool and registers a
-// deferred rollback via t.Cleanup. The returned context carries the
-// transaction so that DbManager.QueriesFunc uses it instead of acquiring a
-// new connection. Use this in repository tests to achieve per-test isolation
-// without TRUNCATE.
-func WithTx(t *testing.T, testDb TestDb) context.Context {
-	t.Helper()
-
-	tx, err := testDb.Pool().Begin(context.Background())
-	if err != nil {
-		t.Fatalf("failed to begin transaction: %v", err)
-	}
-
-	t.Cleanup(func() {
-		_ = tx.Rollback(context.Background())
-	})
-
-	return db.WithTx(context.Background(), tx)
-}
 
 func (d *localTestDb) Terminate() error {
 	d.pool.Close()

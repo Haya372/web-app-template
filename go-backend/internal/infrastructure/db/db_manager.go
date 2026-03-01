@@ -94,13 +94,3 @@ func NewDbManager(pool *pgxpool.Pool) DbManager {
 		pool: pool,
 	}
 }
-
-// WithTx injects tx into ctx so that DbManager.QueriesFunc uses it instead
-// of acquiring a new connection from the pool.
-//
-// NOTE: This function is intended for use in tests only. Do not call it in
-// production code; transaction boundaries in production are managed exclusively
-// by TransactionManager.Do at the use-case layer.
-func WithTx(ctx context.Context, tx pgx.Tx) context.Context {
-	return context.WithValue(ctx, txKey, tx)
-}
