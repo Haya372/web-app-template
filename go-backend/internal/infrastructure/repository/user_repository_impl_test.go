@@ -3,7 +3,6 @@
 package repository_test
 
 import (
-	"context"
 	"errors"
 	"strings"
 	"testing"
@@ -13,6 +12,7 @@ import (
 	domain_repository "github.com/Haya372/web-app-template/go-backend/internal/domain/entity/repository"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/repository"
+	"github.com/Haya372/web-app-template/go-backend/test/integration"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +38,7 @@ func TestCreate_HappyCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := integration.WithTx(t, testDb)
 			user, err := target.Create(ctx, tt.user)
 
 			assert.Nil(t, err)
@@ -51,8 +51,6 @@ func TestCreate_HappyCase(t *testing.T) {
 			assert.Equal(t, user.Status(), tt.user.Status())
 		})
 	}
-
-	testDb.Cleanup()
 }
 
 func TestCreate_ErrorCase(t *testing.T) {
@@ -76,15 +74,13 @@ func TestCreate_ErrorCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := integration.WithTx(t, testDb)
 			user, err := target.Create(ctx, tt.user)
 
 			assert.NotNil(t, err)
 			assert.Nil(t, user)
 		})
 	}
-
-	testDb.Cleanup()
 }
 
 func TestFindByEmail_HappyCase(t *testing.T) {
@@ -97,11 +93,6 @@ func TestFindByEmail_HappyCase(t *testing.T) {
 		time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
 	)
 	target := repository.NewUserRepository(testDb.DbManager())
-
-	_, err := target.Create(context.Background(), seedUser)
-	if err != nil {
-		assert.Failf(t, "failed to create seed user", "err=%v", err)
-	}
 
 	tests := []struct {
 		name   string
@@ -117,15 +108,19 @@ func TestFindByEmail_HappyCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := integration.WithTx(t, testDb)
+
+			_, err := target.Create(ctx, seedUser)
+			if err != nil {
+				assert.Failf(t, "failed to create seed user", "err=%v", err)
+			}
+
 			user, err := target.FindByEmail(ctx, tt.email)
 
 			assert.Nil(t, err)
 			assert.Equal(t, user, tt.expect)
 		})
 	}
-
-	testDb.Cleanup()
 }
 
 func TestFindByEmail_ErrorCase(t *testing.T) {
@@ -143,7 +138,7 @@ func TestFindByEmail_ErrorCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := integration.WithTx(t, testDb)
 			user, err := target.FindByEmail(ctx, tt.email)
 
 			assert.Error(t, err)
@@ -151,6 +146,4 @@ func TestFindByEmail_ErrorCase(t *testing.T) {
 			assert.Nil(t, user)
 		})
 	}
-
-	testDb.Cleanup()
 }

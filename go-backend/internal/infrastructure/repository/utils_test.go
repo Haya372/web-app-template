@@ -17,6 +17,7 @@ func TestMain(m *testing.M) {
 		Password:  "postgres",
 		Database:  "repository_it",
 		DbDirPath: "../../../db",
+		Schema:    "repository_it",
 	})
 	if err != nil {
 		log.Fatalf("failed to create db, err=%v", err)

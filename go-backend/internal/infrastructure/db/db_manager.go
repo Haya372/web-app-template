@@ -94,3 +94,9 @@ func NewDbManager(pool *pgxpool.Pool) DbManager {
 		pool: pool,
 	}
 }
+
+// WithTx injects tx into ctx so that DbManager.QueriesFunc uses it instead
+// of acquiring a new connection from the pool.
+func WithTx(ctx context.Context, tx pgx.Tx) context.Context {
+	return context.WithValue(ctx, txKey, tx)
+}

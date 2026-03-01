@@ -18,15 +18,13 @@ fmt:
 test-unit:
 	go test ./...
 
-# TODO: remove -p option
 .PHONY: test-integration
 test-integration:
-	go test ./... -tags=integration -p 1
+	go test ./... -tags=integration
 
-# TODO: remove -p option
 .PHONY: test-coverage
 test-coverage:
-	go test ./... -tags=integration -p 1 -coverprofile=coverage.out
+	go test ./... -tags=integration -coverprofile=coverage.out
 	grep -F -v -f $(COVERAGE_IGNORE_FILE) coverage.out > coverage.tmp
 	mv coverage.tmp coverage.out
 
