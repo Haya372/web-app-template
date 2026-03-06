@@ -19,19 +19,29 @@ type loggerImpl struct {
 }
 
 func (l *loggerImpl) Debug(ctx context.Context, msg string, args ...any) {
-	l.logger.DebugContext(ctx, msg, args...)
+	l.logger.DebugContext(ctx, msg, withUserId(ctx, args)...)
 }
 
 func (l *loggerImpl) Info(ctx context.Context, msg string, args ...any) {
-	l.logger.InfoContext(ctx, msg, args...)
+	l.logger.InfoContext(ctx, msg, withUserId(ctx, args)...)
 }
 
 func (l *loggerImpl) Warn(ctx context.Context, msg string, args ...any) {
-	l.logger.WarnContext(ctx, msg, args...)
+	l.logger.WarnContext(ctx, msg, withUserId(ctx, args)...)
 }
 
 func (l *loggerImpl) Error(ctx context.Context, msg string, args ...any) {
-	l.logger.ErrorContext(ctx, msg, args...)
+	l.logger.ErrorContext(ctx, msg, withUserId(ctx, args)...)
+}
+
+// withUserId prepends "userID" to args when a user ID is present in the context.
+func withUserId(ctx context.Context, args []any) []any {
+	userId := UserIdFromContext(ctx)
+	if userId == "" {
+		return args
+	}
+
+	return append([]any{"userId", userId}, args...)
 }
 
 func NewLogger() Logger {

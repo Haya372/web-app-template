@@ -17,6 +17,7 @@ func TestNewValidationError(t *testing.T) {
 		assert.Equal(t, vo.ValidationErrorCode, baseErr.Code())
 		assert.Equal(t, "invalid input", baseErr.Message())
 		assert.Equal(t, map[string]any{"field": "email"}, baseErr.Details())
+		assert.Equal(t, "base", err.Error())
 	}
 }
 
@@ -47,6 +48,11 @@ func TestErrorCode_Title(t *testing.T) {
 			name:     "invalid credential",
 			code:     vo.InvalidCredentialErrorCode,
 			expected: "invalid credential",
+		},
+		{
+			name:     "unauthorized",
+			code:     vo.UnauthorizedErrorCode,
+			expected: "Unauthorized",
 		},
 		{
 			name:     "internal",
