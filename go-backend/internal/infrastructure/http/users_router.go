@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
 	"github.com/labstack/echo/v5"
@@ -158,9 +159,10 @@ func (r *routerImpl) handleListUsers(c *echo.Context) error {
 	if raw := c.QueryParam("limit"); raw != "" {
 		parsed, err := strconv.Atoi(raw)
 		if err != nil {
-			status, res := handleError(err)
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			validationErr := vo.NewValidationError("limit must be an integer", nil, err)
+			status, res := handleError(validationErr)
+			span.RecordError(validationErr)
+			span.SetStatus(codes.Error, validationErr.Error())
 
 			return writeProblem(c, status, res)
 		}
@@ -171,9 +173,10 @@ func (r *routerImpl) handleListUsers(c *echo.Context) error {
 	if raw := c.QueryParam("offset"); raw != "" {
 		parsed, err := strconv.Atoi(raw)
 		if err != nil {
-			status, res := handleError(err)
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			validationErr := vo.NewValidationError("offset must be an integer", nil, err)
+			status, res := handleError(validationErr)
+			span.RecordError(validationErr)
+			span.SetStatus(codes.Error, validationErr.Error())
 
 			return writeProblem(c, status, res)
 		}
