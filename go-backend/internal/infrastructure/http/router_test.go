@@ -288,6 +288,205 @@ func TestLogin(t *testing.T) {
 	}
 }
 
+func TestListUsers(t *testing.T) {
+	// Helper: signup + login to obtain a valid JWT.
+	getToken := func(t *testing.T, email string) string {
+		t.Helper()
+
+		signupBody, err := json.Marshal(map[string]any{
+			"name":     "List User",
+			"email":    email,
+			"password": "password",
+		})
+		require.NoError(t, err)
+
+		signupResp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(signupBody))
+		require.NoError(t, err)
+		_ = signupResp.Body.Close()
+
+		loginBody, err := json.Marshal(map[string]any{
+			"email":    email,
+			"password": "password",
+		})
+		require.NoError(t, err)
+
+		loginResp, err := http.Post(testServer.URL+"/v1/users/login", "application/json", bytes.NewBuffer(loginBody))
+		require.NoError(t, err)
+		defer func() { _ = loginResp.Body.Close() }()
+
+		var loginOut struct {
+			Token string `json:"token"`
+		}
+		payload, err := io.ReadAll(loginResp.Body)
+		require.NoError(t, err)
+		require.NoError(t, json.Unmarshal(payload, &loginOut))
+
+		return loginOut.Token
+	}
+
+	t.Run("Success with valid JWT returns user list", func(t *testing.T) {
+		token := getToken(t, "listtest@example.com")
+
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		payload, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+
+		var got struct {
+			Users []struct {
+				Id        string `json:"id"`
+				Name      string `json:"name"`
+				Email     string `json:"email"`
+				Status    string `json:"status"`
+				CreatedAt string `json:"created_at"`
+			} `json:"users"`
+			Total  int `json:"total"`
+			Limit  int `json:"limit"`
+			Offset int `json:"offset"`
+		}
+		require.NoError(t, json.Unmarshal(payload, &got))
+		assert.GreaterOrEqual(t, got.Total, 1)
+		assert.Equal(t, 20, got.Limit)
+		assert.Equal(t, 0, got.Offset)
+
+		// Verify password_hash is not exposed.
+		assert.NotContains(t, string(payload), "password_hash")
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("Pagination with limit and offset", func(t *testing.T) {
+		token := getToken(t, "paginate@example.com")
+
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=5&offset=0", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		payload, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+
+		var got struct {
+			Limit  int `json:"limit"`
+			Offset int `json:"offset"`
+		}
+		require.NoError(t, json.Unmarshal(payload, &got))
+		assert.Equal(t, 5, got.Limit)
+		assert.Equal(t, 0, got.Offset)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("Empty user list returns users:[] total:0", func(t *testing.T) {
+		token := getToken(t, "empty@example.com")
+
+		err := testDb.Cleanup()
+		require.NoError(t, err)
+
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		// After cleanup users table is empty; token is still valid.
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		payload, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+
+		var got struct {
+			Users []any `json:"users"`
+			Total int   `json:"total"`
+		}
+		require.NoError(t, json.Unmarshal(payload, &got))
+		assert.Equal(t, 0, got.Total)
+		assert.Empty(t, got.Users)
+	})
+
+	t.Run("Missing Authorization header returns 401", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		require.NoError(t, err)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+		problem := readProblemResponse(t, resp)
+		assert.Equal(t, "UNAUTHORIZED", problem.Type)
+	})
+
+	t.Run("Invalid JWT returns 401", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer this.is.invalid")
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+		problem := readProblemResponse(t, resp)
+		assert.Equal(t, "UNAUTHORIZED", problem.Type)
+	})
+
+	t.Run("limit=200 out of range returns 400", func(t *testing.T) {
+		token := getToken(t, "limitcheck@example.com")
+
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=200", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		problem := readProblemResponse(t, resp)
+		assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("limit=0 out of range returns 400", func(t *testing.T) {
+		token := getToken(t, "limitcheck2@example.com")
+
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=0", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		problem := readProblemResponse(t, resp)
+		assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+}
+
 type problemResponse struct {
 	Type   string `json:"type"`
 	Title  string `json:"title"`
