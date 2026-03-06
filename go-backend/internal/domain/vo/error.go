@@ -5,6 +5,7 @@ type ErrorCode string
 const (
 	ValidationErrorCode        = ErrorCode("VALIDATION_ERROR")
 	InvalidCredentialErrorCode = ErrorCode("INVALID_CREDENTIAL")
+	UnauthorizedErrorCode      = ErrorCode("UNAUTHORIZED")
 	InternalErrorCode          = ErrorCode("INTERNAL_ERROR")
 )
 
@@ -14,6 +15,8 @@ func (c ErrorCode) Title() string {
 		return "validation error"
 	case InvalidCredentialErrorCode:
 		return "invalid credential"
+	case UnauthorizedErrorCode:
+		return "Unauthorized"
 	case InternalErrorCode:
 		return "internal server error"
 	default:
@@ -74,5 +77,14 @@ func NewUnauthorizedError(message string, details map[string]any, err error) err
 		message: message,
 		err:     err,
 		details: details,
+	}
+}
+
+func NewJWTUnauthorizedError(message string, err error) error {
+	return &baseError{
+		status:  401,
+		code:    UnauthorizedErrorCode,
+		message: message,
+		err:     err,
 	}
 }

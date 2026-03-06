@@ -14,6 +14,11 @@ type UserAccessToken struct {
 	ExpiresAt time.Time
 }
 
+type TokenClaims struct {
+	UserID string
+}
+
 type JwtService interface {
 	GenerateUserAccessToken(ctx context.Context, user entity.User) (*UserAccessToken, error)
+	ValidateToken(ctx context.Context, token string) (*TokenClaims, error)
 }

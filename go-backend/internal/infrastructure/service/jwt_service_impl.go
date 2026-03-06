@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
@@ -20,11 +21,17 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const defaultJWTTTLMinutes = 60
+const (
+	defaultJWTTTLMinutes = 60
+	jwtPartsCount        = 3
+)
 
 var (
-	errMissingJWTSecret = errors.New("AUTH_JWT_SECRET is required")
-	errInvalidJWTTTL    = errors.New("AUTH_JWT_TTL_MINUTES must be positive int")
+	errMissingJWTSecret  = errors.New("AUTH_JWT_SECRET is required")
+	errInvalidJWTTTL     = errors.New("AUTH_JWT_TTL_MINUTES must be positive int")
+	errInvalidJWTFormat  = errors.New("invalid JWT format")
+	errInvalidSignature  = errors.New("invalid JWT signature")
+	errTokenExpired      = errors.New("JWT token has expired")
 )
 
 type jwtConfig struct {
@@ -94,6 +101,54 @@ func (g *jwtServiceImpl) GenerateUserAccessToken(
 		Value:     fmt.Sprintf("%s.%s", signingInput, signature),
 		ExpiresAt: expiresAt,
 	}, nil
+}
+
+func (g *jwtServiceImpl) ValidateToken(ctx context.Context, token string) (*service.TokenClaims, error) {
+	_, span := g.tracer.Start(ctx, "ValidateToken")
+	defer span.End()
+
+	parts := strings.Split(token, ".")
+	if len(parts) != jwtPartsCount {
+		span.RecordError(errInvalidJWTFormat)
+		span.SetStatus(codes.Error, errInvalidJWTFormat.Error())
+
+		return nil, errInvalidJWTFormat
+	}
+
+	signingInput := fmt.Sprintf("%s.%s", parts[0], parts[1])
+	expectedSig := signHS256(g.config.secret, signingInput)
+
+	if !hmac.Equal([]byte(parts[2]), []byte(expectedSig)) {
+		span.RecordError(errInvalidSignature)
+		span.SetStatus(codes.Error, errInvalidSignature.Error())
+
+		return nil, errInvalidSignature
+	}
+
+	claimsJSON, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return nil, fmt.Errorf("decode claims: %w", err)
+	}
+
+	var claims jwtClaims
+	if err = json.Unmarshal(claimsJSON, &claims); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return nil, fmt.Errorf("unmarshal claims: %w", err)
+	}
+
+	if time.Now().UTC().Unix() > claims.ExpiresAt {
+		span.RecordError(errTokenExpired)
+		span.SetStatus(codes.Error, errTokenExpired.Error())
+
+		return nil, errTokenExpired
+	}
+
+	return &service.TokenClaims{UserID: claims.Subject}, nil
 }
 
 func NewJwtService() (service.JwtService, error) {
