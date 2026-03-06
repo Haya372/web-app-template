@@ -32,8 +32,7 @@ func (uc *listUsersUseCaseImpl) Execute(ctx context.Context, input ListUsersInpu
 	ctx, span := uc.tracer.Start(ctx, "execute")
 	defer span.End()
 
-	userID := common.UserIDFromContext(ctx)
-	uc.logger.Info(ctx, "list users requested", "userID", userID, "limit", input.Limit, "offset", input.Offset)
+	uc.logger.Info(ctx, "list users requested", "limit", input.Limit, "offset", input.Offset)
 
 	if input.Limit < minLimit || input.Limit > maxLimit {
 		err := vo.NewValidationError("limit must be between 1 and 100", nil, errInvalidLimit)
@@ -53,7 +52,7 @@ func (uc *listUsersUseCaseImpl) Execute(ctx context.Context, input ListUsersInpu
 
 	users, total, err := uc.userQueryService.FindAll(ctx, input.Limit, input.Offset)
 	if err != nil {
-		uc.logger.Error(ctx, "failed to find users", "error", err, "userID", userID)
+		uc.logger.Error(ctx, "failed to find users", "error", err)
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
