@@ -2,14 +2,22 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
+	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
+	"github.com/Haya372/web-app-template/go-backend/internal/usecase/service"
 	"github.com/labstack/echo/v5"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+)
+
+const (
+	defaultListLimit  = 20
+	defaultListOffset = 0
 )
 
 type Router interface {
@@ -17,16 +25,19 @@ type Router interface {
 }
 
 type routerImpl struct {
-	logger        common.Logger
-	tracer        trace.Tracer
-	SignupUseCase user.SingupUseCase
-	LoginUseCase  user.LoginUseCase
+	logger           common.Logger
+	tracer           trace.Tracer
+	SignupUseCase    user.SingupUseCase
+	LoginUseCase     user.LoginUseCase
+	ListUsersUseCase queryuser.ListUsersUseCase
+	jwtService       service.JwtService
 }
 
 func (r *routerImpl) AddRoute(e *echo.Echo) {
 	v1 := e.Group("/v1")
 	v1.POST("/users/signup", r.handleSignup)
 	v1.POST("/users/login", r.handleLogin)
+	v1.GET("/users", r.handleListUsers, JWTMiddleware(r.jwtService))
 }
 
 func (r *routerImpl) handleSignup(c *echo.Context) error {
@@ -159,12 +170,98 @@ func (r *routerImpl) handleLogin(c *echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func NewRouter(signupUseCase user.SingupUseCase, loginUseCase user.LoginUseCase) Router {
+func (r *routerImpl) handleListUsers(c *echo.Context) error {
+	ctx := c.Request().Context()
+
+	ctx, span := r.tracer.Start(ctx, "listUsers")
+	defer span.End()
+
+	limit := defaultListLimit
+	offset := defaultListOffset
+
+	if raw := c.QueryParam("limit"); raw != "" {
+		parsed, err := strconv.Atoi(raw)
+		if err != nil {
+			status, res := handleError(err)
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+
+			return writeProblem(c, status, res)
+		}
+
+		limit = parsed
+	}
+
+	if raw := c.QueryParam("offset"); raw != "" {
+		parsed, err := strconv.Atoi(raw)
+		if err != nil {
+			status, res := handleError(err)
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+
+			return writeProblem(c, status, res)
+		}
+
+		offset = parsed
+	}
+
+	output, err := r.ListUsersUseCase.Execute(ctx, queryuser.ListUsersInput{
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		status, res := handleError(err)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return writeProblem(c, status, res)
+	}
+
+	type userJSON struct {
+		Id        string `json:"id"`
+		Name      string `json:"name"`
+		Email     string `json:"email"`
+		Status    string `json:"status"`
+		CreatedAt string `json:"createdAt"`
+	}
+
+	users := make([]userJSON, 0, len(output.Users))
+	for _, u := range output.Users {
+		users = append(users, userJSON{
+			Id:        u.Id.String(),
+			Name:      u.Name,
+			Email:     u.Email,
+			Status:    u.Status,
+			CreatedAt: u.CreatedAt.Format(time.RFC3339),
+		})
+	}
+
+	return c.JSON(http.StatusOK, struct {
+		Users  []userJSON `json:"users"`
+		Total  int        `json:"total"`
+		Limit  int        `json:"limit"`
+		Offset int        `json:"offset"`
+	}{
+		Users:  users,
+		Total:  output.Total,
+		Limit:  limit,
+		Offset: offset,
+	})
+}
+
+func NewRouter(
+	signupUseCase user.SingupUseCase,
+	loginUseCase user.LoginUseCase,
+	listUsersUseCase queryuser.ListUsersUseCase,
+	jwtService service.JwtService,
+) Router {
 	return &routerImpl{
-		logger:        common.NewLogger(),
-		tracer:        otel.Tracer("root"),
-		SignupUseCase: signupUseCase,
-		LoginUseCase:  loginUseCase,
+		logger:           common.NewLogger(),
+		tracer:           otel.Tracer("root"),
+		SignupUseCase:    signupUseCase,
+		LoginUseCase:     loginUseCase,
+		ListUsersUseCase: listUsersUseCase,
+		jwtService:       jwtService,
 	}
 }
 
