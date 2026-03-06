@@ -485,6 +485,44 @@ func TestListUsers(t *testing.T) {
 		err = testDb.Cleanup()
 		require.NoError(t, err)
 	})
+
+	t.Run("non-integer limit returns 400", func(t *testing.T) {
+		token := getToken(t, "limitcheck3@example.com")
+
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=abc", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		problem := readProblemResponse(t, resp)
+		assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("non-integer offset returns 400", func(t *testing.T) {
+		token := getToken(t, "offsetcheck@example.com")
+
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?offset=xyz", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		problem := readProblemResponse(t, resp)
+		assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
 }
 
 type problemResponse struct {
