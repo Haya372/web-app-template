@@ -129,7 +129,17 @@ Run the complete suite one last time and confirm all targets pass:
 make fmt && make lint && make test-unit
 ```
 
-If any target fails, investigate and fix before proceeding.
+Then check test coverage:
+
+```bash
+make test-coverage
+```
+
+Review the coverage report for any packages touched by this PR:
+- If a package's coverage **decreased** compared to `main`, identify the uncovered lines and add tests before proceeding.
+- Pay special attention to packages showing 0% or near-0% coverage on newly added functions.
+
+If any target fails or coverage regresses, investigate and fix before proceeding.
 
 ### Step 6: Commit
 
