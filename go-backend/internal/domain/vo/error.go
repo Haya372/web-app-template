@@ -80,11 +80,3 @@ func NewUnauthorizedError(message string, details map[string]any, err error) err
 	}
 }
 
-func NewJWTUnauthorizedError(message string, err error) error {
-	return &baseError{
-		status:  401,
-		code:    UnauthorizedErrorCode,
-		message: message,
-		err:     err,
-	}
-}
