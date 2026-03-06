@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserDTO is a read-only projection of a user; password_hash is intentionally excluded.
-type UserDTO struct {
+// UserDto is a read-only projection of a user; password_hash is intentionally excluded.
+type UserDto struct {
 	Id        uuid.UUID
 	Name      string
 	Email     string
@@ -20,7 +20,7 @@ type UserDTO struct {
 
 // UserQueryService is the port for fetching user projections from the data store.
 type UserQueryService interface {
-	FindAll(ctx context.Context, limit, offset int) ([]UserDTO, int, error)
+	FindAll(ctx context.Context, limit, offset int) ([]UserDto, int, error)
 }
 
 // ListUsersInput holds the validated parameters for the list-users query.
@@ -31,7 +31,7 @@ type ListUsersInput struct {
 
 // ListUsersOutput is the result returned by ListUsersUseCase.
 type ListUsersOutput struct {
-	Users []UserDTO
+	Users []UserDto
 	Total int
 }
 

@@ -21,7 +21,7 @@ type userQueryServiceImpl struct {
 	dbManager db.DbManager
 }
 
-func (s *userQueryServiceImpl) FindAll(ctx context.Context, limit, offset int) ([]usecasequery.UserDTO, int, error) {
+func (s *userQueryServiceImpl) FindAll(ctx context.Context, limit, offset int) ([]usecasequery.UserDto, int, error) {
 	ctx, span := s.tracer.Start(ctx, "FindAll")
 	defer span.End()
 
@@ -53,7 +53,7 @@ func (s *userQueryServiceImpl) FindAll(ctx context.Context, limit, offset int) (
 		return nil, 0, err
 	}
 
-	dtos := make([]usecasequery.UserDTO, 0, len(rows))
+	dtos := make([]usecasequery.UserDto, 0, len(rows))
 
 	for _, row := range rows {
 		status, err := vo.UserStatusFromString(row.StatusCode)
@@ -64,7 +64,7 @@ func (s *userQueryServiceImpl) FindAll(ctx context.Context, limit, offset int) (
 			return nil, 0, fmt.Errorf("parse user status: %w", err)
 		}
 
-		dtos = append(dtos, usecasequery.UserDTO{
+		dtos = append(dtos, usecasequery.UserDto{
 			Id:        uuid.UUID(row.ID.Bytes),
 			Name:      row.Name,
 			Email:     row.Email,

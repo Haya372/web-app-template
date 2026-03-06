@@ -20,7 +20,7 @@ func TestListUsersUseCase_HappyCase(t *testing.T) {
 	ctx := context.Background()
 
 	now := time.Now().UTC()
-	expectedUsers := []user.UserDTO{
+	expectedUsers := []user.UserDto{
 		{Id: uuid.New(), Name: "Alice", Email: "alice@example.com", Status: "ACTIVE", CreatedAt: now},
 		{Id: uuid.New(), Name: "Bob", Email: "bob@example.com", Status: "ACTIVE", CreatedAt: now},
 	}
@@ -43,7 +43,7 @@ func TestListUsersUseCase_Pagination(t *testing.T) {
 	ctx := context.Background()
 
 	now := time.Now().UTC()
-	expectedUsers := []user.UserDTO{
+	expectedUsers := []user.UserDto{
 		{Id: uuid.New(), Name: "Carol", Email: "carol@example.com", Status: "ACTIVE", CreatedAt: now},
 	}
 
