@@ -54,7 +54,7 @@ func TestLoginUseCase_HappyCase(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "token", output.Token)
 	assert.Equal(t, expiresAt, output.ExpiresAt)
-	assert.Equal(t, userID.String(), output.UserID)
+	assert.Equal(t, userID.String(), output.UserId)
 	assert.Equal(t, "Test", output.UserName)
 	assert.Equal(t, "test@example.com", output.UserEmail)
 }

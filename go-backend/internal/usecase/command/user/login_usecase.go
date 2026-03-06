@@ -26,7 +26,7 @@ type LoginInput struct {
 type LoginOutput struct {
 	Token     string
 	ExpiresAt time.Time
-	UserID    string
+	UserId    string
 	UserName  string
 	UserEmail string
 }
@@ -89,7 +89,7 @@ func (uc *loginUseCaseImpl) Execute(ctx context.Context, input LoginInput) (*Log
 	return &LoginOutput{
 		Token:     token.Value,
 		ExpiresAt: token.ExpiresAt,
-		UserID:    user.Id().String(),
+		UserId:    user.Id().String(),
 		UserName:  user.Name(),
 		UserEmail: user.Email(),
 	}, nil

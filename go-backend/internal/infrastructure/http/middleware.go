@@ -12,7 +12,7 @@ import (
 
 // JWTMiddleware returns an Echo middleware that validates Bearer JWT tokens.
 // On success the authenticated user's ID is stored in both the Echo context
-// (key "userID") and the Go request context via common.WithUserID, so that
+// (key "userID") and the Go request context via common.WithUserId, so that
 // downstream handlers and use cases can retrieve it.
 // Requests without a valid token receive a 401 Unauthorized problem response.
 func JWTMiddleware(jwtService service.JwtService) echo.MiddlewareFunc {
@@ -32,8 +32,8 @@ func JWTMiddleware(jwtService service.JwtService) echo.MiddlewareFunc {
 
 			// Propagate userID into both the Echo context and the Go request
 			// context so it is available to use cases for logging.
-			c.Set("userID", claims.UserID)
-			ctx := common.WithUserID(c.Request().Context(), claims.UserID)
+			c.Set("userID", claims.UserId)
+			ctx := common.WithUserId(c.Request().Context(), claims.UserId)
 			c.SetRequest(c.Request().WithContext(ctx))
 
 			return next(c)

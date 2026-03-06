@@ -15,7 +15,7 @@ type UserAccessToken struct {
 }
 
 type TokenClaims struct {
-	UserID string
+	UserId string
 }
 
 type JwtService interface {
