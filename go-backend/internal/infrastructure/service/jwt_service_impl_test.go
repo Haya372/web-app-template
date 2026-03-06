@@ -89,3 +89,86 @@ func TestJwtService_NewJwtService_InvalidTTL(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, svc)
 }
+
+func TestJwtService_ValidateToken_Valid(t *testing.T) {
+	t.Setenv("AUTH_JWT_SECRET", "test-secret")
+	t.Setenv("AUTH_JWT_TTL_MINUTES", "5")
+
+	svc, err := infra_service.NewJwtService()
+	require.NoError(t, err)
+
+	user, err := entity.NewUser("test@example.com", "password", "Test", time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC))
+	require.NoError(t, err)
+
+	token, err := svc.GenerateUserAccessToken(t.Context(), user)
+	require.NoError(t, err)
+
+	claims, err := svc.ValidateToken(t.Context(), token.Value)
+	require.NoError(t, err)
+	require.NotNil(t, claims)
+	assert.Equal(t, user.Id().String(), claims.UserId)
+}
+
+func TestJwtService_ValidateToken_InvalidFormat(t *testing.T) {
+	t.Setenv("AUTH_JWT_SECRET", "test-secret")
+	t.Setenv("AUTH_JWT_TTL_MINUTES", "5")
+
+	svc, err := infra_service.NewJwtService()
+	require.NoError(t, err)
+
+	claims, err := svc.ValidateToken(t.Context(), "not.a.valid.jwt.token")
+	require.Error(t, err)
+	assert.Nil(t, claims)
+}
+
+func TestJwtService_ValidateToken_InvalidSignature(t *testing.T) {
+	t.Setenv("AUTH_JWT_SECRET", "test-secret")
+	t.Setenv("AUTH_JWT_TTL_MINUTES", "5")
+
+	svc, err := infra_service.NewJwtService()
+	require.NoError(t, err)
+
+	user, err := entity.NewUser("test@example.com", "password", "Test", time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC))
+	require.NoError(t, err)
+
+	token, err := svc.GenerateUserAccessToken(t.Context(), user)
+	require.NoError(t, err)
+
+	parts := strings.Split(token.Value, ".")
+	tampered := parts[0] + "." + parts[1] + ".invalidsignature"
+
+	claims, err := svc.ValidateToken(t.Context(), tampered)
+	require.Error(t, err)
+	assert.Nil(t, claims)
+}
+
+func TestJwtService_ValidateToken_Expired(t *testing.T) {
+	const secret = "test-secret"
+
+	t.Setenv("AUTH_JWT_SECRET", secret)
+	t.Setenv("AUTH_JWT_TTL_MINUTES", "5")
+
+	svc, err := infra_service.NewJwtService()
+	require.NoError(t, err)
+
+	// Manually build a JWT with a past expiry and a valid signature.
+	headerJSON, err := json.Marshal(jwtHeader{Algorithm: "HS256", Type: "JWT"})
+	require.NoError(t, err)
+	headerSeg := base64.RawURLEncoding.EncodeToString(headerJSON)
+
+	past := time.Now().UTC().Add(-time.Minute).Unix()
+	claimsJSON, err := json.Marshal(jwtClaims{Subject: "some-id", ExpiresAt: past, IssuedAt: past - 60})
+	require.NoError(t, err)
+	claimsSeg := base64.RawURLEncoding.EncodeToString(claimsJSON)
+
+	signingInput := headerSeg + "." + claimsSeg
+	mac := hmac.New(sha256.New, []byte(secret))
+	_, _ = mac.Write([]byte(signingInput))
+	sig := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+
+	expiredToken := signingInput + "." + sig
+
+	claims, err := svc.ValidateToken(t.Context(), expiredToken)
+	require.Error(t, err)
+	assert.Nil(t, claims)
+}
