@@ -154,11 +154,13 @@ func TestJwtService_ValidateToken_Expired(t *testing.T) {
 	// Manually build a JWT with a past expiry and a valid signature.
 	headerJSON, err := json.Marshal(jwtHeader{Algorithm: "HS256", Type: "JWT"})
 	require.NoError(t, err)
+
 	headerSeg := base64.RawURLEncoding.EncodeToString(headerJSON)
 
 	past := time.Now().UTC().Add(-time.Minute).Unix()
 	claimsJSON, err := json.Marshal(jwtClaims{Subject: "some-id", ExpiresAt: past, IssuedAt: past - 60})
 	require.NoError(t, err)
+
 	claimsSeg := base64.RawURLEncoding.EncodeToString(claimsJSON)
 
 	signingInput := headerSeg + "." + claimsSeg
