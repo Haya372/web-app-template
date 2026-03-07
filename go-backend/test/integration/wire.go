@@ -12,6 +12,7 @@ import (
 	infrareader "github.com/Haya372/web-app-template/go-backend/internal/infrastructure/reader"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/repository"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/service"
+	commandpost "github.com/Haya372/web-app-template/go-backend/internal/usecase/command/post"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
 	"github.com/google/wire"
@@ -20,6 +21,7 @@ import (
 
 var repositorySet = wire.NewSet(
 	repository.NewUserRepository,
+	repository.NewPostRepository,
 )
 
 var authSet = wire.NewSet(
@@ -29,6 +31,7 @@ var authSet = wire.NewSet(
 var usecaseSet = wire.NewSet(
 	user.NewSignupUseCase,
 	user.NewLoginUseCase,
+	commandpost.NewCreatePostUseCase,
 )
 
 var querySet = wire.NewSet(
