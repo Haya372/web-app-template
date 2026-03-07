@@ -14,6 +14,11 @@ LIMIT $1 OFFSET $2;
 -- name: CountUsers :one
 SELECT COUNT(*) FROM users;
 
+-- name: CreatePost :one
+INSERT INTO posts(id, user_id, content, created_at)
+VALUES ($1, $2, $3, $4)
+RETURNING id, user_id, content, created_at;
+
 -- name: FindUserPermissionSnapshot :many
 SELECT u.id, u.email, u.password_hash, u.name, u.status_code, u.created_at, u.updated_at,
        p.code AS permission_code

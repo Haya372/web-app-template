@@ -43,3 +43,13 @@ create table user_roles (
   role_id uuid not null references roles(id),
   primary key (user_id, role_id)
 );
+
+create table posts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references users(id) on delete cascade,
+  content text not null,
+  created_at timestamp not null default now(),
+  updated_at timestamp not null default now()
+);
+
+create index posts_user_id_idx on posts(user_id);
