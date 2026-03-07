@@ -5,11 +5,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Haya372/web-app-template/go-backend/internal/common"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
+	"github.com/Haya372/web-app-template/go-backend/internal/usecase/service"
 	"github.com/labstack/echo/v5"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -17,7 +20,24 @@ const (
 	defaultListOffset = 0
 )
 
-func (r *routerImpl) handleSignup(c *echo.Context) error {
+type usersRouter struct {
+	logger           common.Logger
+	tracer           trace.Tracer
+	SignupUseCase    user.SingupUseCase
+	LoginUseCase     user.LoginUseCase
+	ListUsersUseCase queryuser.ListUsersUseCase
+	jwtService       service.JwtService
+}
+
+func (r *usersRouter) AddRoute(e *echo.Echo) {
+	g := e.Group("/v1/users")
+
+	g.POST("/signup", r.handleSignup)
+	g.POST("/login", r.handleLogin)
+	g.GET("", r.handleListUsers, JWTMiddleware(r.jwtService))
+}
+
+func (r *usersRouter) handleSignup(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	ctx, span := r.tracer.Start(ctx, "signup")
@@ -79,7 +99,7 @@ func (r *routerImpl) handleSignup(c *echo.Context) error {
 	return c.JSON(http.StatusCreated, res)
 }
 
-func (r *routerImpl) handleLogin(c *echo.Context) error {
+func (r *usersRouter) handleLogin(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	ctx, span := r.tracer.Start(ctx, "login")
@@ -147,7 +167,7 @@ func (r *routerImpl) handleLogin(c *echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (r *routerImpl) handleListUsers(c *echo.Context) error {
+func (r *usersRouter) handleListUsers(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	ctx, span := r.tracer.Start(ctx, "listUsers")

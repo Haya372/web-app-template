@@ -7,7 +7,6 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/service"
 	"github.com/labstack/echo/v5"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type Router interface {
@@ -15,19 +14,11 @@ type Router interface {
 }
 
 type routerImpl struct {
-	logger           common.Logger
-	tracer           trace.Tracer
-	SignupUseCase    user.SingupUseCase
-	LoginUseCase     user.LoginUseCase
-	ListUsersUseCase queryuser.ListUsersUseCase
-	jwtService       service.JwtService
+	usersRouter *usersRouter
 }
 
 func (r *routerImpl) AddRoute(e *echo.Echo) {
-	v1 := e.Group("/v1")
-	v1.POST("/users/signup", r.handleSignup)
-	v1.POST("/users/login", r.handleLogin)
-	v1.GET("/users", r.handleListUsers, JWTMiddleware(r.jwtService))
+	r.usersRouter.AddRoute(e)
 }
 
 func NewRouter(
@@ -37,12 +28,14 @@ func NewRouter(
 	jwtService service.JwtService,
 ) Router {
 	return &routerImpl{
-		logger:           common.NewLogger(),
-		tracer:           otel.Tracer("root"),
-		SignupUseCase:    signupUseCase,
-		LoginUseCase:     loginUseCase,
-		ListUsersUseCase: listUsersUseCase,
-		jwtService:       jwtService,
+		usersRouter: &usersRouter{
+			logger:           common.NewLogger(),
+			tracer:           otel.Tracer("users"),
+			SignupUseCase:    signupUseCase,
+			LoginUseCase:     loginUseCase,
+			ListUsersUseCase: listUsersUseCase,
+			jwtService:       jwtService,
+		},
 	}
 }
 
