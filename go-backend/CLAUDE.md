@@ -49,7 +49,7 @@ infrastructure (adapters) → usecase → domain
   - `entity/` — persistent domain objects (immutable: state-change methods return new instances)
   - `vo/` — value objects (identifier-free, immutable, validated at construction)
   - `snapshot/` — read-only multi-entity projections used across use cases; fetched via `QueryService`, never updated directly
-  - `entity/repository/` and `snapshot/query/` — port interfaces (implemented in infrastructure)
+  - `entity/repository/` and `snapshot/reader/` — port interfaces (implemented in infrastructure)
 - `internal/usecase` — application flow, CQRS (Command/Query separation); owns transaction boundaries via `TransactionManager`
 - `internal/infrastructure` — adapter implementations (`*_impl`), DB access via sqlc/pgx, OTel tracing/logging
 - `internal/common` — cross-cutting: logging, config, shared error handling (no domain logic)

@@ -7,7 +7,7 @@ domain
 ├── entity
 │   └── repository
 ├── snapshot
-│   └── query
+│   └── reader
 └── vo
 ```
 
@@ -111,7 +111,7 @@ if _, err := userRepository.Update(ctx, user); err != nil {
 * 永続化や読み取り最適化に関する「接続口」はドメイン層に **インターフェース（Port）として定義**する
 
   * `repository/`: Entity（集約）を取得・保存するための I/F
-  * `snapshot/query/`: Snapshot を構築するための読み取り専用 I/F
+  * `snapshot/reader/`: Snapshot を構築するための読み取り専用 I/F
 * 実装（DBクエリ、ORM、HTTPクライアント等）はインフラ層に置き、依存関係は **domain → interface（port） ← infra** の形にする
 * Entity を肥大化させないため、読み取り専用の状態表現は Snapshot として切り出す
 * Snapshot は DTO ではなく、**ドメインの言葉として命名**する
