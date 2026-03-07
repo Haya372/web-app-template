@@ -16,13 +16,15 @@ import (
 func TestCreatePost(t *testing.T) {
 	tests := []struct {
 		name         string
+		email        string
 		request      map[string]any
 		withAuth     bool
 		responseCode int
 		problemType  string
 	}{
 		{
-			name: "Success with valid JWT and content returns 201",
+			name:  "Success with valid JWT and content returns 201",
+			email: "post-success@example.com",
 			request: map[string]any{
 				"content": "Hello, world!",
 			},
@@ -30,7 +32,8 @@ func TestCreatePost(t *testing.T) {
 			responseCode: http.StatusCreated,
 		},
 		{
-			name: "Missing Authorization header returns 401",
+			name:  "Missing Authorization header returns 401",
+			email: "post-noauth@example.com",
 			request: map[string]any{
 				"content": "Hello, world!",
 			},
@@ -39,7 +42,8 @@ func TestCreatePost(t *testing.T) {
 			problemType:  "UNAUTHORIZED",
 		},
 		{
-			name: "Empty content returns 400",
+			name:  "Empty content returns 400",
+			email: "post-empty@example.com",
 			request: map[string]any{
 				"content": "",
 			},
@@ -49,6 +53,7 @@ func TestCreatePost(t *testing.T) {
 		},
 		{
 			name:         "Missing content field returns 400",
+			email:        "post-missing@example.com",
 			request:      map[string]any{},
 			withAuth:     true,
 			responseCode: http.StatusBadRequest,
@@ -58,7 +63,7 @@ func TestCreatePost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			token, _ := signupAndGetToken(t, "postuser_"+tt.name+"@example.com", "")
+			token, _ := signupAndGetToken(t, tt.email, "")
 
 			body, err := json.Marshal(tt.request)
 			require.NoError(t, err)
