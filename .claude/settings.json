@@ -2,5 +2,17 @@
   "enabledPlugins": {
     "code-review@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true
+  },
+  "permissions": {
+    "deny": [
+      "Bash(gh config get:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh secret:*)",
+      "Bash(gh project:*)",
+      "Bash(gh release:*)",
+      "Bash(gh repo:*)",
+      "Bash(gh ssh-key:*)",
+      "Bash(gh codespace:*)"
+    ]
   }
 }
