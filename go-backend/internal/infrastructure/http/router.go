@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
+	commandpost "github.com/Haya372/web-app-template/go-backend/internal/usecase/command/post"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/service"
@@ -15,16 +16,19 @@ type Router interface {
 
 type routerImpl struct {
 	usersRouter *usersRouter
+	postsRouter *postsRouter
 }
 
 func (r *routerImpl) AddRoute(e *echo.Echo) {
 	r.usersRouter.AddRoute(e)
+	r.postsRouter.AddRoute(e)
 }
 
 func NewRouter(
 	signupUseCase user.SingupUseCase,
 	loginUseCase user.LoginUseCase,
 	listUsersUseCase queryuser.ListUsersUseCase,
+	createPostUseCase commandpost.CreatePostUseCase,
 	jwtService service.JwtService,
 ) Router {
 	return &routerImpl{
@@ -35,6 +39,12 @@ func NewRouter(
 			LoginUseCase:     loginUseCase,
 			ListUsersUseCase: listUsersUseCase,
 			jwtService:       jwtService,
+		},
+		postsRouter: &postsRouter{
+			logger:            common.NewLogger(),
+			tracer:            otel.Tracer("posts"),
+			CreatePostUseCase: createPostUseCase,
+			jwtService:        jwtService,
 		},
 	}
 }
