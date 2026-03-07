@@ -10,3 +10,8 @@ coverage.out
 # claude
 .claude/settings.local.json
 .claude/agent-memory/*
+
+# pnpm
+node_modules
+.turbo
+dist
