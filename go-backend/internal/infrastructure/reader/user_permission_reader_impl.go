@@ -2,6 +2,7 @@ package reader
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
@@ -18,6 +19,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+var errUserNotFound = errors.New("user not found")
+
 type userPermissionReaderImpl struct {
 	tracer    trace.Tracer
 	logger    common.Logger
@@ -32,20 +35,12 @@ func (r *userPermissionReaderImpl) FindByUserId(
 
 	pgID := pgtype.UUID{Bytes: userId, Valid: true}
 
-	var (
-		userRow   sqlc.User
-		permCodes []string
-	)
+	var rows []sqlc.FindUserPermissionSnapshotRow
 
 	err := r.dbManager.QueriesFunc(ctx, func(ctx context.Context, queries sqlc.Queries) error {
 		var err error
 
-		userRow, err = queries.FindUserByID(ctx, pgID)
-		if err != nil {
-			return fmt.Errorf("find user: %w", err)
-		}
-
-		permCodes, err = queries.FindPermissionsByUserID(ctx, pgID)
+		rows, err = queries.FindUserPermissionSnapshot(ctx, pgID)
 
 		return err
 	})
@@ -57,24 +52,32 @@ func (r *userPermissionReaderImpl) FindByUserId(
 		return nil, err
 	}
 
-	status, err := vo.UserStatusFromString(userRow.StatusCode)
+	if len(rows) == 0 {
+		return nil, errUserNotFound
+	}
+
+	first := rows[0]
+
+	status, err := vo.UserStatusFromString(first.StatusCode)
 	if err != nil {
 		return nil, fmt.Errorf("parse user status: %w", err)
 	}
 
 	user := entity.ReconstructUser(
-		uuid.UUID(userRow.ID.Bytes),
-		userRow.Email,
-		userRow.PasswordHash,
-		userRow.Name,
+		uuid.UUID(first.ID.Bytes),
+		first.Email,
+		first.PasswordHash,
+		first.Name,
 		status,
-		userRow.CreatedAt.Time,
+		first.CreatedAt.Time,
 	)
 
-	perms := make([]vo.Permission, 0, len(permCodes))
+	perms := make([]vo.Permission, 0, len(rows))
 
-	for _, code := range permCodes {
-		perms = append(perms, vo.Permission(code))
+	for _, row := range rows {
+		if row.PermissionCode.Valid {
+			perms = append(perms, vo.Permission(row.PermissionCode.String))
+		}
 	}
 
 	return &snapshot.UserPermissionSnapshot{
