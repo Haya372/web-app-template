@@ -25,6 +25,7 @@ type UserQueryService interface {
 
 // ListUsersInput holds the validated parameters for the list-users query.
 type ListUsersInput struct {
+	UserId uuid.UUID
 	Limit  int
 	Offset int
 }

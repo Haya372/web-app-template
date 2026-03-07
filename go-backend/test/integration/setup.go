@@ -47,7 +47,8 @@ func (b *baseTestDb) Pool() *pgxpool.Pool { return b.pool }
 
 func (b *baseTestDb) Cleanup() error {
 	return b.manager.PoolFunc(context.Background(), func(ctx context.Context, conn *pgxpool.Conn) error {
-		_, err := conn.Exec(ctx, "truncate table users")
+		// Truncate user_roles first (references users) then users.
+		_, err := conn.Exec(ctx, "truncate table user_roles, users")
 
 		return err
 	})

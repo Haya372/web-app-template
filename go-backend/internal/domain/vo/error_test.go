@@ -33,6 +33,18 @@ func TestNewUnauthorizedError(t *testing.T) {
 	}
 }
 
+func TestNewForbiddenError(t *testing.T) {
+	err := vo.NewForbiddenError("insufficient permissions", nil, errors.New("base"))
+
+	var baseErr vo.Error
+	if assert.ErrorAs(t, err, &baseErr) {
+		assert.Equal(t, 403, baseErr.Status())
+		assert.Equal(t, vo.ForbiddenErrorCode, baseErr.Code())
+		assert.Equal(t, "insufficient permissions", baseErr.Message())
+		assert.Nil(t, baseErr.Details())
+	}
+}
+
 func TestErrorCode_Title(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -58,6 +70,11 @@ func TestErrorCode_Title(t *testing.T) {
 			name:     "internal",
 			code:     vo.InternalErrorCode,
 			expected: "internal server error",
+		},
+		{
+			name:     "forbidden",
+			code:     vo.ForbiddenErrorCode,
+			expected: "forbidden",
 		},
 		{
 			name:     "unknown",

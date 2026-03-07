@@ -10,6 +10,7 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
 	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/service"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -204,7 +205,20 @@ func (r *usersRouter) handleListUsers(c *echo.Context) error {
 		offset = parsed
 	}
 
+	userIdStr := common.UserIdFromContext(ctx)
+
+	userId, err := uuid.Parse(userIdStr)
+	if err != nil {
+		parseErr := vo.NewValidationError("invalid user ID in token", nil, err)
+		status, res := handleError(parseErr)
+		span.RecordError(parseErr)
+		span.SetStatus(codes.Error, parseErr.Error())
+
+		return writeProblem(c, status, res)
+	}
+
 	output, err := r.ListUsersUseCase.Execute(ctx, queryuser.ListUsersInput{
+		UserId: userId,
 		Limit:  limit,
 		Offset: offset,
 	})

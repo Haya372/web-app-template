@@ -8,6 +8,7 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/http"
 	infraquery "github.com/Haya372/web-app-template/go-backend/internal/infrastructure/query"
+	infrareader "github.com/Haya372/web-app-template/go-backend/internal/infrastructure/reader"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/repository"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/service"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
@@ -30,6 +31,7 @@ var usecaseSet = wire.NewSet(
 
 var querySet = wire.NewSet(
 	infraquery.NewUserQueryService,
+	infrareader.NewUserPermissionReader,
 	queryuser.NewListUsersUseCase,
 )
 
@@ -56,5 +58,6 @@ func InitializeServer(ctx context.Context) (*http.Server, error) {
 		dbSet,
 		httpSet,
 	)
+
 	return nil, nil
 }
