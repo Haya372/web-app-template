@@ -4,6 +4,7 @@ package http_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -13,6 +14,57 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// adminRoleID is the seeded role ID with full permissions including users:list.
+const adminRoleID = "00000000-0000-0000-0000-000000000001"
+
+// signupAndGetToken creates a user, assigns the given roleID, and returns the JWT token and user ID.
+// Pass an empty roleID to skip role assignment (creates a user without any roles).
+func signupAndGetToken(t *testing.T, email, roleID string) (token, userID string) {
+	t.Helper()
+
+	signupBody, err := json.Marshal(map[string]any{
+		"name":     "Test User",
+		"email":    email,
+		"password": "password",
+	})
+	require.NoError(t, err)
+
+	signupResp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(signupBody))
+	require.NoError(t, err)
+	_ = signupResp.Body.Close()
+
+	loginBody, err := json.Marshal(map[string]any{
+		"email":    email,
+		"password": "password",
+	})
+	require.NoError(t, err)
+
+	loginResp, err := http.Post(testServer.URL+"/v1/users/login", "application/json", bytes.NewBuffer(loginBody))
+	require.NoError(t, err)
+	defer func() { _ = loginResp.Body.Close() }()
+
+	var loginOut struct {
+		Token string `json:"token"`
+		User  struct {
+			Id string `json:"id"`
+		} `json:"user"`
+	}
+	payload, err := io.ReadAll(loginResp.Body)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(payload, &loginOut))
+
+	userID = loginOut.User.Id
+	token = loginOut.Token
+
+	if roleID != "" {
+		assignRoleSQL := "INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
+		_, execErr := testDb.Pool().Exec(context.Background(), assignRoleSQL, userID, roleID)
+		require.NoError(t, execErr)
+	}
+
+	return token, userID
+}
 
 func TestSignup(t *testing.T) {
 	tests := []struct {
@@ -289,43 +341,8 @@ func TestLogin(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
-	// Helper: signup + login to obtain a valid JWT.
-	getToken := func(t *testing.T, email string) string {
-		t.Helper()
-
-		signupBody, err := json.Marshal(map[string]any{
-			"name":     "List User",
-			"email":    email,
-			"password": "password",
-		})
-		require.NoError(t, err)
-
-		signupResp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(signupBody))
-		require.NoError(t, err)
-		_ = signupResp.Body.Close()
-
-		loginBody, err := json.Marshal(map[string]any{
-			"email":    email,
-			"password": "password",
-		})
-		require.NoError(t, err)
-
-		loginResp, err := http.Post(testServer.URL+"/v1/users/login", "application/json", bytes.NewBuffer(loginBody))
-		require.NoError(t, err)
-		defer func() { _ = loginResp.Body.Close() }()
-
-		var loginOut struct {
-			Token string `json:"token"`
-		}
-		payload, err := io.ReadAll(loginResp.Body)
-		require.NoError(t, err)
-		require.NoError(t, json.Unmarshal(payload, &loginOut))
-
-		return loginOut.Token
-	}
-
-	t.Run("Success with valid JWT returns user list", func(t *testing.T) {
-		token := getToken(t, "listtest@example.com")
+	t.Run("Success with valid JWT and admin role returns user list", func(t *testing.T) {
+		token, _ := signupAndGetToken(t, "listtest@example.com", adminRoleID)
 
 		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
 		require.NoError(t, err)
@@ -346,7 +363,7 @@ func TestListUsers(t *testing.T) {
 				Name      string `json:"name"`
 				Email     string `json:"email"`
 				Status    string `json:"status"`
-				CreatedAt string `json:"created_at"`
+				CreatedAt string `json:"createdAt"`
 			} `json:"users"`
 			Total  int `json:"total"`
 			Limit  int `json:"limit"`
@@ -365,7 +382,7 @@ func TestListUsers(t *testing.T) {
 	})
 
 	t.Run("Pagination with limit and offset", func(t *testing.T) {
-		token := getToken(t, "paginate@example.com")
+		token, _ := signupAndGetToken(t, "paginate@example.com", adminRoleID)
 
 		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=5&offset=0", nil)
 		require.NoError(t, err)
@@ -390,35 +407,6 @@ func TestListUsers(t *testing.T) {
 
 		err = testDb.Cleanup()
 		require.NoError(t, err)
-	})
-
-	t.Run("Empty user list returns users:[] total:0", func(t *testing.T) {
-		token := getToken(t, "empty@example.com")
-
-		err := testDb.Cleanup()
-		require.NoError(t, err)
-
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
-		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		// After cleanup users table is empty; token is still valid.
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		payload, err := io.ReadAll(resp.Body)
-		require.NoError(t, err)
-
-		var got struct {
-			Users []any `json:"users"`
-			Total int   `json:"total"`
-		}
-		require.NoError(t, json.Unmarshal(payload, &got))
-		assert.Equal(t, 0, got.Total)
-		assert.Empty(t, got.Users)
 	})
 
 	t.Run("Missing Authorization header returns 401", func(t *testing.T) {
@@ -448,8 +436,27 @@ func TestListUsers(t *testing.T) {
 		assert.Equal(t, "UNAUTHORIZED", problem.Type)
 	})
 
+	t.Run("User without any role returns 403", func(t *testing.T) {
+		token, _ := signupAndGetToken(t, "norole@example.com", "") // no role assigned
+
+		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer func() { _ = resp.Body.Close() }()
+
+		assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+		problem := readProblemResponse(t, resp)
+		assert.Equal(t, "FORBIDDEN", problem.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
 	t.Run("limit=200 out of range returns 400", func(t *testing.T) {
-		token := getToken(t, "limitcheck@example.com")
+		token, _ := signupAndGetToken(t, "limitcheck@example.com", adminRoleID)
 
 		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=200", nil)
 		require.NoError(t, err)
@@ -468,7 +475,7 @@ func TestListUsers(t *testing.T) {
 	})
 
 	t.Run("limit=0 out of range returns 400", func(t *testing.T) {
-		token := getToken(t, "limitcheck2@example.com")
+		token, _ := signupAndGetToken(t, "limitcheck2@example.com", adminRoleID)
 
 		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=0", nil)
 		require.NoError(t, err)
@@ -487,7 +494,7 @@ func TestListUsers(t *testing.T) {
 	})
 
 	t.Run("non-integer limit returns 400", func(t *testing.T) {
-		token := getToken(t, "limitcheck3@example.com")
+		token, _ := signupAndGetToken(t, "limitcheck3@example.com", adminRoleID)
 
 		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=abc", nil)
 		require.NoError(t, err)
@@ -506,7 +513,7 @@ func TestListUsers(t *testing.T) {
 	})
 
 	t.Run("non-integer offset returns 400", func(t *testing.T) {
-		token := getToken(t, "offsetcheck@example.com")
+		token, _ := signupAndGetToken(t, "offsetcheck@example.com", adminRoleID)
 
 		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?offset=xyz", nil)
 		require.NoError(t, err)

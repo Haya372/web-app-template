@@ -6,6 +6,7 @@ const (
 	ValidationErrorCode        = ErrorCode("VALIDATION_ERROR")
 	InvalidCredentialErrorCode = ErrorCode("INVALID_CREDENTIAL")
 	UnauthorizedErrorCode      = ErrorCode("UNAUTHORIZED")
+	ForbiddenErrorCode         = ErrorCode("FORBIDDEN")
 	InternalErrorCode          = ErrorCode("INTERNAL_ERROR")
 )
 
@@ -17,6 +18,8 @@ func (c ErrorCode) Title() string {
 		return "invalid credential"
 	case UnauthorizedErrorCode:
 		return "Unauthorized"
+	case ForbiddenErrorCode:
+		return "forbidden"
 	case InternalErrorCode:
 		return "internal server error"
 	default:
@@ -74,6 +77,16 @@ func NewUnauthorizedError(message string, details map[string]any, err error) err
 	return &baseError{
 		status:  401,
 		code:    InvalidCredentialErrorCode,
+		message: message,
+		err:     err,
+		details: details,
+	}
+}
+
+func NewForbiddenError(message string, details map[string]any, err error) error {
+	return &baseError{
+		status:  403,
+		code:    ForbiddenErrorCode,
 		message: message,
 		err:     err,
 		details: details,
