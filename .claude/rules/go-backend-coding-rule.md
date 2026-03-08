@@ -1,4 +1,9 @@
-# Coding Rules
+---
+paths:
+  - "go-backend/**"
+---
+
+# Go-Backend Coding Rules
 
 ## Language
 
