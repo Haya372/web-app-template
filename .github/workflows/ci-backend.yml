@@ -4,6 +4,7 @@ on:
     paths:
       - "go-backend/**"
       - ".github/workflows/ci-backend.yml"
+      - ".github/actions/setup-backend/**"
       - "!**.md"
       - "!Makefile"
       - "!go-backend/docker-compose.yml"
@@ -13,7 +14,8 @@ on:
       - 'main'
     paths:
       - "go-backend/**"
-      - ".github/workflows/ci-backend-lint.yml"
+      - ".github/workflows/ci-backend.yml"
+      - ".github/actions/setup-backend/**"
       - "!**.md"
       - "!Makefile"
       - "!docker-compose.yml"

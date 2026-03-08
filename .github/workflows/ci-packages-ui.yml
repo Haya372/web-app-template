@@ -4,6 +4,8 @@ on:
     paths:
       - "package.json"
       - "packages/ui/**"
+      - ".github/workflows/ci-packages-ui.yml"
+      - ".github/actions/setup-pnpm-workspace/**"
       - "!**.md"
 
 jobs:
