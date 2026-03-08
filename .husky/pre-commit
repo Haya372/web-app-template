@@ -1,8 +1,16 @@
 #\!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+ROOT=$(pwd)
+
 if git diff --cached --name-only | grep -q "^apps/react-frontend/"; then
-  cd apps/react-frontend && pnpm lint-staged
+  cd "$ROOT/apps/react-frontend" && pnpm lint-staged
   pnpm lint
   pnpm build
+  cd "$ROOT"
+fi
+
+if git diff --cached --name-only | grep -q "^packages/ui/"; then
+  cd "$ROOT/packages/ui" && pnpm lint-staged
+  cd "$ROOT"
 fi
