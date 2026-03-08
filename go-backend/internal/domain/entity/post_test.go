@@ -63,6 +63,28 @@ func TestNewPost_FailureCase(t *testing.T) {
 	}
 }
 
+func TestNewPost_GeneratesUuidV7(t *testing.T) {
+	t.Run("generated id has UUID version 7", func(t *testing.T) {
+		userId := uuid.New()
+		post, err := entity.NewPost(userId, "some content", time.Now())
+
+		require.NoError(t, err)
+		assert.Equal(t, uuid.Version(7), post.Id().Version())
+	})
+
+	t.Run("consecutively generated ids are time-ordered", func(t *testing.T) {
+		userId := uuid.New()
+		post1, err1 := entity.NewPost(userId, "first post", time.Now())
+		post2, err2 := entity.NewPost(userId, "second post", time.Now())
+
+		require.NoError(t, err1)
+		require.NoError(t, err2)
+		// UUID v7 bytes are lexicographically sortable by creation time
+		assert.True(t, post1.Id().String() < post2.Id().String() || post1.Id().String() == post2.Id().String(),
+			"first post ID should be <= second post ID in lexicographic order")
+	})
+}
+
 func TestReconstructPost_HappyCase(t *testing.T) {
 	tests := []struct {
 		name      string
