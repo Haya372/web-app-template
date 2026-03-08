@@ -1,0 +1,17 @@
+name: setup pnpm workspace
+description: Setup pnpm workspace
+runs:
+  using: composite
+  steps:
+    - name: Enable corepack
+      run: corepack enable
+      shell: bash
+    - name: Setup Node.js
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      with:
+        node-version: 24.14.0
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      shell: bash

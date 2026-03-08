@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "tags": [
+    "-lintignore"
+  ],
+  "entry": ["src/router.tsx", "src/routeTree.gen.ts"],
+  "ignoreDependencies": [
+    "tailwindcss",
+    "@tailwindcss/typography"
+  ]
+}

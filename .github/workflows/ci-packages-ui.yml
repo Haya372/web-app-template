@@ -1,0 +1,41 @@
+name: ci-packages-ui
+on:
+  pull_request:
+    paths:
+      - "package.json"
+      - "packages/ui/**"
+      - ".github/workflows/ci-packages-ui.yml"
+      - ".github/actions/setup-pnpm-workspace/**"
+      - "!**.md"
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/ui
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm-workspace
+      - name: Lint
+        run: pnpm lint
+
+  build-storybook:
+    name: build-storybook
+    needs: lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/ui
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm-workspace
+      - name: Build Storybook
+        run: pnpm build-storybook

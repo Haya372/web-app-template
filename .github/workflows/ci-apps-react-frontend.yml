@@ -1,0 +1,46 @@
+name: ci-apps-react-frontend
+on:
+  pull_request:
+    paths:
+      - "package.json"
+      - "apps/react-frontend/**"
+      - ".github/workflows/ci-apps-react-frontend.yml"
+      - ".github/actions/setup-pnpm-workspace/**"
+      - "!**.md"
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/react-frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm-workspace
+      - name: Build
+        run: pnpm build
+      - name: Lint
+        run: pnpm lint
+
+# TODO: apps/react-frontend has no test files
+#  test:
+#    name: test
+#    runs-on: ubuntu-latest
+#    needs: lint
+#    defaults:
+#      run:
+#        working-directory: apps/react-frontend
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+#      - name: Setup pnpm workspace
+#        uses: ./.github/actions/setup-pnpm-workspace
+#      - name: Prebuild
+#        run: pnpm prebuild
+#      - name: Test
+#        run: pnpm test

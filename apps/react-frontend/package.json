@@ -1,0 +1,59 @@
+{
+  "name": "react-frontend",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "vite dev --port 3000",
+    "generate": "run-p generate:*",
+    "generate:route": "tsr generate",
+    "build": "vite build",
+    "prebuild": "run-s generate typecheck",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "run-s lint:*",
+    "lint:biome": "biome lint",
+    "lint:knip": "knip",
+    "lint-staged": "lint-staged",
+    "fmt": "run-s fmt:*",
+    "fmt:biome": "biome lint --write ./src",
+    "fmt:knip": "knip --fix",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "0.5.19",
+    "@tailwindcss/vite": "4.1.18",
+    "@tanstack/react-devtools": "0.9.10",
+    "@tanstack/react-router": "1.166.2",
+    "@tanstack/react-router-devtools": "1.166.2",
+    "@tanstack/react-start": "1.166.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "tailwindcss": "4.2.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.5",
+    "@tanstack/devtools-vite": "0.5.3",
+    "@tanstack/router-cli": "1.166.2",
+    "@types/node": "24.1.0",
+    "@types/react": "19.2.0",
+    "@types/react-dom": "19.2.0",
+    "@vitejs/plugin-react": "5.1.4",
+    "jsdom": "28.1.0",
+    "knip": "5.86.0",
+    "lint-staged": "16.3.2",
+    "npm-run-all2": "8.0.4",
+    "typescript": "5.7.2",
+    "vite": "7.3.1",
+    "vite-tsconfig-paths": "5.1.4",
+    "vitest": "3.0.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "pnpm biome lint --write"
+    ]
+  }
+}
