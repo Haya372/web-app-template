@@ -1,9 +1,5 @@
 name: setup pnpm workspace
 description: Setup pnpm workspace
-inputs:
-  package:
-    description: package directory
-    required: true
 runs:
   using: composite
   steps:
@@ -17,5 +13,5 @@ runs:
         cache: pnpm
         cache-dependency-path: pnpm-lock.yaml
     - name: Install dependencies
-      run: pnpm --filter ${{ inputs.package }} install --frozen-lockfile
+      run: pnpm install --frozen-lockfile
       shell: bash

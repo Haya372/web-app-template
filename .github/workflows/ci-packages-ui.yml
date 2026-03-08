@@ -39,7 +39,5 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - name: Setup pnpm workspace
         uses: ./.github/actions/setup-pnpm-workspace
-        with:
-          package: packages/ui
       - name: Build Storybook
         run: pnpm build-storybook
