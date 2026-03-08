@@ -42,7 +42,7 @@ func (p *postImpl) CreatedAt() time.Time {
 
 // NewPost creates a new Post with a generated UUID, validating the content.
 func NewPost(userId uuid.UUID, content string, createdAt time.Time) (Post, error) {
-	id, err := uuid.NewRandom()
+	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
