@@ -12,6 +12,11 @@ updates:
     labels:
       - "dependencies"
       - "dependabot"
+      - "gomod"
+    groups:
+      gomod:
+        patterns:
+          - "*"
     commit-message:
       prefix: "chore(go-backend)"
 
@@ -48,13 +53,31 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 1
+    open-pull-requests-limit: 2
     labels:
       - "dependencies"
       - "dependabot"
+      - "node"
     commit-message:
       prefix: "chore"
       include: "scope"
+
+    groups:
+      production:
+        dependency-type: "production"
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+
+      development:
+        dependency-type: "development"
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
 
     ignore:
       - dependency-name: "*"
