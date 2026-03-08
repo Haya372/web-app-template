@@ -11,12 +11,12 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.40.0
-	go.opentelemetry.io/contrib/bridges/otelslog v0.15.0
+	go.opentelemetry.io/contrib/bridges/otelslog v0.17.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.67.0
 	go.opentelemetry.io/otel v1.42.0
 	go.opentelemetry.io/otel/exporters/stdout/stdoutlog v0.16.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.40.0
-	go.opentelemetry.io/otel/log v0.16.0
+	go.opentelemetry.io/otel/log v0.18.0
 	go.opentelemetry.io/otel/sdk v1.42.0
 	go.opentelemetry.io/otel/sdk/log v0.16.0
 	go.opentelemetry.io/otel/trace v1.42.0
