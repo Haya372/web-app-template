@@ -1,0 +1,23 @@
+{
+  "login": {
+    "title": "ログイン",
+    "email": {
+      "label": "メールアドレス",
+      "placeholder": "your@email.com"
+    },
+    "password": {
+      "label": "パスワード",
+      "placeholder": "パスワード"
+    },
+    "submit": "ログイン",
+    "submitting": "ログイン中…",
+    "error": {
+      "invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
+      "generic": "ログインに失敗しました。もう一度お試しください。"
+    },
+    "validation": {
+      "emailRequired": "メールアドレスを入力してください",
+      "passwordRequired": "パスワードを入力してください"
+    }
+  }
+}
