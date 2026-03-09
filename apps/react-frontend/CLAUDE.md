@@ -46,12 +46,13 @@ src/
     __root.tsx     # Root layout: HTML shell, Header, Footer
     index.tsx      # Home page (path: /)
     about.tsx      # About page (path: /about)
-  features/        # Feature-based modules (co-locate components/hooks/api/types per feature)
+  features/        # Feature-based modules (co-locate components/hooks/api/types/pages per feature)
     <feature>/
       components/  # Components used only by this feature
       hooks/       # Hooks used only by this feature
       api/         # API client functions for this feature
       types/       # Domain and response types for this feature
+      pages/       # Full-page components rendered by route files
   components/      # Shared UI components used across multiple features (PascalCase)
   hooks/           # Shared hooks used across multiple features
   utils/           # Pure utility functions (no side effects)

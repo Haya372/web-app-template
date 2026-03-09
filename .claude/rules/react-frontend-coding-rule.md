@@ -90,6 +90,21 @@ src/features/<feature-name>/
   hooks/        # hooks used only by this feature
   api/          # API client functions for this feature
   types/        # domain and response types for this feature
+  pages/        # full-page components rendered by route files
+```
+
+Route files under `src/routes/` must be thin wrappers that only wire up the route to a page component from `features/<feature>/pages/`. All state, logic, and JSX live in the page component.
+
+```tsx
+// good — src/routes/login.tsx
+import { createFileRoute } from '@tanstack/react-router'
+import { LoginPage } from '@/features/auth/pages/LoginPage'
+export const Route = createFileRoute('/login')({ component: LoginPage })
+
+// bad — business logic inside a route file
+export const Route = createFileRoute('/login')({
+  component: () => { /* 100 lines of JSX and state */ }
+})
 ```
 
 - Import files directly by path — both within a feature and across features.
@@ -97,19 +112,17 @@ src/features/<feature-name>/
 
 ## packages/ui Usage
 
-App-level components (`apps/`) must be built by composing `packages/ui` components.
+App-level components (`apps/`) must use `packages/ui` components instead of raw HTML elements to keep styles consistent. Avoid reaching for `<button>`, `<input>`, `<label>` etc. directly — use the equivalent `packages/ui` component unless there is no suitable one.
 
-- Never pass `className` to a `packages/ui` component — doing so breaks design consistency. Use `variant` / `size` or other semantic props instead.
-- For layout adjustments (margin, width, alignment), wrap the component and apply Tailwind classes to the wrapper.
+- `packages/ui` components do **not** accept a `className` prop by design. For layout adjustments (margin, width, alignment), wrap the component and apply Tailwind classes to the wrapper.
+- If a new visual pattern is needed, add a new variant to `packages/ui` rather than using raw HTML.
 
 ```tsx
-// good — layout via wrapper only
+// good — use packages/ui component; layout via wrapper
 <div className="mt-4 w-full">
-  <Button variant="primary">Submit</Button>
+  <Button variant="default">Submit</Button>
 </div>
 
-// bad — overriding design with className on a UI component
-<Button className="mt-4 bg-red-500">Submit</Button>
+// bad — raw HTML element instead of packages/ui component
+<button style={{ marginTop: 16 }} onClick={handleClick}>Submit</button>
 ```
-
-- If a new visual pattern is needed, add a new variant to `packages/ui` rather than patching it with `className`.
