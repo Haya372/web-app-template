@@ -14,3 +14,6 @@ todos.json
 
 # generated file
 routeTree.gen.ts
+
+# claude
+.claude/agent-memory/*

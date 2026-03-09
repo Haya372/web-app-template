@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type { ComponentProps } from "react";
+import type { HTMLAttributes } from "react";
 
 const typographyVariants = cva("", {
 	variants: {
@@ -28,7 +28,7 @@ type TypographyVariant = NonNullable<
 	VariantProps<typeof typographyVariants>["variant"]
 >;
 
-type TypographyProps = Omit<ComponentProps<"p">, "className"> & {
+type TypographyProps = Omit<HTMLAttributes<HTMLElement>, "className"> & {
 	variant?: TypographyVariant;
 };
 
