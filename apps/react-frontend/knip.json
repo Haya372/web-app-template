@@ -6,6 +6,7 @@
   "entry": ["src/router.tsx", "src/routeTree.gen.ts"],
   "ignoreDependencies": [
     "tailwindcss",
-    "@tailwindcss/typography"
+    "@tailwindcss/typography",
+    "@repo/ui"
   ]
 }
