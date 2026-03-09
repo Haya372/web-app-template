@@ -12,7 +12,7 @@ const config = defineConfig({
     devtools(),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
-    tanstackStart({ mode: 'spa' }),
+    tanstackStart({ spa: { enabled: true } }),
     viteReact(),
   ],
 })
