@@ -1,4 +1,5 @@
 import { Root as LabelRoot } from "@radix-ui/react-label";
+import { Slot } from "@radix-ui/react-slot";
 import { createContext, useContext, useId, type ComponentProps } from "react";
 import {
 	Controller,
@@ -39,11 +40,11 @@ function useFormField() {
 	const itemContext = useContext(FormItemContext);
 	const { getFieldState, formState } = useFormContext();
 
-	const fieldState = getFieldState(fieldContext.name, formState);
-
 	if (!fieldContext) {
 		throw new Error("useFormField should be used within <FormField>");
 	}
+
+	const fieldState = getFieldState(fieldContext.name, formState);
 
 	const { id } = itemContext;
 
@@ -92,13 +93,13 @@ function FormLabel({ ...props }: FormLabelProps) {
 	);
 }
 
-type FormControlProps = Omit<ComponentProps<"div">, "className">;
+type FormControlProps = Omit<ComponentProps<typeof Slot>, "className">;
 
 function FormControl({ ...props }: FormControlProps) {
 	const { error, formItemId, formDescriptionId, formMessageId } =
 		useFormField();
 	return (
-		<div
+		<Slot
 			id={formItemId}
 			aria-describedby={
 				!error
