@@ -1,16 +1,16 @@
 /**
- * Tests for LoginPage component.
+ * Tests for SignupPage component.
  *
  * Uses ReactDOM + manual DOM querying since @testing-library/react is not installed.
  *
  * Mocks:
- *  - @/features/auth/api/login          callLogin vi.mock
- *  - @/features/auth/utils/tokenStorage saveToken vi.mock
- *  - @tanstack/react-router             useNavigate vi.mock
- *  - @repo/ui                           toast vi.mock
+ *  - @/features/auth/api/signup   callSignup vi.mock
+ *  - @tanstack/react-router       useNavigate vi.mock
+ *
+ * Note: errors are shown inline in the page (NOT via toast).
  */
 
-import React, { act } from "react"
+import { act } from "react"
 import { createRoot } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -18,64 +18,44 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 // Hoisted mock functions (must be defined before vi.mock calls)
 // ---------------------------------------------------------------------------
 
-const { mockNavigate, mockToastError } = vi.hoisted(() => ({
+const { mockNavigate } = vi.hoisted(() => ({
 	mockNavigate: vi.fn(),
-	mockToastError: vi.fn(),
 }))
 
 // ---------------------------------------------------------------------------
 // Module-level mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@/features/auth/api/login", () => ({
-	callLogin: vi.fn(),
-}))
-
-vi.mock("@/features/auth/utils/tokenStorage", () => ({
-	saveToken: vi.fn(),
+vi.mock("@/features/auth/api/signup", () => ({
+	callSignup: vi.fn(),
 }))
 
 vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => mockNavigate,
-	Link: ({ children, to }: { children: React.ReactNode; to: string }) =>
-		React.createElement("a", { href: to }, children),
 }))
-
-vi.mock("@repo/ui", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@repo/ui")>()
-	return {
-		...actual,
-		toast: {
-			...actual.toast,
-			error: mockToastError,
-		},
-	}
-})
 
 // ---------------------------------------------------------------------------
 // Imports after mocks
 // ---------------------------------------------------------------------------
 
-import { callLogin } from "@/features/auth/api/login"
-import { saveToken } from "@/features/auth/utils/tokenStorage"
-import { LoginPage } from "./LoginPage"
+import { callSignup } from "@/features/auth/api/signup"
+import { SignupPage } from "./SignupPage"
 
 // ---------------------------------------------------------------------------
 // Typed mock references
 // ---------------------------------------------------------------------------
 
-const mockCallLogin = callLogin as ReturnType<typeof vi.fn>
-const mockSaveToken = saveToken as ReturnType<typeof vi.fn>
+const mockCallSignup = callSignup as ReturnType<typeof vi.fn>
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function mountLoginPage(): HTMLDivElement {
+function mountSignupPage(): HTMLDivElement {
 	const container = document.createElement("div")
 	document.body.appendChild(container)
 	act(() => {
-		createRoot(container).render(<LoginPage />)
+		createRoot(container).render(<SignupPage />)
 	})
 	return container
 }
@@ -113,10 +93,8 @@ function clearBody(): void {
 
 beforeEach(() => {
 	vi.stubEnv("VITE_API_BASE_URL", "http://localhost:8080")
-	mockCallLogin.mockReset()
-	mockSaveToken.mockReset()
+	mockCallSignup.mockReset()
 	mockNavigate.mockReset()
-	mockToastError.mockReset()
 })
 
 afterEach(() => {
@@ -128,9 +106,17 @@ afterEach(() => {
 // Tests — rendering
 // ---------------------------------------------------------------------------
 
-describe("LoginPage — rendering", () => {
+describe("SignupPage — rendering", () => {
+	it("renders a name input", () => {
+		const container = mountSignupPage()
+		const nameInput = container.querySelector<HTMLInputElement>(
+			'input[name="name"], input[placeholder*="name" i]',
+		)
+		expect(nameInput).not.toBeNull()
+	})
+
 	it("renders an email input", () => {
-		const container = mountLoginPage()
+		const container = mountSignupPage()
 		const emailInput = container.querySelector<HTMLInputElement>(
 			'input[type="email"], input[name="email"]',
 		)
@@ -138,7 +124,7 @@ describe("LoginPage — rendering", () => {
 	})
 
 	it("renders a password input with type='password'", () => {
-		const container = mountLoginPage()
+		const container = mountSignupPage()
 		const passwordInput = container.querySelector<HTMLInputElement>(
 			'input[type="password"]',
 		)
@@ -146,7 +132,7 @@ describe("LoginPage — rendering", () => {
 	})
 
 	it("renders a submit button", () => {
-		const container = mountLoginPage()
+		const container = mountSignupPage()
 		const submitBtn =
 			container.querySelector<HTMLButtonElement>('button[type="submit"]') ??
 			container.querySelector<HTMLButtonElement>("button")
@@ -158,38 +144,58 @@ describe("LoginPage — rendering", () => {
 // Tests — client-side validation
 // ---------------------------------------------------------------------------
 
-describe("LoginPage — client-side validation", () => {
-	it("shows 'Invalid email address' when email is empty on submit", async () => {
-		const container = mountLoginPage()
+describe("SignupPage — client-side validation", () => {
+	it("shows 'Name is required' when name is empty on submit", async () => {
+		const container = mountSignupPage()
 		const form = container.querySelector<HTMLFormElement>("form")
 		expect(form).not.toBeNull()
 
+		await submitForm(form as HTMLFormElement)
+
+		expect(container.textContent).toContain("Name is required")
+	})
+
+	it("shows 'Invalid email address' when email is empty on submit", async () => {
+		const container = mountSignupPage()
+		const form = container.querySelector<HTMLFormElement>("form")
+		const nameInput = container.querySelector<HTMLInputElement>(
+			'input[name="name"], input[placeholder*="name" i]',
+		)
+		expect(form).not.toBeNull()
+		expect(nameInput).not.toBeNull()
+
+		fillInput(nameInput as HTMLInputElement, "Alice")
 		await submitForm(form as HTMLFormElement)
 
 		expect(container.textContent).toContain("Invalid email address")
 	})
 
 	it("shows 'Password is required' when password is empty on submit", async () => {
-		const container = mountLoginPage()
+		const container = mountSignupPage()
 		const form = container.querySelector<HTMLFormElement>("form")
+		const nameInput = container.querySelector<HTMLInputElement>(
+			'input[name="name"], input[placeholder*="name" i]',
+		)
 		const emailInput = container.querySelector<HTMLInputElement>(
 			'input[type="email"], input[name="email"]',
 		)
 		expect(form).not.toBeNull()
+		expect(nameInput).not.toBeNull()
 		expect(emailInput).not.toBeNull()
 
-		fillInput(emailInput as HTMLInputElement, "user@example.com")
+		fillInput(nameInput as HTMLInputElement, "Alice")
+		fillInput(emailInput as HTMLInputElement, "alice@example.com")
 		await submitForm(form as HTMLFormElement)
 
 		expect(container.textContent).toContain("Password is required")
 	})
 
-	it("does not call callLogin when validation fails", async () => {
-		const container = mountLoginPage()
+	it("does not call callSignup when validation fails", async () => {
+		const container = mountSignupPage()
 		const form = container.querySelector<HTMLFormElement>("form")
 		await submitForm(form as HTMLFormElement)
 
-		expect(mockCallLogin).not.toHaveBeenCalled()
+		expect(mockCallSignup).not.toHaveBeenCalled()
 	})
 })
 
@@ -197,13 +203,16 @@ describe("LoginPage — client-side validation", () => {
 // Tests — loading state
 // ---------------------------------------------------------------------------
 
-describe("LoginPage — loading state", () => {
+describe("SignupPage — loading state", () => {
 	it("disables the submit button while the API call is in-flight", async () => {
-		mockCallLogin.mockImplementation(
+		mockCallSignup.mockImplementation(
 			() => new Promise<never>(() => undefined),
 		)
 
-		const container = mountLoginPage()
+		const container = mountSignupPage()
+		const nameInput = container.querySelector<HTMLInputElement>(
+			'input[name="name"], input[placeholder*="name" i]',
+		)
 		const emailInput = container.querySelector<HTMLInputElement>(
 			'input[type="email"], input[name="email"]',
 		)
@@ -212,7 +221,8 @@ describe("LoginPage — loading state", () => {
 		)
 		const form = container.querySelector<HTMLFormElement>("form")
 
-		fillInput(emailInput as HTMLInputElement, "user@example.com")
+		fillInput(nameInput as HTMLInputElement, "Alice")
+		fillInput(emailInput as HTMLInputElement, "alice@example.com")
 		fillInput(passwordInput as HTMLInputElement, "password123")
 		await submitForm(form as HTMLFormElement)
 
@@ -224,20 +234,17 @@ describe("LoginPage — loading state", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Tests — successful login
+// Tests — successful signup
 // ---------------------------------------------------------------------------
 
-describe("LoginPage — successful login", () => {
-	const VALID_RESPONSE = {
-		token: "jwt-abc-123",
-		expiresAt: "2026-12-31T00:00:00Z",
-		user: { id: "u1", name: "Alice", email: "alice@example.com" },
-	}
+describe("SignupPage — successful signup", () => {
+	it("navigates to '/login' after a successful signup", async () => {
+		mockCallSignup.mockResolvedValue(undefined)
 
-	it("calls saveToken with the token returned by callLogin", async () => {
-		mockCallLogin.mockResolvedValue(VALID_RESPONSE)
-
-		const container = mountLoginPage()
+		const container = mountSignupPage()
+		const nameInput = container.querySelector<HTMLInputElement>(
+			'input[name="name"], input[placeholder*="name" i]',
+		)
 		const emailInput = container.querySelector<HTMLInputElement>(
 			'input[type="email"], input[name="email"]',
 		)
@@ -246,68 +253,47 @@ describe("LoginPage — successful login", () => {
 		)
 		const form = container.querySelector<HTMLFormElement>("form")
 
+		fillInput(nameInput as HTMLInputElement, "Alice")
 		fillInput(emailInput as HTMLInputElement, "alice@example.com")
-		fillInput(passwordInput as HTMLInputElement, "secret")
+		fillInput(passwordInput as HTMLInputElement, "password123")
 
 		await submitForm(form as HTMLFormElement)
 
-		expect(mockSaveToken).toHaveBeenCalledWith("jwt-abc-123")
-	})
-
-	it("navigates to '/' after a successful login", async () => {
-		mockCallLogin.mockResolvedValue(VALID_RESPONSE)
-
-		const container = mountLoginPage()
-		const emailInput = container.querySelector<HTMLInputElement>(
-			'input[type="email"], input[name="email"]',
-		)
-		const passwordInput = container.querySelector<HTMLInputElement>(
-			'input[type="password"]',
-		)
-		const form = container.querySelector<HTMLFormElement>("form")
-
-		fillInput(emailInput as HTMLInputElement, "alice@example.com")
-		fillInput(passwordInput as HTMLInputElement, "secret")
-
-		await submitForm(form as HTMLFormElement)
-
-		expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
+		expect(mockNavigate).toHaveBeenCalledWith({ to: "/login" })
 	})
 })
 
 // ---------------------------------------------------------------------------
-// Tests — failed login
+// Tests — failed signup (inline errors, NOT toast)
 // ---------------------------------------------------------------------------
 
-describe("LoginPage — failed login", () => {
+describe("SignupPage — failed signup", () => {
 	const errorCases = [
 		{
-			name: "shows 'Invalid email or password' toast on a 401 error",
-			error: new Error("401"),
-			expectedMessage: "Invalid email or password",
+			name: "shows 'Email already registered' inline error on a 409 conflict",
+			error: new Error("409"),
+			expectedMessage: "Email already registered",
 		},
 		{
-			name: "shows generic error toast on a 500 server error",
+			name: "shows generic inline error on a 500 server error",
 			error: new Error("500"),
-			expectedMessage: "Login failed. Please try again.",
+			expectedMessage: "Signup failed",
 		},
 		{
-			name: "shows generic error toast on a network-level failure",
+			name: "shows generic inline error on a network-level failure",
 			error: new Error("Network failure"),
-			expectedMessage: "Login failed. Please try again.",
-		},
-		{
-			name: "shows generic error toast on a 403 error",
-			error: new Error("403"),
-			expectedMessage: "Login failed. Please try again.",
+			expectedMessage: "Signup failed",
 		},
 	]
 
 	for (const { name, error, expectedMessage } of errorCases) {
 		it(name, async () => {
-			mockCallLogin.mockRejectedValue(error)
+			mockCallSignup.mockRejectedValue(error)
 
-			const container = mountLoginPage()
+			const container = mountSignupPage()
+			const nameInput = container.querySelector<HTMLInputElement>(
+				'input[name="name"], input[placeholder*="name" i]',
+			)
 			const emailInput = container.querySelector<HTMLInputElement>(
 				'input[type="email"], input[name="email"]',
 			)
@@ -316,21 +302,24 @@ describe("LoginPage — failed login", () => {
 			)
 			const form = container.querySelector<HTMLFormElement>("form")
 
-			fillInput(emailInput as HTMLInputElement, "user@example.com")
+			fillInput(nameInput as HTMLInputElement, "Alice")
+			fillInput(emailInput as HTMLInputElement, "alice@example.com")
 			fillInput(passwordInput as HTMLInputElement, "password123")
 
 			await submitForm(form as HTMLFormElement)
 
-			expect(mockToastError).toHaveBeenCalledWith(
-				expect.stringContaining(expectedMessage),
-			)
+			// Error must be visible inline in the page, not in a toast
+			expect(container.textContent).toContain(expectedMessage)
 		})
 	}
 
-	it("re-enables the submit button after a failed login", async () => {
-		mockCallLogin.mockRejectedValue(new Error("500"))
+	it("re-enables the submit button after a failed signup", async () => {
+		mockCallSignup.mockRejectedValue(new Error("500"))
 
-		const container = mountLoginPage()
+		const container = mountSignupPage()
+		const nameInput = container.querySelector<HTMLInputElement>(
+			'input[name="name"], input[placeholder*="name" i]',
+		)
 		const emailInput = container.querySelector<HTMLInputElement>(
 			'input[type="email"], input[name="email"]',
 		)
@@ -339,7 +328,8 @@ describe("LoginPage — failed login", () => {
 		)
 		const form = container.querySelector<HTMLFormElement>("form")
 
-		fillInput(emailInput as HTMLInputElement, "user@example.com")
+		fillInput(nameInput as HTMLInputElement, "Alice")
+		fillInput(emailInput as HTMLInputElement, "alice@example.com")
 		fillInput(passwordInput as HTMLInputElement, "password123")
 
 		await submitForm(form as HTMLFormElement)

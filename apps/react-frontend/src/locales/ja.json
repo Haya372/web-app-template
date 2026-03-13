@@ -1,4 +1,31 @@
 {
+  "signup": {
+    "title": "アカウント作成",
+    "name": {
+      "label": "名前",
+      "placeholder": "お名前"
+    },
+    "email": {
+      "label": "メールアドレス",
+      "placeholder": "your@email.com"
+    },
+    "password": {
+      "label": "パスワード",
+      "placeholder": "パスワード"
+    },
+    "submit": "登録する",
+    "submitting": "登録中…",
+    "error": {
+      "emailAlreadyRegistered": "このメールアドレスはすでに登録されています",
+      "generic": "登録に失敗しました。もう一度お試しください。"
+    },
+    "validation": {
+      "nameRequired": "名前を入力してください",
+      "emailRequired": "メールアドレスを入力してください",
+      "emailInvalid": "有効なメールアドレスを入力してください",
+      "passwordRequired": "パスワードを入力してください"
+    }
+  },
   "login": {
     "title": "ログイン",
     "email": {
@@ -17,7 +44,9 @@
     },
     "validation": {
       "emailRequired": "メールアドレスを入力してください",
+      "emailInvalid": "有効なメールアドレスを入力してください",
       "passwordRequired": "パスワードを入力してください"
-    }
+    },
+    "signupLink": "アカウントをお持ちでない方はこちら"
   }
 }

@@ -10,7 +10,7 @@ import { saveToken } from '@/features/auth/utils/tokenStorage'
 function useLoginFormSchema() {
   const { t } = useTranslation()
   return z.object({
-    email: z.string().min(1, t('login.validation.emailRequired')),
+    email: z.email(t('login.validation.emailInvalid')),
     password: z.string().min(1, t('login.validation.passwordRequired')),
   })
 }

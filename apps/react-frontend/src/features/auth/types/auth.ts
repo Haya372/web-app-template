@@ -11,3 +11,13 @@ export const loginResponseSchema = z.object({
 })
 
 export type LoginResponse = z.infer<typeof loginResponseSchema>
+
+export const signupResponseSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	email: z.string(),
+	status: z.string(),
+	createdAt: z.string(),
+})
+
+export type SignupResponse = z.infer<typeof signupResponseSchema>
