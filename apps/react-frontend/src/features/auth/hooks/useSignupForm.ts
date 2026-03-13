@@ -10,7 +10,7 @@ function useSignupFormSchema() {
   const { t } = useTranslation()
   return z.object({
     name: z.string().min(1, t('signup.validation.nameRequired')),
-    email: z.string().min(1, t('signup.validation.emailRequired')),
+    email: z.email(t('signup.validation.emailInvalid')),
     password: z.string().min(1, t('signup.validation.passwordRequired')),
   })
 }

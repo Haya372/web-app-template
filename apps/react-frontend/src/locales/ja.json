@@ -22,6 +22,7 @@
     "validation": {
       "nameRequired": "名前を入力してください",
       "emailRequired": "メールアドレスを入力してください",
+      "emailInvalid": "有効なメールアドレスを入力してください",
       "passwordRequired": "パスワードを入力してください"
     }
   },
@@ -43,6 +44,7 @@
     },
     "validation": {
       "emailRequired": "メールアドレスを入力してください",
+      "emailInvalid": "有効なメールアドレスを入力してください",
       "passwordRequired": "パスワードを入力してください"
     },
     "signupLink": "アカウントをお持ちでない方はこちら"

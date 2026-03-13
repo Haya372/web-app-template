@@ -22,6 +22,7 @@
     "validation": {
       "nameRequired": "Name is required",
       "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
       "passwordRequired": "Password is required"
     }
   },
@@ -43,6 +44,7 @@
     },
     "validation": {
       "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
       "passwordRequired": "Password is required"
     },
     "signupLink": "Don't have an account? Sign up"

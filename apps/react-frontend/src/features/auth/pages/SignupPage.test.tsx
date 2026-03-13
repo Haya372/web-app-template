@@ -155,7 +155,7 @@ describe("SignupPage — client-side validation", () => {
 		expect(container.textContent).toContain("Name is required")
 	})
 
-	it("shows 'Email is required' when email is empty on submit", async () => {
+	it("shows 'Invalid email address' when email is empty on submit", async () => {
 		const container = mountSignupPage()
 		const form = container.querySelector<HTMLFormElement>("form")
 		const nameInput = container.querySelector<HTMLInputElement>(
@@ -167,7 +167,7 @@ describe("SignupPage — client-side validation", () => {
 		fillInput(nameInput as HTMLInputElement, "Alice")
 		await submitForm(form as HTMLFormElement)
 
-		expect(container.textContent).toContain("Email is required")
+		expect(container.textContent).toContain("Invalid email address")
 	})
 
 	it("shows 'Password is required' when password is empty on submit", async () => {
