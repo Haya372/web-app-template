@@ -1,4 +1,30 @@
 {
+  "signup": {
+    "title": "Create account",
+    "name": {
+      "label": "Name",
+      "placeholder": "Your name"
+    },
+    "email": {
+      "label": "Email",
+      "placeholder": "you@example.com"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Password"
+    },
+    "submit": "Sign up",
+    "submitting": "Signing up…",
+    "error": {
+      "emailAlreadyRegistered": "Email already registered",
+      "generic": "Signup failed. Please try again."
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required"
+    }
+  },
   "login": {
     "title": "Sign in",
     "email": {
@@ -18,6 +44,7 @@
     "validation": {
       "emailRequired": "Email is required",
       "passwordRequired": "Password is required"
-    }
+    },
+    "signupLink": "Don't have an account? Sign up"
   }
 }
