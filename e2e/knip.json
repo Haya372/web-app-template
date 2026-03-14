@@ -1,5 +1,5 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["playwright.config.ts", "tests/**/*.spec.ts"],
-  "ignoreDependencies": ["@playwright/test"]
+  "entry": ["tests/**/*.spec.ts"],
+  "ignoreDependencies": ["lint-staged"]
 }
