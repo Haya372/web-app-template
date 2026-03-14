@@ -5,12 +5,12 @@ import { callCreatePost } from "@/features/posts/api/createPost"
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@/features/auth/utils/tokenStorage", () => ({
+vi.mock("@/utils/tokenStorage", () => ({
 	getToken: vi.fn(),
 }))
 
 // Import after vi.mock so that the mock is already in place
-import { getToken } from "@/features/auth/utils/tokenStorage"
+import { getToken } from "@/utils/tokenStorage"
 
 const mockGetToken = getToken as ReturnType<typeof vi.fn>
 

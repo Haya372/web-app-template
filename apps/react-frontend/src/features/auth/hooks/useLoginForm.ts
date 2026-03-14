@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { callLogin } from '@/features/auth/api/login'
-import { saveToken } from '@/features/auth/utils/tokenStorage'
+import { saveToken } from '@/utils/tokenStorage'
 
 function useLoginFormSchema() {
   const { t } = useTranslation()
