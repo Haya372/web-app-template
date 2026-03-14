@@ -18,7 +18,7 @@ pnpm generate:route
 
 # Format and lint
 pnpm fmt          # biome lint --write + knip --fix
-pnpm lint         # biome lint + knip (read-only check)
+pnpm lint         # biome lint + eslint + knip (read-only check)
 pnpm check        # biome check (format + lint combined)
 
 # Tests
@@ -86,7 +86,8 @@ src/
 - Component filenames and function names use **PascalCase** (`Header.tsx`, `function Header()`).
 - Non-component TypeScript files use **camelCase** (`router.tsx`, `useTheme.ts`).
 - Hooks must start with `use`; place in `src/features/<feature>/hooks/` if feature-specific, or `src/hooks/` if shared.
-- `any` is forbidden; use `unknown` and narrow with type guards or zod. `as` casts are strongly discouraged — `as any` is unconditionally forbidden.
+- `any` is forbidden; use `unknown` and narrow with type guards or zod. `as` casts are strongly discouraged — `as any` is unconditionally forbidden. Non-null assertions (`!`) are also forbidden (`style/noNonNullAssertion`).
+- **Feature boundary imports are enforced by ESLint** (`eslint.config.mjs`): files inside `src/features/<A>/` must not import from `src/features/<B>/`. Shared utilities belong in `src/utils/`, `src/hooks/`, or `src/components/`.
 - Avoid inline styles; express all visual variations via Tailwind utility classes or CSS variables.
 
 ## Testing
