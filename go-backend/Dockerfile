@@ -2,10 +2,12 @@ FROM golang:1.25.6-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY go.mod go.sum Makefile ./
 RUN go mod download
+RUN make setup
 
 COPY . .
+RUN make generate
 RUN go build -o server ./cmd/server/main.go
 
 FROM alpine:latest
