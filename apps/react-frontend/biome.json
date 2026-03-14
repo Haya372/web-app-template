@@ -24,7 +24,19 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"style": {
+				"noNonNullAssertion": "error",
+				"noProcessEnv": "error"
+			},
+			"suspicious": {
+				"noConsole": "warn",
+				"noImportCycles": "error"
+			},
+			"nursery": {
+				"noFloatingPromises": "error",
+				"noMisusedPromises": "error"
+			}
 		}
 	},
 	"javascript": {
