@@ -26,21 +26,20 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-# TODO: apps/react-frontend has no test files
-#  test:
-#    name: test
-#    runs-on: ubuntu-latest
-#    needs: lint
-#    defaults:
-#      run:
-#        working-directory: apps/react-frontend
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-#      - name: Setup pnpm workspace
-#        uses: ./.github/actions/setup-pnpm-workspace
-#      - name: Prebuild
-#        run: pnpm prebuild
-#      - name: Test
-#        run: pnpm test
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    needs: lint
+    defaults:
+      run:
+        working-directory: apps/react-frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm-workspace
+      - name: Prebuild
+        run: pnpm prebuild
+      - name: Test
+        run: pnpm test
