@@ -213,8 +213,8 @@ func TestSignup_DuplicateRequest(t *testing.T) {
 	}()
 
 	problem := readProblemResponse(t, resp2)
-	assert.Equal(t, http.StatusInternalServerError, problem.Status)
-	assert.Equal(t, "INTERNAL_ERROR", problem.Type)
+	assert.Equal(t, http.StatusConflict, problem.Status)
+	assert.Equal(t, "DUPLICATE_EMAIL", problem.Type)
 
 	err = testDb.Cleanup()
 	if err != nil {

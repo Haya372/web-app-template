@@ -87,6 +87,44 @@ func TestCreate_ErrorCase(t *testing.T) {
 	testDb.Cleanup()
 }
 
+func TestCreate_DuplicateEmail(t *testing.T) {
+	target := repository.NewUserRepository(testDb.DbManager())
+	ctx := context.Background()
+
+	first := entity.ReconstructUser(
+		uuid.New(),
+		"dup@example.com",
+		[]byte("password"),
+		"First User",
+		vo.UserStatusActive,
+		time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+	)
+	_, err := target.Create(ctx, first)
+	if err != nil {
+		t.Fatalf("failed to create first user: %v", err)
+	}
+
+	second := entity.ReconstructUser(
+		uuid.New(),
+		"dup@example.com",
+		[]byte("other-password"),
+		"Second User",
+		vo.UserStatusActive,
+		time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+	)
+	user, err := target.Create(ctx, second)
+
+	assert.Nil(t, user)
+	assert.Error(t, err)
+
+	var domainErr vo.Error
+	assert.True(t, errors.As(err, &domainErr), "error should be a vo.Error")
+	assert.Equal(t, vo.DuplicateEmailErrorCode, domainErr.Code())
+	assert.Equal(t, 409, domainErr.Status())
+
+	testDb.Cleanup()
+}
+
 func TestFindByEmail_HappyCase(t *testing.T) {
 	seedUser := entity.ReconstructUser(
 		uuid.New(),
