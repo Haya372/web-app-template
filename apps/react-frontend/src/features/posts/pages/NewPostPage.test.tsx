@@ -7,8 +7,13 @@
  * correctly wires up the hook — not the hook's own logic (which is tested
  * separately in useCreatePostForm.test.ts).
  *
+ * @repo/ui Form components (Form, FormField, FormItem, FormControl, FormLabel,
+ * FormMessage) are stubbed to avoid requiring real react-hook-form internals
+ * (FormProvider / Controller) in unit tests.
+ *
  * Mocks:
  *  - @/features/posts/hooks/useCreatePostForm  useCreatePostForm vi.mock
+ *  - @repo/ui                                  Form component stubs vi.mock
  */
 
 import type React from "react"
@@ -46,6 +51,53 @@ const { mockReset, makeFormObject } = vi.hoisted(() => {
 // ---------------------------------------------------------------------------
 // Module-level mocks
 // ---------------------------------------------------------------------------
+
+// Stub Form components to avoid needing real react-hook-form internals.
+// FormField calls its render prop with a minimal field object so the Textarea
+// inside renders normally and is queryable via DOM selectors.
+vi.mock("@repo/ui", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@repo/ui")>()
+	return {
+		...actual,
+		Form: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+		FormField: ({
+			render,
+		}: {
+			render: (args: {
+				field: {
+					value: string
+					onChange: () => void
+					onBlur: () => void
+					name: string
+					ref: () => void
+				}
+			}) => React.ReactNode
+		}) =>
+			render({
+				field: {
+					value: "",
+					onChange: vi.fn(),
+					onBlur: vi.fn(),
+					name: "content",
+					ref: vi.fn(),
+				},
+			}),
+		FormItem: ({ children }: { children: React.ReactNode }) => (
+			<div>{children}</div>
+		),
+		FormControl: ({ children }: { children: React.ReactNode }) => (
+			<>{children}</>
+		),
+		FormLabel: ({
+			children,
+			htmlFor,
+		}: {
+			children: React.ReactNode
+			htmlFor?: string
+		}) => <label htmlFor={htmlFor}>{children}</label>,
+		FormMessage: () => null,
+	}
+})
 
 // Default: not submitting, charCount starts at 0.
 vi.mock("@/features/posts/hooks/useCreatePostForm", () => ({
