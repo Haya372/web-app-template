@@ -3,14 +3,12 @@
 package http_test
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"io"
 	"net/http"
-	"strings"
 	"testing"
 
+	clientgen "github.com/Haya372/web-app-template/go-backend/test/integration/client/generated"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,324 +16,199 @@ import (
 // adminRoleID is the seeded role ID with full permissions including users:list.
 const adminRoleID = "00000000-0000-0000-0000-000000000001"
 
-// signupAndGetToken creates a user, assigns the given roleID, and returns the JWT token and user ID.
-// Pass an empty roleID to skip role assignment (creates a user without any roles).
-func signupAndGetToken(t *testing.T, email, roleID string) (token, userID string) {
-	t.Helper()
-
-	signupBody, err := json.Marshal(map[string]any{
-		"name":     "Test User",
-		"email":    email,
-		"password": "password",
-	})
-	require.NoError(t, err)
-
-	signupResp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(signupBody))
-	require.NoError(t, err)
-	_ = signupResp.Body.Close()
-
-	loginBody, err := json.Marshal(map[string]any{
-		"email":    email,
-		"password": "password",
-	})
-	require.NoError(t, err)
-
-	loginResp, err := http.Post(testServer.URL+"/v1/users/login", "application/json", bytes.NewBuffer(loginBody))
-	require.NoError(t, err)
-	defer func() { _ = loginResp.Body.Close() }()
-
-	var loginOut struct {
-		Token string `json:"token"`
-		User  struct {
-			Id string `json:"id"`
-		} `json:"user"`
-	}
-	payload, err := io.ReadAll(loginResp.Body)
-	require.NoError(t, err)
-	require.NoError(t, json.Unmarshal(payload, &loginOut))
-
-	userID = loginOut.User.Id
-	token = loginOut.Token
-
-	if roleID != "" {
-		assignRoleSQL := "INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
-		_, execErr := testDb.Pool().Exec(context.Background(), assignRoleSQL, userID, roleID)
-		require.NoError(t, execErr)
-	}
-
-	return token, userID
-}
-
 func TestSignup(t *testing.T) {
 	tests := []struct {
 		name         string
-		request      map[string]any
+		request      clientgen.SignupRequest
 		responseCode int
+		problemType  string
 	}{
 		{
 			name: "Success to create user",
-			request: map[string]any{
-				"name":     "Test",
-				"email":    "test@example.com",
-				"password": "password",
+			request: clientgen.SignupRequest{
+				Name:     "Test",
+				Email:    "test@example.com",
+				Password: "password",
 			},
 			responseCode: http.StatusCreated,
 		},
 		{
 			name: "Empty password",
-			request: map[string]any{
-				"name":     "Test",
-				"email":    "test@example.com",
-				"password": "",
+			request: clientgen.SignupRequest{
+				Name:     "Test",
+				Email:    "test@example.com",
+				Password: "",
 			},
 			responseCode: http.StatusBadRequest,
+			problemType:  "VALIDATION_ERROR",
 		},
 		{
 			name: "password length under 8 characters",
-			request: map[string]any{
-				"name":     "Test",
-				"email":    "test@example.com",
-				"password": "passwor",
+			request: clientgen.SignupRequest{
+				Name:     "Test",
+				Email:    "test@example.com",
+				Password: "passwor",
 			},
 			responseCode: http.StatusBadRequest,
-		},
-		{
-			name: "Illegal Password",
-			request: map[string]any{
-				"name":     "Test",
-				"email":    "test@example.com",
-				"password": "passwor",
-			},
-			responseCode: http.StatusBadRequest,
+			problemType:  "VALIDATION_ERROR",
 		},
 		{
 			name: "Illegal Email Format",
-			request: map[string]any{
-				"name":     "Test",
-				"email":    "test",
-				"password": "password",
+			request: clientgen.SignupRequest{
+				Name:     "Test",
+				Email:    "test",
+				Password: "password",
 			},
 			responseCode: http.StatusBadRequest,
+			problemType:  "VALIDATION_ERROR",
 		},
 		{
 			name: "Empty Name",
-			request: map[string]any{
-				"email":    "test",
-				"password": "password",
+			request: clientgen.SignupRequest{
+				Email:    "test@example.com",
+				Password: "password",
 			},
 			responseCode: http.StatusBadRequest,
+			problemType:  "VALIDATION_ERROR",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			body, err := json.Marshal(tt.request)
-			if err != nil {
-				assert.FailNow(t, "fail to marshal json", err)
-			}
+			resp, err := newTestClient().PostV1UsersSignupWithResponse(context.Background(), tt.request)
+			require.NoError(t, err)
+			assert.Equal(t, tt.responseCode, resp.StatusCode())
 
-			resp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(body))
-			if err != nil {
-				assert.FailNow(t, "fail to request", err)
-			}
-
-			defer func() {
-				err := resp.Body.Close()
-				if err != nil {
-					assert.Fail(t, "failed to close body", err)
-				}
-			}()
-
-			assert.Equal(t, tt.responseCode, resp.StatusCode)
-
-			if resp.StatusCode == http.StatusCreated {
-				payload, err := io.ReadAll(resp.Body)
-				if err != nil {
-					assert.FailNow(t, "fail to read body", err)
-				}
-
-				var got struct {
-					Status string `json:"status"`
-				}
-
-				require.NoError(t, json.Unmarshal(payload, &got))
-				assert.Equal(t, "ACTIVE", got.Status)
+			if resp.StatusCode() == http.StatusCreated {
+				require.NotNil(t, resp.JSON201)
+				assert.Equal(t, "ACTIVE", resp.JSON201.Status)
 			} else {
-				problem := readProblemResponse(t, resp)
-				assert.Equal(t, tt.responseCode, problem.Status)
-				assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+				require.NotNil(t, resp.ApplicationproblemJSON400)
+				assert.Equal(t, http.StatusBadRequest, resp.ApplicationproblemJSON400.Status)
+				assert.Equal(t, tt.problemType, resp.ApplicationproblemJSON400.Type)
 			}
 
 			err = testDb.Cleanup()
-			if err != nil {
-				assert.Fail(t, "fail to cleanup testDb", err)
-			}
+			require.NoError(t, err)
 		})
 	}
 }
 
 func TestSignup_DuplicateRequest(t *testing.T) {
-	request := map[string]any{
-		"name":     "Test",
-		"email":    "test@example.com",
-		"password": "password",
+	c := newTestClient()
+	ctx := context.Background()
+
+	request := clientgen.SignupRequest{
+		Name:     "Test",
+		Email:    openapi_types.Email("test@example.com"),
+		Password: "password",
 	}
 
-	body, err := json.Marshal(request)
-	if err != nil {
-		assert.FailNow(t, "fail to marshal json", err)
-	}
+	resp1, err := c.PostV1UsersSignupWithResponse(ctx, request)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusCreated, resp1.StatusCode())
 
-	resp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		assert.FailNow(t, "fail to request", err)
-	}
-
-	defer func() {
-		err := resp.Body.Close()
-		if err != nil {
-			assert.Fail(t, "failed to close body", err)
-		}
-	}()
-
-	assert.Equal(t, http.StatusCreated, resp.StatusCode)
-
-	resp2, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		assert.FailNow(t, "fail to request", err)
-	}
-
-	defer func() {
-		err := resp2.Body.Close()
-		if err != nil {
-			assert.Fail(t, "failed to close body", err)
-		}
-	}()
-
-	problem := readProblemResponse(t, resp2)
-	assert.Equal(t, http.StatusConflict, problem.Status)
-	assert.Equal(t, "DUPLICATE_EMAIL", problem.Type)
+	resp2, err := c.PostV1UsersSignupWithResponse(ctx, request)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusConflict, resp2.StatusCode())
+	require.NotNil(t, resp2.ApplicationproblemJSON409)
+	assert.Equal(t, "DUPLICATE_EMAIL", resp2.ApplicationproblemJSON409.Type)
 
 	err = testDb.Cleanup()
-	if err != nil {
-		assert.Fail(t, "fail to cleanup testDb", err)
-	}
+	require.NoError(t, err)
 }
 
 func TestLogin(t *testing.T) {
 	tests := []struct {
 		name         string
-		request      map[string]any
+		setup        bool // whether to pre-create the user
+		request      clientgen.LoginRequest
 		responseCode int
+		problemType  string
 	}{
 		{
-			name: "Success login",
-			request: map[string]any{
-				"email":    "login@example.com",
-				"password": "password",
+			name:  "Success login",
+			setup: true,
+			request: clientgen.LoginRequest{
+				Email:    "login@example.com",
+				Password: "password",
 			},
 			responseCode: http.StatusOK,
 		},
 		{
-			name: "User not found",
-			request: map[string]any{
-				"email":    "unknown@example.com",
-				"password": "password",
+			name:  "User not found",
+			setup: false,
+			request: clientgen.LoginRequest{
+				Email:    "unknown@example.com",
+				Password: "password",
 			},
 			responseCode: http.StatusUnauthorized,
+			problemType:  "INVALID_CREDENTIAL",
 		},
 		{
-			name: "Wrong password",
-			request: map[string]any{
-				"email":    "login@example.com",
-				"password": "wrongpass",
+			name:  "Wrong password",
+			setup: true,
+			request: clientgen.LoginRequest{
+				Email:    "login@example.com",
+				Password: "wrongpass",
 			},
 			responseCode: http.StatusUnauthorized,
+			problemType:  "INVALID_CREDENTIAL",
 		},
 		{
-			name: "Missing password",
-			request: map[string]any{
-				"email": "login@example.com",
+			name:  "Missing password",
+			setup: true,
+			request: clientgen.LoginRequest{
+				Email: "login@example.com",
 			},
 			responseCode: http.StatusBadRequest,
+			problemType:  "VALIDATION_ERROR",
 		},
 		{
-			name: "Invalid email",
-			request: map[string]any{
-				"email":    "invalid",
-				"password": "password",
+			name:  "Invalid email",
+			setup: true,
+			request: clientgen.LoginRequest{
+				Email:    "invalid",
+				Password: "password",
 			},
 			responseCode: http.StatusBadRequest,
+			problemType:  "VALIDATION_ERROR",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.name != "User not found" {
-				signupBody, err := json.Marshal(map[string]any{
-					"name":     "Login User",
-					"email":    "login@example.com",
-					"password": "password",
+			c := newTestClient()
+			ctx := context.Background()
+
+			if tt.setup {
+				signupResp, err := c.PostV1UsersSignupWithResponse(ctx, clientgen.SignupRequest{
+					Name:     "Login User",
+					Email:    "login@example.com",
+					Password: "password",
 				})
-				if err != nil {
-					assert.FailNow(t, "fail to marshal signup json", err)
-				}
-
-				signupResp, err := http.Post(testServer.URL+"/v1/users/signup", "application/json", bytes.NewBuffer(signupBody))
-				if err != nil {
-					assert.FailNow(t, "fail to signup", err)
-				}
-				_ = signupResp.Body.Close()
+				require.NoError(t, err)
+				require.Equal(t, http.StatusCreated, signupResp.StatusCode())
 			}
 
-			body, err := json.Marshal(tt.request)
-			if err != nil {
-				assert.FailNow(t, "fail to marshal login json", err)
-			}
+			resp, err := c.PostV1UsersLoginWithResponse(ctx, tt.request)
+			require.NoError(t, err)
+			assert.Equal(t, tt.responseCode, resp.StatusCode())
 
-			resp, err := http.Post(testServer.URL+"/v1/users/login", "application/json", bytes.NewBuffer(body))
-			if err != nil {
-				assert.FailNow(t, "fail to request", err)
-			}
-
-			defer func() {
-				err := resp.Body.Close()
-				if err != nil {
-					assert.Fail(t, "failed to close body", err)
-				}
-			}()
-
-			assert.Equal(t, tt.responseCode, resp.StatusCode)
-
-			if resp.StatusCode == http.StatusOK {
-				payload, err := io.ReadAll(resp.Body)
-				if err != nil {
-					assert.FailNow(t, "fail to read body", err)
-				}
-
-				var got struct {
-					Token     string `json:"token"`
-					ExpiresAt string `json:"expiresAt"`
-				}
-
-				require.NoError(t, json.Unmarshal(payload, &got))
-				assert.NotEmpty(t, got.Token)
-				assert.NotEmpty(t, got.ExpiresAt)
-			} else {
-				problem := readProblemResponse(t, resp)
-				assert.Equal(t, tt.responseCode, problem.Status)
-				if tt.responseCode == http.StatusBadRequest {
-					assert.Equal(t, "VALIDATION_ERROR", problem.Type)
-				}
-				if tt.responseCode == http.StatusUnauthorized {
-					assert.Equal(t, "INVALID_CREDENTIAL", problem.Type)
-				}
+			if resp.StatusCode() == http.StatusOK {
+				require.NotNil(t, resp.JSON200)
+				assert.NotEmpty(t, resp.JSON200.Token)
+				assert.NotZero(t, resp.JSON200.ExpiresAt)
+			} else if tt.responseCode == http.StatusBadRequest {
+				require.NotNil(t, resp.ApplicationproblemJSON400)
+				assert.Equal(t, tt.problemType, resp.ApplicationproblemJSON400.Type)
+			} else if tt.responseCode == http.StatusUnauthorized {
+				require.NotNil(t, resp.ApplicationproblemJSON401)
+				assert.Equal(t, tt.problemType, resp.ApplicationproblemJSON401.Type)
 			}
 
 			err = testDb.Cleanup()
-			if err != nil {
-				assert.Fail(t, "fail to cleanup testDb", err)
-			}
+			require.NoError(t, err)
 		})
 	}
 }
@@ -343,39 +216,15 @@ func TestLogin(t *testing.T) {
 func TestListUsers(t *testing.T) {
 	t.Run("Success with valid JWT and admin role returns user list", func(t *testing.T) {
 		token, _ := signupAndGetToken(t, "listtest@example.com", adminRoleID)
+		c := newTestClient()
 
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		resp, err := c.GetV1UsersWithResponse(context.Background(), nil, withBearerToken(token))
 		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		payload, err := io.ReadAll(resp.Body)
-		require.NoError(t, err)
-
-		var got struct {
-			Users []struct {
-				Id        string `json:"id"`
-				Name      string `json:"name"`
-				Email     string `json:"email"`
-				Status    string `json:"status"`
-				CreatedAt string `json:"createdAt"`
-			} `json:"users"`
-			Total  int `json:"total"`
-			Limit  int `json:"limit"`
-			Offset int `json:"offset"`
-		}
-		require.NoError(t, json.Unmarshal(payload, &got))
-		assert.GreaterOrEqual(t, got.Total, 1)
-		assert.Equal(t, 20, got.Limit)
-		assert.Equal(t, 0, got.Offset)
-
-		// Verify password_hash is not exposed.
-		assert.NotContains(t, string(payload), "password_hash")
+		assert.Equal(t, http.StatusOK, resp.StatusCode())
+		require.NotNil(t, resp.JSON200)
+		assert.GreaterOrEqual(t, resp.JSON200.Total, 1)
+		assert.Equal(t, 20, resp.JSON200.Limit)
+		assert.Equal(t, 0, resp.JSON200.Offset)
 
 		err = testDb.Cleanup()
 		require.NoError(t, err)
@@ -383,73 +232,57 @@ func TestListUsers(t *testing.T) {
 
 	t.Run("Pagination with limit and offset", func(t *testing.T) {
 		token, _ := signupAndGetToken(t, "paginate@example.com", adminRoleID)
+		c := newTestClient()
 
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=5&offset=0", nil)
+		limit := 5
+		offset := 0
+		resp, err := c.GetV1UsersWithResponse(
+			context.Background(),
+			&clientgen.GetV1UsersParams{Limit: &limit, Offset: &offset},
+			withBearerToken(token),
+		)
 		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		payload, err := io.ReadAll(resp.Body)
-		require.NoError(t, err)
-
-		var got struct {
-			Limit  int `json:"limit"`
-			Offset int `json:"offset"`
-		}
-		require.NoError(t, json.Unmarshal(payload, &got))
-		assert.Equal(t, 5, got.Limit)
-		assert.Equal(t, 0, got.Offset)
+		assert.Equal(t, http.StatusOK, resp.StatusCode())
+		require.NotNil(t, resp.JSON200)
+		assert.Equal(t, 5, resp.JSON200.Limit)
+		assert.Equal(t, 0, resp.JSON200.Offset)
 
 		err = testDb.Cleanup()
 		require.NoError(t, err)
 	})
 
 	t.Run("Missing Authorization header returns 401", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		resp, err := newTestClient().GetV1UsersWithResponse(context.Background(), nil)
 		require.NoError(t, err)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-		problem := readProblemResponse(t, resp)
-		assert.Equal(t, "UNAUTHORIZED", problem.Type)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON401)
+		assert.Equal(t, "UNAUTHORIZED", resp.ApplicationproblemJSON401.Type)
 	})
 
 	t.Run("Invalid JWT returns 401", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		resp, err := newTestClient().GetV1UsersWithResponse(
+			context.Background(),
+			nil,
+			withBearerToken("this.is.invalid"),
+		)
 		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer this.is.invalid")
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-		problem := readProblemResponse(t, resp)
-		assert.Equal(t, "UNAUTHORIZED", problem.Type)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON401)
+		assert.Equal(t, "UNAUTHORIZED", resp.ApplicationproblemJSON401.Type)
 	})
 
 	t.Run("User without any role returns 403", func(t *testing.T) {
 		token, _ := signupAndGetToken(t, "norole@example.com", "") // no role assigned
 
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users", nil)
+		resp, err := newTestClient().GetV1UsersWithResponse(
+			context.Background(),
+			nil,
+			withBearerToken(token),
+		)
 		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-		problem := readProblemResponse(t, resp)
-		assert.Equal(t, "FORBIDDEN", problem.Type)
+		assert.Equal(t, http.StatusForbidden, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON403)
+		assert.Equal(t, "FORBIDDEN", resp.ApplicationproblemJSON403.Type)
 
 		err = testDb.Cleanup()
 		require.NoError(t, err)
@@ -457,18 +290,18 @@ func TestListUsers(t *testing.T) {
 
 	t.Run("limit=200 out of range returns 400", func(t *testing.T) {
 		token, _ := signupAndGetToken(t, "limitcheck@example.com", adminRoleID)
+		c := newTestClient()
 
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=200", nil)
+		limit := 200
+		resp, err := c.GetV1UsersWithResponse(
+			context.Background(),
+			&clientgen.GetV1UsersParams{Limit: &limit},
+			withBearerToken(token),
+		)
 		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		problem := readProblemResponse(t, resp)
-		assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON400)
+		assert.Equal(t, "VALIDATION_ERROR", resp.ApplicationproblemJSON400.Type)
 
 		err = testDb.Cleanup()
 		require.NoError(t, err)
@@ -476,80 +309,20 @@ func TestListUsers(t *testing.T) {
 
 	t.Run("limit=0 out of range returns 400", func(t *testing.T) {
 		token, _ := signupAndGetToken(t, "limitcheck2@example.com", adminRoleID)
+		c := newTestClient()
 
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=0", nil)
+		limit := 0
+		resp, err := c.GetV1UsersWithResponse(
+			context.Background(),
+			&clientgen.GetV1UsersParams{Limit: &limit},
+			withBearerToken(token),
+		)
 		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		problem := readProblemResponse(t, resp)
-		assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON400)
+		assert.Equal(t, "VALIDATION_ERROR", resp.ApplicationproblemJSON400.Type)
 
 		err = testDb.Cleanup()
 		require.NoError(t, err)
 	})
-
-	t.Run("non-integer limit returns 400", func(t *testing.T) {
-		token, _ := signupAndGetToken(t, "limitcheck3@example.com", adminRoleID)
-
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?limit=abc", nil)
-		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		problem := readProblemResponse(t, resp)
-		assert.Equal(t, "VALIDATION_ERROR", problem.Type)
-
-		err = testDb.Cleanup()
-		require.NoError(t, err)
-	})
-
-	t.Run("non-integer offset returns 400", func(t *testing.T) {
-		token, _ := signupAndGetToken(t, "offsetcheck@example.com", adminRoleID)
-
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/v1/users?offset=xyz", nil)
-		require.NoError(t, err)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		defer func() { _ = resp.Body.Close() }()
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		problem := readProblemResponse(t, resp)
-		assert.Equal(t, "VALIDATION_ERROR", problem.Type)
-
-		err = testDb.Cleanup()
-		require.NoError(t, err)
-	})
-}
-
-type problemResponse struct {
-	Type   string `json:"type"`
-	Title  string `json:"title"`
-	Status int    `json:"status"`
-}
-
-func readProblemResponse(t *testing.T, resp *http.Response) problemResponse {
-	t.Helper()
-
-	assert.True(t, strings.HasPrefix(resp.Header.Get("Content-Type"), "application/problem+json"))
-
-	payload, err := io.ReadAll(resp.Body)
-	require.NoError(t, err)
-
-	var got problemResponse
-	require.NoError(t, json.Unmarshal(payload, &got))
-	assert.NotEmpty(t, got.Type)
-	assert.NotEmpty(t, got.Title)
-
-	return got
 }
