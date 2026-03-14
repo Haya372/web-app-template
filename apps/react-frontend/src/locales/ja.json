@@ -26,6 +26,22 @@
       "passwordRequired": "パスワードを入力してください"
     }
   },
+  "posts": {
+    "new": {
+      "title": "新規投稿",
+      "label": "内容",
+      "submit": "投稿する",
+      "charCount": "{{current}} / {{max}}",
+      "success": "投稿しました",
+      "validation": {
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は280文字以内で入力してください"
+      },
+      "error": {
+        "generic": "投稿に失敗しました。もう一度お試しください。"
+      }
+    }
+  },
   "login": {
     "title": "ログイン",
     "email": {

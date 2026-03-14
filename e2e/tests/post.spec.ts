@@ -1,18 +1,103 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
-// TODO: Implement post creation E2E tests once the post creation UI is built.
-// Tracked in a separate ticket.
-//
-// Scenario: logged-in user fills the post content field and submits;
-// the new post should appear in the post list.
+const API_BASE_URL = process.env.E2E_API_BASE_URL ?? "http://localhost:8080";
+
+async function registerAndLogin(
+	name: string,
+	email: string,
+	password: string,
+): Promise<string> {
+	const signupRes = await fetch(`${API_BASE_URL}/v1/users/signup`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ name, email, password }),
+	});
+	if (!signupRes.ok) {
+		throw new Error(`Signup API failed: ${signupRes.status}`);
+	}
+
+	const loginRes = await fetch(`${API_BASE_URL}/v1/users/login`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ email, password }),
+	});
+	if (!loginRes.ok) {
+		throw new Error(`Login API failed: ${loginRes.status}`);
+	}
+
+	const { token } = (await loginRes.json()) as { token: string };
+	return token;
+}
+
 test.describe("Post creation", () => {
-  test.fixme(
-    "happy path: logged-in user can create a post and it appears in the list",
-    async () => {
-      // 1. Log in via the login page (or set JWT in localStorage directly).
-      // 2. Navigate to the post creation page.
-      // 3. Fill the content field and click Submit.
-      // 4. Verify the new post appears in the post list.
-    },
-  );
+	test("happy path: logged-in user can create a post", async ({ page }) => {
+		const unique = Date.now();
+		const email = `e2e-post-${unique}@example.com`;
+		const password = "password123";
+		const token = await registerAndLogin(
+			`E2E Post User ${unique}`,
+			email,
+			password,
+		);
+
+		await page.goto("/");
+		await page.evaluate((t) => {
+			localStorage.setItem("auth_token", t);
+		}, token);
+		await page.goto("/posts/new");
+
+		await page.getByLabel("内容").fill("E2E test post content");
+		await page.getByRole("button", { name: "投稿する" }).click();
+
+		await expect(page.getByText("投稿しました")).toBeVisible();
+	});
+
+	test("validation error: empty content shows error message", async ({
+		page,
+	}) => {
+		const unique = Date.now();
+		const email = `e2e-post-empty-${unique}@example.com`;
+		const password = "password123";
+		const token = await registerAndLogin(
+			`E2E Post Empty ${unique}`,
+			email,
+			password,
+		);
+
+		await page.goto("/");
+		await page.evaluate((t) => {
+			localStorage.setItem("auth_token", t);
+		}, token);
+		await page.goto("/posts/new");
+
+		await page.getByRole("button", { name: "投稿する" }).click();
+
+		await expect(page.getByText("内容を入力してください")).toBeVisible();
+	});
+
+	test("validation error: content exceeding 280 characters shows error", async ({
+		page,
+	}) => {
+		const unique = Date.now();
+		const email = `e2e-post-long-${unique}@example.com`;
+		const password = "password123";
+		const token = await registerAndLogin(
+			`E2E Post Long ${unique}`,
+			email,
+			password,
+		);
+
+		await page.goto("/");
+		await page.evaluate((t) => {
+			localStorage.setItem("auth_token", t);
+		}, token);
+		await page.goto("/posts/new");
+
+		await page.getByLabel("内容").fill("a".repeat(281));
+		await page.getByRole("button", { name: "投稿する" }).click();
+
+		await expect(
+			page.getByText("内容は280文字以内で入力してください"),
+		).toBeVisible();
+	});
 });
