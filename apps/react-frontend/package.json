@@ -23,12 +23,12 @@
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
     "@repo/ui": "workspace:*",
-    "@tanstack/react-router": "1.166.2",
-    "i18next": "25.8.14",
+    "@tanstack/react-router": "1.166.8",
+    "i18next": "25.8.18",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "7.71.2",
-    "react-i18next": "16.5.6",
+    "react-i18next": "16.5.8",
     "zod": "4.3.6"
   },
   "devDependencies": {
