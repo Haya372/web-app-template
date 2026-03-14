@@ -4,7 +4,7 @@
   "private": true,
   "devDependencies": {
     "husky": "8.0.3",
-    "turbo": "2.8.14"
+    "turbo": "2.8.17"
   },
   "scripts": {
     "prepare": "husky install",
