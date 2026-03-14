@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "package.json"
+      - "pnpm-lock.yaml"
       - "packages/ui/**"
       - ".github/workflows/ci-packages-ui.yml"
       - ".github/actions/setup-pnpm-workspace/**"
