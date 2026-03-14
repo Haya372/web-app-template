@@ -1,5 +1,7 @@
 FROM golang:1.25.6-alpine AS builder
 
+RUN apk add --no-cache make
+
 WORKDIR /app
 
 COPY go.mod go.sum Makefile ./
