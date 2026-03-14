@@ -26,6 +26,22 @@
       "passwordRequired": "Password is required"
     }
   },
+  "posts": {
+    "new": {
+      "title": "New Post",
+      "label": "Content",
+      "submit": "Post",
+      "charCount": "{{current}} / {{max}}",
+      "success": "Post created successfully",
+      "validation": {
+        "contentRequired": "Content is required",
+        "contentTooLong": "Content must be 280 characters or less"
+      },
+      "error": {
+        "generic": "Failed to create post. Please try again."
+      }
+    }
+  },
   "login": {
     "title": "Sign in",
     "email": {
