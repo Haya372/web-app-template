@@ -17,7 +17,17 @@ make them green."
 
 Run tests (from `apps/react-frontend/`):
 ```bash
-pnpm test
+# All tests
+pnpm test:agent
+
+# Specific file
+pnpm test:agent src/features/auth/pages/LoginPage.test.tsx
+
+# Specific test/describe name (substring match)
+pnpm test:agent -t "LoginPage — rendering"
+
+# Combine file and name filter
+pnpm test:agent src/features/auth/pages/LoginPage.test.tsx -t "renders an email input"
 ```
 
 ## Review prompt (Refactor)
@@ -34,5 +44,5 @@ test coverage. Task: <task description>."
 
 Run from `apps/react-frontend/`:
 ```bash
-pnpm lint && pnpm test
+pnpm lint && pnpm test:agent
 ```
