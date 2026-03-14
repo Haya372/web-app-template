@@ -1,7 +1,6 @@
 ---
 name: create-pr
 description: This skill should be used when the user wants to create a pull request for the current branch. It gathers context, validates the branch state, and opens a PR following this repository's conventions.
-disable-model-invocation: true
 allowed-tools: Bash, Read, Glob, Grep
 ---
 
@@ -41,6 +40,7 @@ Identify which `make` targets are relevant to the changes:
 | Go source code | `make fmt && make lint && make test-unit` |
 | Integration paths | `make test-integration` |
 | DB schema / queries | `make generate && make migrate-local` |
+| Frontend (React) | `pnpm lint && pnpm test` (run from `apps/react-frontend/`) |
 
 Report which targets were run and whether they passed. If tests have not been run, prompt the user to run them before creating the PR.
 

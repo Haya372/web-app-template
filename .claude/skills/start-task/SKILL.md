@@ -30,9 +30,9 @@ gh issue view $ISSUE_NUMBER --json number,title,body,labels,assignees
 ```
 
 Read the output carefully:
-- Understand the **summary**, **background**, **goals**, and **acceptance criteria** (完了条件).
+- Understand the **summary**, **background**, **goals**, and **acceptance criteria** (the "完了条件" section).
 - Identify which layers are touched: Backend (Go), Frontend, DB migration, Docs.
-- List the concrete sub-tasks from the "やること" section of the issue body.
+- List the concrete sub-tasks from the "やること" (To-do) section of the issue body.
 
 If the issue body is missing or too vague, stop and ask the user to clarify before continuing.
 
@@ -53,11 +53,12 @@ Use `TaskUpdate` to set up dependency chains (`addBlockedBy`) where ordering mat
 
 Always create at minimum:
 - One task per layer touched (Backend, Frontend, DB, Docs)
+- An E2E task if UI or user-facing API endpoints are added or changed (see `.claude/skills/start-task/e2e-context.md`)
 - A final "commit & PR" task that is blocked by all implementation tasks
 
 ### Step 4: Implement following TDD (Red → Green → Refactor)
 
-Consult `docs/guidelines/task-progress-guide.md` for the full TDD flow.
+Consult `docs/guidlines/task-progress-guide.md` for the full TDD flow.
 Process each implementation task in dependency order.
 
 For each task, execute the following sub-steps **sequentially**:
@@ -78,52 +79,26 @@ test command). Mark the task as `in_progress`.
 
 #### 4b. Implement (Green)
 
-Invoke the **code-implementer** agent:
+Refer to the context file for the task's layer and invoke the code-implementer agent using the "Implement prompt" section:
+- Backend (Go): `.claude/skills/start-task/backend-context.md`
+- Frontend (React): `.claude/skills/start-task/frontend-context.md`
 
-```
-Agent: code-implementer
-Prompt: "Implement the minimum code to make the failing tests pass.
-Task: <task subject and description>. Issue context: <issue body excerpt>.
-Follow the repository architecture in go-backend/CLAUDE.md. Tests are
-already written — make them green."
-```
-
-Run `make test-unit` (and `make test-integration` if integration paths
-changed). Confirm all tests pass.
+Confirm all tests pass before moving on.
 
 #### 4c. Refactor & review (Refactor)
 
-Invoke the **code-reviewer** agent:
+Refer to the context file for the task's layer and invoke the code-reviewer agent using the "Review prompt" section:
+- Backend (Go): `.claude/skills/start-task/backend-context.md`
+- Frontend (React): `.claude/skills/start-task/frontend-context.md`
 
-```
-Agent: code-reviewer
-Prompt: "Review the implementation for this task. Check: correctness,
-security (OWASP top 10), performance (N+1, timeouts), readability, adherence
-to repository guidelines in docs/guidelines/backend-coding-guidline.md, and
-test coverage. Task: <task description>."
-```
-
-Apply any critical feedback from the reviewer before marking the task complete.
-
-Run the full quality gate:
-```bash
-make fmt && make lint && make test-unit
-```
-
-If integration paths were touched, also run:
-```bash
-make test-integration
-```
+Apply any critical feedback, then run the commands in the "Quality gate" section of the same context file.
 
 Mark the task as `completed` once all checks pass.
 
-#### 4e. Add or update E2E tests (if UI or API is touched)
+#### 4e. Process the E2E task (if created in Step 3)
 
-If the task adds or changes a user-facing feature (new page, new form, new API endpoint used from the frontend), add or update the corresponding E2E test spec in `e2e/tests/`.
-
-- If the UI is fully implemented and the scenario can be verified end-to-end, write a passing test.
-- If the backend is ready but the frontend UI is not yet built, add a `test.fixme()` stub with a comment describing the missing prerequisite and referencing the relevant ticket.
-- Follow the conventions in `docs/guidlines/e2e-testing.md`.
+If an E2E task was registered, process it like any other task.
+Refer to `.claude/skills/start-task/e2e-context.md` for the test-writer prompt and test execution commands.
 
 #### 4f. Repeat for each task
 
@@ -131,21 +106,9 @@ Continue until every implementation task is `completed`.
 
 ### Step 5: Final quality gate
 
-Run the complete suite one last time and confirm all targets pass:
-
-```bash
-make fmt && make lint && make test-unit
-```
-
-Then check test coverage:
-
-```bash
-make test-coverage
-```
-
-Review the coverage report for any packages touched by this PR:
-- If a package's coverage **decreased** compared to `main`, identify the uncovered lines and add tests before proceeding.
-- Pay special attention to packages showing 0% or near-0% coverage on newly added functions.
+For each layer touched by this PR, refer to its context file and run all commands in the "Quality gate" section:
+- Backend (Go): `.claude/skills/start-task/backend-context.md`
+- Frontend (React): `.claude/skills/start-task/frontend-context.md`
 
 If any target fails or coverage regresses, investigate and fix before proceeding.
 

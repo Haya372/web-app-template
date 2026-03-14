@@ -69,7 +69,7 @@ For each group, apply the format:
 | `perf` | performance improvement |
 | `ci` | CI/CD pipeline changes |
 
-**Scope:** the affected component — e.g. `go-backend`, `auth`, `docker`. Omit when changes span many components.
+**Scope:** the affected component — e.g. `go-backend`, `react-frontend`, `auth`, `docker`. Omit when changes span many components.
 
 **Summary:** imperative English verb phrase, ≤ 50 chars.
 
