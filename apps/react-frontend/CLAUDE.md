@@ -22,7 +22,7 @@ pnpm lint         # biome lint + knip (read-only check)
 pnpm check        # biome check (format + lint combined)
 
 # Tests
-pnpm test         # vitest run (single pass, no DB needed)
+pnpm test:agent   # vitest run (single pass, no DB needed)
 
 # Build
 pnpm build        # prebuild (generate + typecheck) then vite build
@@ -96,6 +96,26 @@ src/
 - Use table-driven tests for utility functions with boundary and error cases.
 - There is no integration test setup; focus unit tests on pure logic and component rendering.
 - Aim for meaningful coverage of business logic; UI snapshot tests are discouraged.
+
+### Running tests
+
+Run from `apps/react-frontend/`:
+
+```bash
+# All tests (agent-friendly reporter)
+pnpm test:agent
+
+# Specific file
+pnpm test:agent src/features/auth/pages/LoginPage.test.tsx
+
+# Specific test or describe block (substring match on name)
+pnpm test:agent -t "LoginPage — rendering"
+
+# Combine: file + name filter
+pnpm test:agent src/features/auth/pages/LoginPage.test.tsx -t "renders an email input"
+```
+
+The `-t` flag matches against the full test name (`describe` block + `it` label concatenated). Use a unique substring to target a single case.
 
 ## Security
 
