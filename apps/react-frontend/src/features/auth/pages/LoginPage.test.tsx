@@ -5,7 +5,7 @@
  *
  * Mocks:
  *  - @/features/auth/api/login          callLogin vi.mock
- *  - @/features/auth/utils/tokenStorage saveToken vi.mock
+ *  - @/utils/tokenStorage saveToken vi.mock
  *  - @tanstack/react-router             useNavigate vi.mock
  *  - @repo/ui                           toast vi.mock
  */
@@ -31,7 +31,7 @@ vi.mock("@/features/auth/api/login", () => ({
 	callLogin: vi.fn(),
 }))
 
-vi.mock("@/features/auth/utils/tokenStorage", () => ({
+vi.mock("@/utils/tokenStorage", () => ({
 	saveToken: vi.fn(),
 }))
 
@@ -57,7 +57,7 @@ vi.mock("@repo/ui", async (importOriginal) => {
 // ---------------------------------------------------------------------------
 
 import { callLogin } from "@/features/auth/api/login"
-import { saveToken } from "@/features/auth/utils/tokenStorage"
+import { saveToken } from "@/utils/tokenStorage"
 import { LoginPage } from "./LoginPage"
 
 // ---------------------------------------------------------------------------

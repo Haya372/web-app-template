@@ -1,4 +1,4 @@
-import { getToken } from "@/features/auth/utils/tokenStorage"
+import { getToken } from "@/utils/tokenStorage"
 import { createPostResponseSchema } from "@/features/posts/types/post"
 import type { CreatePostResponse } from "@/features/posts/types/post"
 
