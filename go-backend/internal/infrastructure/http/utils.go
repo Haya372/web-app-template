@@ -12,6 +12,20 @@ import (
 
 const problemContentType = "application/problem+json"
 
+func writeProblem(c *echo.Context, status int, res problemDetails) error {
+	c.Response().Header().Set(echo.HeaderContentType, problemContentType)
+
+	return c.JSON(status, res)
+}
+
+// writeJSONError serialises an arbitrary error as a JSON string.
+// Used by the generated-handler error callback for request-parse failures.
+func writeJSONError(w http.ResponseWriter, err error) error {
+	_, werr := w.Write([]byte(`{"type":"VALIDATION_ERROR","title":"validation error","status":400,"detail":"` + err.Error() + `"}`))
+
+	return werr
+}
+
 type problemDetails struct {
 	Type     vo.ErrorCode `json:"type"`
 	Title    string       `json:"title"`
