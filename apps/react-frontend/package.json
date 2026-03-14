@@ -10,6 +10,7 @@
     "prebuild": "run-s generate typecheck",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:agent": "vitest run --reporter=agent",
     "lint": "run-s lint:*",
     "lint:biome": "biome lint",
     "lint:knip": "knip",
@@ -47,9 +48,9 @@
     "npm-run-all2": "8.0.4",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
-    "vite": "7.3.1",
+    "vite": "8.0.0",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.4"
+    "vitest": "4.1.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
