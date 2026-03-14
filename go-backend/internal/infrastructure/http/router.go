@@ -1,6 +1,8 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
 	commandpost "github.com/Haya372/web-app-template/go-backend/internal/usecase/command/post"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
@@ -20,6 +22,9 @@ type routerImpl struct {
 }
 
 func (r *routerImpl) AddRoute(e *echo.Echo) {
+	e.GET("/health", func(c *echo.Context) error {
+		return c.NoContent(http.StatusOK)
+	})
 	r.usersRouter.AddRoute(e)
 	r.postsRouter.AddRoute(e)
 }

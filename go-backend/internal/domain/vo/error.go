@@ -8,6 +8,7 @@ const (
 	UnauthorizedErrorCode      = ErrorCode("UNAUTHORIZED")
 	ForbiddenErrorCode         = ErrorCode("FORBIDDEN")
 	InternalErrorCode          = ErrorCode("INTERNAL_ERROR")
+	DuplicateEmailErrorCode    = ErrorCode("DUPLICATE_EMAIL")
 )
 
 func (c ErrorCode) Title() string {
@@ -22,6 +23,8 @@ func (c ErrorCode) Title() string {
 		return "forbidden"
 	case InternalErrorCode:
 		return "internal server error"
+	case DuplicateEmailErrorCode:
+		return "duplicate email"
 	default:
 		return "application error"
 	}
@@ -90,6 +93,15 @@ func NewForbiddenError(message string, details map[string]any, err error) error 
 		message: message,
 		err:     err,
 		details: details,
+	}
+}
+
+func NewDuplicateEmailError(err error) error {
+	return &baseError{
+		status:  409,
+		code:    DuplicateEmailErrorCode,
+		message: "email already registered",
+		err:     err,
 	}
 }
 

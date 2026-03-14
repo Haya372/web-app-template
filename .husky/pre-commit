@@ -13,3 +13,8 @@ if git diff --cached --name-only | grep -q "^packages/ui/"; then
   cd "$ROOT/packages/ui" && pnpm lint-staged
   cd "$ROOT"
 fi
+
+if git diff --cached --name-only | grep -q "^e2e/"; then
+  cd "$ROOT/e2e" && pnpm lint-staged
+  cd "$ROOT"
+fi

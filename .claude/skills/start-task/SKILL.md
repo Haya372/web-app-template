@@ -117,7 +117,15 @@ make test-integration
 
 Mark the task as `completed` once all checks pass.
 
-#### 4d. Repeat for each task
+#### 4e. Add or update E2E tests (if UI or API is touched)
+
+If the task adds or changes a user-facing feature (new page, new form, new API endpoint used from the frontend), add or update the corresponding E2E test spec in `e2e/tests/`.
+
+- If the UI is fully implemented and the scenario can be verified end-to-end, write a passing test.
+- If the backend is ready but the frontend UI is not yet built, add a `test.fixme()` stub with a comment describing the missing prerequisite and referencing the relevant ticket.
+- Follow the conventions in `docs/guidlines/e2e-testing.md`.
+
+#### 4f. Repeat for each task
 
 Continue until every implementation task is `completed`.
 

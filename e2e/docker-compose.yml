@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:18.3
+    container_name: e2e_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: postgres:18.3
+    container_name: e2e_migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: postgres
+    volumes:
+      - ../go-backend/db/schema/schema.sql:/schema/schema.sql:ro
+      - ../go-backend/db/seeds/master/seed.sql:/schema/seed.sql:ro
+    command: >
+      sh -c "
+        psql -h db -U postgres -d backend -f /schema/schema.sql &&
+        psql -h db -U postgres -d backend -f /schema/seed.sql
+      "
+    restart: on-failure
+
+  backend:
+    build:
+      context: ../go-backend
+      dockerfile: Dockerfile
+    container_name: e2e_backend
+    environment:
+      DATABASE_DSN: postgres://postgres:postgres@db:5432/backend
+      AUTH_JWT_SECRET: e2e-test-secret
+      CORS_ALLOW_ORIGINS: http://localhost:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null http://localhost:8080/health && echo ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: e2e/Dockerfile.frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:3000
+    container_name: e2e_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy

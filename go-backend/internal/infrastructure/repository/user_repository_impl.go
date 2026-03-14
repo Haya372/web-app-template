@@ -12,6 +12,7 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/sqlc"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -38,6 +39,11 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user entity.User) (enti
 		})
 	})
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, vo.NewDuplicateEmailError(err)
+		}
+
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 

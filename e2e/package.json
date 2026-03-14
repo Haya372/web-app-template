@@ -1,0 +1,37 @@
+{
+  "name": "e2e",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "postinstall": "playwright install chromium",
+    "pretest:e2e": "run-s docker:clean docker:up docker:wait",
+    "test:e2e": "playwright test",
+    "posttest:e2e": "docker compose down -v",
+    "test": "playwright test",
+    "docker:clean": "docker compose down -v --remove-orphans",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down -v",
+    "docker:wait": "wait-on http://localhost:3000 --timeout 120000",
+    "test:report": "playwright show-report",
+    "lint": "run-s lint:biome lint:knip",
+    "lint:biome": "biome lint",
+    "lint:knip": "knip",
+    "fmt": "run-s fmt:biome",
+    "fmt:biome": "biome lint --write ."
+  },
+  "devDependencies": {
+    "@types/node": "24.12.0",
+    "@biomejs/biome": "2.4.6",
+    "@playwright/test": "1.53.0",
+    "knip": "5.86.0",
+    "lint-staged": "16.3.2",
+    "npm-run-all2": "8.0.4",
+    "typescript": "5.9.3",
+    "wait-on": "8.0.1"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "pnpm biome lint --write"
+    ]
+  }
+}

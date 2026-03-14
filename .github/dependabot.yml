@@ -20,7 +20,6 @@ updates:
     commit-message:
       prefix: "chore(go-backend)"
 
-  # TODO: fix　to suit your requirements
   - package-ecosystem: "docker-compose"
     directory: "/go-backend"
     open-pull-requests-limit: 1
@@ -31,6 +30,39 @@ updates:
       - "dependabot"
     commit-message:
       prefix: "chore(go-backend docker)"
+
+  - package-ecosystem: "docker"
+    directory: "/go-backend"
+    open-pull-requests-limit: 1
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "dependabot"
+    commit-message:
+      prefix: "chore(go-backend docker)"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/e2e"
+    open-pull-requests-limit: 1
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "dependabot"
+    commit-message:
+      prefix: "chore(e2e docker)"
+
+  - package-ecosystem: "docker"
+    directory: "/e2e"
+    open-pull-requests-limit: 1
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "dependabot"
+    commit-message:
+      prefix: "chore(e2e docker)"
 
   # TODO: fix　to suit your requirements
   - package-ecosystem: "github-actions"
@@ -48,7 +80,6 @@ updates:
     commit-message:
       prefix: "chore(github-actions)"
 
-  # TODO: fix　to suit your requirements
   - package-ecosystem: "npm"
     directory: "/"
     schedule:

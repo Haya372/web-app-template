@@ -3,6 +3,8 @@ package http
 import (
 	"context"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -44,6 +46,12 @@ func NewServer(r Router) *echo.Echo {
 
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
+
+	if origins := os.Getenv("CORS_ALLOW_ORIGINS"); origins != "" {
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins: strings.Split(origins, ","),
+		}))
+	}
 	// TODO: replace otelecho middleware
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
