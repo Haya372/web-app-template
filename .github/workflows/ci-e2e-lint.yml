@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "e2e/**"
+      - "pnpm-lock.yaml"
       - ".github/workflows/ci-e2e-lint.yml"
       - "!**.md"
 
