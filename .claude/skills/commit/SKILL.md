@@ -19,7 +19,7 @@ Run in parallel:
 
 ### Step 2: Plan commit groupings
 
-Examine the changes and propose a split into **logical, self-contained commits**. Each commit should represent one coherent intent — something that could be reviewed and reverted independently.
+Examine the changes and decide on a split into **logical, self-contained commits**. Each commit should represent one coherent intent — something that could be reviewed and reverted independently.
 
 **Good reasons to split into separate commits:**
 - Different `type` (e.g. `feat` changes alongside `chore` dependency bumps)
@@ -31,22 +31,7 @@ Examine the changes and propose a split into **logical, self-contained commits**
 - Changes are tightly coupled (e.g. an entity, its repository implementation, and its unit test all added together)
 - Splitting would leave the repo in a broken/inconsistent state
 
-Present the proposed plan to the user as a numbered list before doing anything:
-
-```
-I found changes across 8 files. I suggest 3 commits:
-
-1. feat(go-backend): add user entity and repository interface
-   → internal/domain/entity/user.go, internal/domain/entity/repository/user.go
-
-2. feat(go-backend): implement user repository with sqlc
-   → internal/infrastructure/user_repository_impl.go, db/query/user.sql
-
-3. test(go-backend): add unit tests for user entity
-   → internal/domain/entity/user_test.go
-```
-
-Ask: "Does this split look right, or would you like to adjust it?"
+Decide the split autonomously and proceed directly to execution — do **not** ask the user for confirmation.
 
 ### Step 3: Generate commit messages
 
@@ -77,7 +62,7 @@ For each group, apply the format:
 
 ### Step 4: Execute commits in order
 
-After the user approves the plan, execute each commit sequentially:
+Execute each commit sequentially without waiting for user approval:
 
 1. Stage only the files for that commit (use explicit file paths, never `git add -A`)
 2. Run the commit
