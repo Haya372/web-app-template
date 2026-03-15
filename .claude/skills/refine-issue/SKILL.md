@@ -7,15 +7,15 @@ user-invokable: true
 
 # Refine Issue Skill
 
-このスキルは GitHub Issue を受け取り、要件定義として整理し、実装計画を Sub-Issue として作成します。
+This skill takes a GitHub Issue, organizes it as structured requirements (要件定義), and creates Sub-Issues as an implementation plan.
 
 ## Workflow
 
 ### Step 0: Parse arguments
 
-`$ARGUMENTS` に GitHub Issue 番号が含まれている必要があります（例: `42` または `#42`）。
-数値部分を抽出して `ISSUE_NUMBER` に代入します。
-番号が見つからない場合は止まり、ユーザーに質問します: "Which issue number should I refine?"
+`$ARGUMENTS` must contain a GitHub Issue number (e.g. `42` or `#42`).
+Extract the numeric part and assign it to `ISSUE_NUMBER`.
+If no number is found, stop and ask the user: "Which issue number should I refine?"
 
 ### Step 1: Fetch the issue
 
@@ -23,19 +23,19 @@ user-invokable: true
 gh issue view $ISSUE_NUMBER --json number,title,body,labels,assignees
 ```
 
-以下を把握します:
-- **サマリ**: 何をするのか
-- **背景 / 課題**: なぜ必要か
-- **目的 / 成功基準**: 完了の定義
-- **スコープ**: 対象範囲
-- **やること**: 実施事項リスト
-- **完了条件**: 検証可能な受け入れ条件
+Understand:
+- **Summary**: what needs to be done
+- **Background / Problem**: why it is needed
+- **Goals / Success criteria**: definition of done
+- **Scope**: what is and is not included
+- **To-do list**: list of tasks
+- **Acceptance criteria**: verifiable conditions
 
-Issue 本文が不足・曖昧な場合は、次の Step に進む前にユーザーに確認します。
+If the issue body is missing or too vague, stop and ask the user before continuing.
 
 ### Step 2: Produce structured requirements (要件定義)
 
-Issue の内容を以下の構造で整理します:
+Organize the issue content into the following structure and output it in Japanese:
 
 ```
 ## 要件定義: <Issue タイトル>
@@ -67,20 +67,20 @@ Issue の内容を以下の構造で整理します:
 - <他の Issue や前提条件>
 ```
 
-要件定義の結果をユーザーに提示し、確認を得てから Sub-Issue 作成に進みます。
+Present the requirements to the user and get confirmation before proceeding to Sub-Issue creation.
 
 ### Step 3: Split into Sub-Issues (実装計画)
 
-機能要件とレイヤーに基づいて、Sub-Issues に分割します。
+Split into Sub-Issues based on functional requirements and layers.
 
-分割の基準:
-- **1 Sub-Issue = 1 レイヤーの 1 機能単位** (例: Backend のエンドポイント追加、Frontend のコンポーネント実装)
-- 依存関係がある場合は `Blocked by #<issue>` を本文に記載
-- 各 Sub-Issue は独立してレビュー・リバートできる粒度にする
+Splitting rules:
+- **1 Sub-Issue = 1 unit of functionality per layer** (e.g. adding a Backend endpoint, implementing a Frontend component)
+- If there are dependencies, include `Blocked by #<issue>` in the body
+- Each Sub-Issue should be granular enough to be reviewed and reverted independently
 
-Sub-Issue のタイトル形式: `<type>(<scope>): <要件の概要> (Sub-Issue of #<ISSUE_NUMBER>)`
+Sub-Issue title format: `<type>(<scope>): <requirement summary> (Sub-Issue of #<ISSUE_NUMBER>)`
 
-Sub-Issue の本文テンプレート:
+Sub-Issue body template (write in Japanese):
 
 ```
 **親 Issue:** #<ISSUE_NUMBER>
@@ -99,7 +99,7 @@ Sub-Issue の本文テンプレート:
 - Blocked by: <なし、または #<issue>>
 ```
 
-各 Sub-Issue を作成します:
+Create each Sub-Issue:
 
 ```bash
 gh issue create \
@@ -112,7 +112,7 @@ EOF
 
 ### Step 4: Link Sub-Issues to the parent
 
-親 Issue にコメントを追加して Sub-Issue の一覧を記録します:
+Add a comment to the parent issue listing all Sub-Issues (write in Japanese):
 
 ```bash
 gh issue comment $ISSUE_NUMBER --body "$(cat <<'EOF'
@@ -130,12 +130,12 @@ EOF
 
 ### Step 5: Summary
 
-作成した Sub-Issues の URL 一覧をユーザーに返します。
+Return a list of created Sub-Issue URLs to the user.
 
 ---
 
 ## Safety rules
 
-- Issue 本文が不明瞭な場合は Sub-Issue を作成せず、ユーザーに確認する
-- Sub-Issue は親 Issue より細かい粒度にする（親をそのまま複製しない）
-- 1 つの Sub-Issue が大きすぎる場合（やること が 5 項目超）はさらに分割を検討する
+- If the issue body is unclear, do not create Sub-Issues — ask the user first
+- Sub-Issues must be more granular than the parent (do not simply duplicate it)
+- If a single Sub-Issue is too large (more than 5 to-do items), consider splitting further

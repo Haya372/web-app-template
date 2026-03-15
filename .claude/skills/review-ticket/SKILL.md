@@ -7,15 +7,15 @@ user-invokable: true
 
 # Review Ticket Skill (Refinement Review)
 
-このスキルは GitHub Issue の品質をレビューし、不備・曖昧さを指摘します。
+This skill reviews the quality of a GitHub Issue and reports deficiencies and ambiguities.
 
 ## Workflow
 
 ### Step 0: Parse arguments
 
-`$ARGUMENTS` に GitHub Issue 番号が含まれている必要があります（例: `42` または `#42`）。
-数値部分を抽出して `ISSUE_NUMBER` に代入します。
-番号が見つからない場合は止まり、ユーザーに質問します: "Which issue number should I review?"
+`$ARGUMENTS` must contain a GitHub Issue number (e.g. `42` or `#42`).
+Extract the numeric part and assign it to `ISSUE_NUMBER`.
+If no number is found, stop and ask the user: "Which issue number should I review?"
 
 ### Step 1: Fetch the issue
 
@@ -23,50 +23,50 @@ user-invokable: true
 gh issue view $ISSUE_NUMBER --json number,title,body,labels,assignees,comments
 ```
 
-Issue のすべてのセクションを精読します。
+Read all sections of the issue carefully.
 
 ### Step 2: Review against quality checklist
 
-以下の観点で Issue を評価します。各項目を Pass / Fail / Warning で判定します。
+Evaluate the issue against the following criteria. Rate each item Pass / Fail / Warning.
 
-#### 2.1 サマリ・目的の明確さ
-- [ ] サマリが1文で「何をするか」を述べているか
-- [ ] 目的・成功基準が「なぜ必要か」を明確に述べているか
-- [ ] ビジネス価値またはユーザー価値が示されているか
+#### 2.1 Clarity of summary and purpose
+- [ ] Does the summary describe "what to do" in one sentence?
+- [ ] Does the goal/success criteria clearly state "why it is needed"?
+- [ ] Is business or user value demonstrated?
 
-#### 2.2 スコープの妥当性
-- [ ] 「対象」と「対象外」が明記されているか
-- [ ] スコープが単一のイテレーションで完遂できる大きさか（目安: やること が 7 項目以内）
-- [ ] スコープ外の懸念が「リスク / 相談事項」に記載されているか
+#### 2.2 Appropriateness of scope
+- [ ] Are "in scope" and "out of scope" explicitly stated?
+- [ ] Is the scope small enough to complete in a single iteration? (guideline: ≤ 7 to-do items)
+- [ ] Are out-of-scope concerns noted in the risks/discussion section?
 
-#### 2.3 完了条件の検証可能性
-- [ ] 完了条件がすべて客観的に検証できるか（「良くなる」などの主観的表現がないか）
-- [ ] 完了条件がすべての主要機能要件をカバーしているか
-- [ ] エラーケース・境界値を含む完了条件があるか
+#### 2.3 Verifiability of acceptance criteria
+- [ ] Can all acceptance criteria be verified objectively (no subjective expressions like "improves")?
+- [ ] Do the acceptance criteria cover all major functional requirements?
+- [ ] Are error cases and boundary values included in the criteria?
 
-#### 2.4 やること（タスクリスト）の具体性
-- [ ] 各タスクが実装者が迷わず着手できる粒度か
-- [ ] タスク間の依存関係が明示されているか（順序が重要な場合）
-- [ ] 技術的な実装詳細（APIエンドポイント、DBスキーマ等）が適切に記載されているか
+#### 2.4 Specificity of the to-do list
+- [ ] Is each task granular enough that an implementer can start without hesitation?
+- [ ] Are dependencies between tasks made explicit (when order matters)?
+- [ ] Are technical implementation details (API endpoints, DB schema, etc.) documented appropriately?
 
-#### 2.5 テスト観点の充実度
-- [ ] 正常系シナリオが記載されているか
-- [ ] 異常系・エラーシナリオが記載されているか
-- [ ] 受け入れテストが実行可能な形で記述されているか
+#### 2.5 Completeness of test perspective
+- [ ] Are normal-flow scenarios documented?
+- [ ] Are error/edge-case scenarios documented?
+- [ ] Are acceptance tests written in an executable form?
 
-#### 2.6 リスクと依存関係
-- [ ] 既知のリスクや未解決の問題が記載されているか
-- [ ] 他のチームや Issue への依存関係が明示されているか
+#### 2.6 Risks and dependencies
+- [ ] Are known risks or unresolved questions documented?
+- [ ] Are dependencies on other teams or issues made explicit?
 
 ### Step 3: Produce the review report
 
-以下の形式でレビュー結果を出力します:
+Output the review result in Japanese using the following format:
 
 ```
-## Ticket Review: #<ISSUE_NUMBER> — <タイトル>
+## チケットレビュー: #<ISSUE_NUMBER> — <タイトル>
 
 ### 総合評価
-<Ready for implementation / Needs revision / Needs major rework>
+<実装開始可能 / 要修正 / 大幅な見直しが必要>
 
 <総合評価の理由を2〜4文で記述>
 
@@ -104,7 +104,7 @@ Issue のすべてのセクションを精読します。
 
 ### Step 4: Post as comment (optional)
 
-ユーザーが指示した場合、レビュー結果を Issue にコメントとして投稿します:
+If the user instructs, post the review result as a comment on the issue:
 
 ```bash
 gh issue comment $ISSUE_NUMBER --body "$(cat <<'EOF'
@@ -117,7 +117,7 @@ EOF
 
 ## Behavioral guidelines
 
-- **具体的に指摘する**: 「曖昧」と言うだけでなく、何が曖昧でどう修正すべきかを示す
-- **建設的に**: 問題を見つけることではなく、実装可能な状態にすることが目的
-- **過剰要求しない**: 完璧なチケットを要求しない。実装者が安心して着手できれば十分
-- **コンテキストを尊重する**: プロジェクトの慣習・制約を踏まえてレビューする
+- **Be specific**: don't just say "ambiguous" — show what is ambiguous and how to fix it
+- **Be constructive**: the goal is to make the ticket implementable, not to find faults
+- **Don't over-demand**: don't require a perfect ticket; it is enough that an implementer can start confidently
+- **Respect context**: review with awareness of project conventions and constraints
