@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite --port 3000",
     "generate": "run-p generate:*",
+    "generate:api": "openapi-ts",
     "generate:route": "tsr generate",
     "build": "vite build",
     "prebuild": "run-s generate typecheck",
@@ -23,6 +24,8 @@
     "check": "biome check"
   },
   "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1",
+    "@hey-api/openapi-ts": "^0.94.1",
     "@hookform/resolvers": "5.2.2",
     "@repo/ui": "workspace:*",
     "@tanstack/react-router": "1.166.8",

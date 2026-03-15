@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "go-backend/**"
+      - "openapi/**"
       - ".github/workflows/ci-backend.yml"
       - ".github/actions/setup-backend/**"
       - "!**.md"
@@ -14,6 +15,7 @@ on:
       - 'main'
     paths:
       - "go-backend/**"
+      - "openapi/**"
       - ".github/workflows/ci-backend.yml"
       - ".github/actions/setup-backend/**"
       - "!**.md"

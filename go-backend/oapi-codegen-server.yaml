@@ -1,0 +1,16 @@
+# oapi-codegen v2 configuration for server-side code generation.
+# Generates StrictServerInterface (framework-agnostic typed handler interface)
+# and model types from openapi/openapi.yaml.
+#
+# NOTE: We intentionally omit the "echo-server" target because oapi-codegen's
+# echo template targets Echo v4, which is incompatible with this project's Echo
+# v5 dependency (handler signature: func(*echo.Context) error vs interface).
+# Instead, a hand-written Echo v5 adapter lives in
+# internal/infrastructure/http/router.go.
+package: generated
+generate:
+  models: true
+  strict-server: true
+  chi-server: true
+  embedded-spec: true
+output: internal/infrastructure/http/generated/server.gen.go

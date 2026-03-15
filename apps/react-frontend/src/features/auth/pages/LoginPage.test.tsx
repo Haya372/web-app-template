@@ -4,10 +4,10 @@
  * Uses ReactDOM + manual DOM querying since @testing-library/react is not installed.
  *
  * Mocks:
- *  - @/features/auth/api/login          callLogin vi.mock
- *  - @/utils/tokenStorage saveToken vi.mock
- *  - @tanstack/react-router             useNavigate vi.mock
- *  - @repo/ui                           toast vi.mock
+ *  - @/generated/sdk.gen               postV1UsersLogin vi.mock
+ *  - @/utils/tokenStorage              saveToken vi.mock
+ *  - @tanstack/react-router            useNavigate vi.mock
+ *  - @repo/ui                          toast vi.mock
  */
 
 import React, { act } from "react"
@@ -27,8 +27,8 @@ const { mockNavigate, mockToastError } = vi.hoisted(() => ({
 // Module-level mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@/features/auth/api/login", () => ({
-	callLogin: vi.fn(),
+vi.mock("@/generated/sdk.gen", () => ({
+	postV1UsersLogin: vi.fn(),
 }))
 
 vi.mock("@/utils/tokenStorage", () => ({
@@ -56,7 +56,7 @@ vi.mock("@repo/ui", async (importOriginal) => {
 // Imports after mocks
 // ---------------------------------------------------------------------------
 
-import { callLogin } from "@/features/auth/api/login"
+import { postV1UsersLogin } from "@/generated/sdk.gen"
 import { saveToken } from "@/utils/tokenStorage"
 import { LoginPage } from "./LoginPage"
 
@@ -64,7 +64,7 @@ import { LoginPage } from "./LoginPage"
 // Typed mock references
 // ---------------------------------------------------------------------------
 
-const mockCallLogin = callLogin as ReturnType<typeof vi.fn>
+const mockPostV1UsersLogin = postV1UsersLogin as ReturnType<typeof vi.fn>
 const mockSaveToken = saveToken as ReturnType<typeof vi.fn>
 
 // ---------------------------------------------------------------------------
@@ -113,7 +113,7 @@ function clearBody(): void {
 
 beforeEach(() => {
 	vi.stubEnv("VITE_API_BASE_URL", "http://localhost:8080")
-	mockCallLogin.mockReset()
+	mockPostV1UsersLogin.mockReset()
 	mockSaveToken.mockReset()
 	mockNavigate.mockReset()
 	mockToastError.mockReset()
@@ -184,12 +184,12 @@ describe("LoginPage — client-side validation", () => {
 		expect(container.textContent).toContain("Password is required")
 	})
 
-	it("does not call callLogin when validation fails", async () => {
+	it("does not call postV1UsersLogin when validation fails", async () => {
 		const container = mountLoginPage()
 		const form = container.querySelector<HTMLFormElement>("form")
 		await submitForm(form as HTMLFormElement)
 
-		expect(mockCallLogin).not.toHaveBeenCalled()
+		expect(mockPostV1UsersLogin).not.toHaveBeenCalled()
 	})
 })
 
@@ -199,7 +199,7 @@ describe("LoginPage — client-side validation", () => {
 
 describe("LoginPage — loading state", () => {
 	it("disables the submit button while the API call is in-flight", async () => {
-		mockCallLogin.mockImplementation(
+		mockPostV1UsersLogin.mockImplementation(
 			() => new Promise<never>(() => undefined),
 		)
 
@@ -234,8 +234,12 @@ describe("LoginPage — successful login", () => {
 		user: { id: "u1", name: "Alice", email: "alice@example.com" },
 	}
 
-	it("calls saveToken with the token returned by callLogin", async () => {
-		mockCallLogin.mockResolvedValue(VALID_RESPONSE)
+	it("calls saveToken with the token returned by the API", async () => {
+		mockPostV1UsersLogin.mockResolvedValue({
+			data: VALID_RESPONSE,
+			error: undefined,
+			response: { status: 200 },
+		})
 
 		const container = mountLoginPage()
 		const emailInput = container.querySelector<HTMLInputElement>(
@@ -255,7 +259,11 @@ describe("LoginPage — successful login", () => {
 	})
 
 	it("navigates to '/' after a successful login", async () => {
-		mockCallLogin.mockResolvedValue(VALID_RESPONSE)
+		mockPostV1UsersLogin.mockResolvedValue({
+			data: VALID_RESPONSE,
+			error: undefined,
+			response: { status: 200 },
+		})
 
 		const container = mountLoginPage()
 		const emailInput = container.querySelector<HTMLInputElement>(
@@ -283,29 +291,24 @@ describe("LoginPage — failed login", () => {
 	const errorCases = [
 		{
 			name: "shows 'Invalid email or password' toast on a 401 error",
-			error: new Error("401"),
+			mock: { data: undefined, error: {}, response: { status: 401 } },
 			expectedMessage: "Invalid email or password",
 		},
 		{
 			name: "shows generic error toast on a 500 server error",
-			error: new Error("500"),
-			expectedMessage: "Login failed. Please try again.",
-		},
-		{
-			name: "shows generic error toast on a network-level failure",
-			error: new Error("Network failure"),
+			mock: { data: undefined, error: {}, response: { status: 500 } },
 			expectedMessage: "Login failed. Please try again.",
 		},
 		{
 			name: "shows generic error toast on a 403 error",
-			error: new Error("403"),
+			mock: { data: undefined, error: {}, response: { status: 403 } },
 			expectedMessage: "Login failed. Please try again.",
 		},
 	]
 
-	for (const { name, error, expectedMessage } of errorCases) {
+	for (const { name, mock, expectedMessage } of errorCases) {
 		it(name, async () => {
-			mockCallLogin.mockRejectedValue(error)
+			mockPostV1UsersLogin.mockResolvedValue(mock)
 
 			const container = mountLoginPage()
 			const emailInput = container.querySelector<HTMLInputElement>(
@@ -327,8 +330,34 @@ describe("LoginPage — failed login", () => {
 		})
 	}
 
+	it("shows generic error toast on a network-level failure", async () => {
+		mockPostV1UsersLogin.mockRejectedValue(new Error("Network failure"))
+
+		const container = mountLoginPage()
+		const emailInput = container.querySelector<HTMLInputElement>(
+			'input[type="email"], input[name="email"]',
+		)
+		const passwordInput = container.querySelector<HTMLInputElement>(
+			'input[type="password"]',
+		)
+		const form = container.querySelector<HTMLFormElement>("form")
+
+		fillInput(emailInput as HTMLInputElement, "user@example.com")
+		fillInput(passwordInput as HTMLInputElement, "password123")
+
+		await submitForm(form as HTMLFormElement)
+
+		expect(mockToastError).toHaveBeenCalledWith(
+			expect.stringContaining("Login failed. Please try again."),
+		)
+	})
+
 	it("re-enables the submit button after a failed login", async () => {
-		mockCallLogin.mockRejectedValue(new Error("500"))
+		mockPostV1UsersLogin.mockResolvedValue({
+			data: undefined,
+			error: {},
+			response: { status: 500 },
+		})
 
 		const container = mountLoginPage()
 		const emailInput = container.querySelector<HTMLInputElement>(

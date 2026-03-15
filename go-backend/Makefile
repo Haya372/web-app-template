@@ -5,6 +5,7 @@ setup:
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
 	go install go.uber.org/mock/mockgen@v0.6.0
 	go install github.com/google/wire/cmd/wire@v0.7.0
+	go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 
 .PHONY: lint
 lint:
@@ -36,8 +37,15 @@ generate-db-client:
 generate-di-container:
 	wire gen ./...
 
-.PHONY: generate generate-db-client generate-di-container
-generate: generate-db-client generate-di-container
+.PHONY: generate-api
+generate-api:
+	mkdir -p internal/infrastructure/http/generated
+	mkdir -p test/integration/client/generated
+	oapi-codegen -config oapi-codegen-server.yaml ../openapi/openapi.yaml
+	oapi-codegen -config oapi-codegen-client.yaml ../openapi/openapi.yaml
+
+.PHONY: generate generate-db-client generate-api generate-di-container
+generate: generate-db-client generate-api generate-di-container
 	go generate ./...
 
 .PHONY: migrate-local

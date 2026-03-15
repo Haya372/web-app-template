@@ -39,6 +39,9 @@ linters = [
   "mnd",
 ]
 
+[linters.settings.exhaustive]
+default-signifies-exhaustive = true
+
 # depguard: enforce Clean Architecture import boundaries (ADR-0004)
 [linters.settings.depguard.rules.domain-no-framework]
   files = ["**/internal/domain/**"]

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-import { callSignup } from '@/features/auth/api/signup'
+import { postV1UsersSignup } from '@/generated/sdk.gen'
 
 function useSignupFormSchema() {
   const { t } = useTranslation()
@@ -31,7 +31,11 @@ export function useSignupForm() {
   async function onSubmit(values: SignupFormValues) {
     setErrorMessage('')
     try {
-      await callSignup(values.name, values.email, values.password)
+      const { data, error, response } = await postV1UsersSignup({
+        body: { name: values.name, email: values.email, password: values.password },
+        baseUrl: import.meta.env.VITE_API_BASE_URL,
+      })
+      if (error || !data) throw new Error(String(response.status))
       navigate({ to: '/login' })
     } catch (err) {
       const message = err instanceof Error ? err.message : ''

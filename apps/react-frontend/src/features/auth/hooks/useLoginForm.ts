@@ -4,7 +4,7 @@ import { toast } from '@repo/ui'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-import { callLogin } from '@/features/auth/api/login'
+import { postV1UsersLogin } from '@/generated/sdk.gen'
 import { saveToken } from '@/utils/tokenStorage'
 
 function useLoginFormSchema() {
@@ -29,8 +29,12 @@ export function useLoginForm() {
 
   async function onSubmit(values: LoginFormValues) {
     try {
-      const response = await callLogin(values.email, values.password)
-      saveToken(response.token)
+      const { data, error, response } = await postV1UsersLogin({
+        body: { email: values.email, password: values.password },
+        baseUrl: import.meta.env.VITE_API_BASE_URL,
+      })
+      if (error || !data) throw new Error(String(response.status))
+      saveToken(data.token)
       navigate({ to: '/' })
     } catch (err) {
       const message = err instanceof Error ? err.message : ''

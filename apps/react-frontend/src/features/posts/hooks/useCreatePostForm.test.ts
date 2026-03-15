@@ -8,10 +8,10 @@
  * return value is reachable through the DOM.
  *
  * Mocks:
- *  - @/features/posts/api/createPost   callCreatePost  vi.mock
- *  - @/utils/tokenStorage getToken       vi.mock
- *  - @tanstack/react-router             useNavigate    vi.mock
- *  - @repo/ui                           toast          vi.mock
+ *  - @/generated/sdk.gen               postV1Posts    vi.mock
+ *  - @/utils/tokenStorage              getToken       vi.mock
+ *  - @tanstack/react-router            useNavigate    vi.mock
+ *  - @repo/ui                          toast          vi.mock
  */
 
 import { createElement } from "react"
@@ -35,8 +35,8 @@ const { mockNavigate, mockToastSuccess, mockToastError, mockGetToken } =
 // Module-level mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@/features/posts/api/createPost", () => ({
-	callCreatePost: vi.fn(),
+vi.mock("@/generated/sdk.gen", () => ({
+	postV1Posts: vi.fn(),
 }))
 
 vi.mock("@/utils/tokenStorage", () => ({
@@ -63,14 +63,14 @@ vi.mock("@repo/ui", async (importOriginal) => {
 // Imports after mocks
 // ---------------------------------------------------------------------------
 
-import { callCreatePost } from "@/features/posts/api/createPost"
+import { postV1Posts } from "@/generated/sdk.gen"
 import { useCreatePostForm } from "@/features/posts/hooks/useCreatePostForm"
 
 // ---------------------------------------------------------------------------
 // Typed mock references
 // ---------------------------------------------------------------------------
 
-const mockCallCreatePost = callCreatePost as ReturnType<typeof vi.fn>
+const mockPostV1Posts = postV1Posts as ReturnType<typeof vi.fn>
 
 // ---------------------------------------------------------------------------
 // TestComponent
@@ -166,7 +166,7 @@ function clearBody(): void {
 
 beforeEach(() => {
 	vi.stubEnv("VITE_API_BASE_URL", "http://localhost:8080")
-	mockCallCreatePost.mockReset()
+	mockPostV1Posts.mockReset()
 	mockNavigate.mockReset()
 	mockToastSuccess.mockReset()
 	mockToastError.mockReset()
@@ -214,8 +214,8 @@ describe("useCreatePostForm — client-side validation", () => {
 
 		await submitForm(form as HTMLFormElement)
 
-		// Validation must surface an error — callCreatePost must not be called
-		expect(mockCallCreatePost).not.toHaveBeenCalled()
+		// Validation must surface an error — postV1Posts must not be called
+		expect(mockPostV1Posts).not.toHaveBeenCalled()
 		// The error message should be visible in the DOM
 		const errorEl = container.querySelector<HTMLElement>("[data-testid='content-error']")
 		expect(errorEl).not.toBeNull()
@@ -234,7 +234,7 @@ describe("useCreatePostForm — client-side validation", () => {
 		fillTextarea(textarea as HTMLTextAreaElement, "a".repeat(281))
 		await submitForm(form as HTMLFormElement)
 
-		expect(mockCallCreatePost).not.toHaveBeenCalled()
+		expect(mockPostV1Posts).not.toHaveBeenCalled()
 		expect(container.textContent).toContain(
 			"Content must be 280 characters or less",
 		)
@@ -242,10 +242,10 @@ describe("useCreatePostForm — client-side validation", () => {
 
 	it("does not show a validation error when content is exactly 280 characters", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
-		mockCallCreatePost.mockResolvedValue({
-			id: "post-1",
-			content: "a".repeat(280),
-			createdAt: "2026-03-14T00:00:00Z",
+		mockPostV1Posts.mockResolvedValue({
+			data: { id: "post-1", content: "a".repeat(280), createdAt: "2026-03-14T00:00:00Z" },
+			error: undefined,
+			response: { status: 201 },
 		})
 
 		const container = mountTestComponent()
@@ -307,9 +307,13 @@ describe("useCreatePostForm — successful submit", () => {
 		createdAt: "2026-03-14T00:00:00Z",
 	}
 
-	it("calls callCreatePost with the entered content", async () => {
+	it("calls postV1Posts with the entered content", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
-		mockCallCreatePost.mockResolvedValue(MOCK_RESPONSE)
+		mockPostV1Posts.mockResolvedValue({
+			data: MOCK_RESPONSE,
+			error: undefined,
+			response: { status: 201 },
+		})
 
 		const container = mountTestComponent()
 		const textarea = container.querySelector<HTMLTextAreaElement>("textarea")
@@ -318,12 +322,18 @@ describe("useCreatePostForm — successful submit", () => {
 		fillTextarea(textarea as HTMLTextAreaElement, VALID_CONTENT)
 		await submitForm(form as HTMLFormElement)
 
-		expect(mockCallCreatePost).toHaveBeenCalledWith(VALID_CONTENT)
+		expect(mockPostV1Posts).toHaveBeenCalledWith(
+			expect.objectContaining({ body: { content: VALID_CONTENT } }),
+		)
 	})
 
 	it("shows a success toast after a successful submit", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
-		mockCallCreatePost.mockResolvedValue(MOCK_RESPONSE)
+		mockPostV1Posts.mockResolvedValue({
+			data: MOCK_RESPONSE,
+			error: undefined,
+			response: { status: 201 },
+		})
 
 		const container = mountTestComponent()
 		const textarea = container.querySelector<HTMLTextAreaElement>("textarea")
@@ -337,7 +347,11 @@ describe("useCreatePostForm — successful submit", () => {
 
 	it("resets the form after a successful submit", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
-		mockCallCreatePost.mockResolvedValue(MOCK_RESPONSE)
+		mockPostV1Posts.mockResolvedValue({
+			data: MOCK_RESPONSE,
+			error: undefined,
+			response: { status: 201 },
+		})
 
 		const container = mountTestComponent()
 		const textarea = container.querySelector<HTMLTextAreaElement>("textarea")
@@ -362,7 +376,7 @@ describe("useCreatePostForm — loading state", () => {
 	it("disables the submit button while the API call is in-flight", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
 		// Never resolves — keeps isSubmitting true
-		mockCallCreatePost.mockImplementation(
+		mockPostV1Posts.mockImplementation(
 			() => new Promise<never>(() => undefined),
 		)
 
@@ -385,9 +399,13 @@ describe("useCreatePostForm — loading state", () => {
 // ---------------------------------------------------------------------------
 
 describe("useCreatePostForm — failed submit", () => {
-	it("navigates to /login on a 401 error from callCreatePost", async () => {
+	it("navigates to /login on a 401 error from postV1Posts", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
-		mockCallCreatePost.mockRejectedValue(new Error("401"))
+		mockPostV1Posts.mockResolvedValue({
+			data: undefined,
+			error: { type: "UNAUTHORIZED", title: "Unauthorized", status: 401 },
+			response: { status: 401 },
+		})
 
 		const container = mountTestComponent()
 		const textarea = container.querySelector<HTMLTextAreaElement>("textarea")
@@ -401,7 +419,11 @@ describe("useCreatePostForm — failed submit", () => {
 
 	it("shows an error toast on a 500 server error", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
-		mockCallCreatePost.mockRejectedValue(new Error("500"))
+		mockPostV1Posts.mockResolvedValue({
+			data: undefined,
+			error: { type: "INTERNAL_ERROR", title: "Internal Server Error", status: 500 },
+			response: { status: 500 },
+		})
 
 		const container = mountTestComponent()
 		const textarea = container.querySelector<HTMLTextAreaElement>("textarea")
@@ -416,7 +438,7 @@ describe("useCreatePostForm — failed submit", () => {
 
 	it("shows an error toast on a network-level failure", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
-		mockCallCreatePost.mockRejectedValue(new Error("Network failure"))
+		mockPostV1Posts.mockRejectedValue(new Error("Network failure"))
 
 		const container = mountTestComponent()
 		const textarea = container.querySelector<HTMLTextAreaElement>("textarea")
@@ -431,7 +453,11 @@ describe("useCreatePostForm — failed submit", () => {
 
 	it("does not navigate to /login on a non-401 error", async () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
-		mockCallCreatePost.mockRejectedValue(new Error("403"))
+		mockPostV1Posts.mockResolvedValue({
+			data: undefined,
+			error: { type: "FORBIDDEN", title: "Forbidden", status: 403 },
+			response: { status: 403 },
+		})
 
 		const container = mountTestComponent()
 		const textarea = container.querySelector<HTMLTextAreaElement>("textarea")

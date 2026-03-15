@@ -32,8 +32,8 @@ services:
 
   backend:
     build:
-      context: ../go-backend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: go-backend/Dockerfile
     container_name: e2e_backend
     environment:
       DATABASE_DSN: postgres://postgres:postgres@db:5432/backend
