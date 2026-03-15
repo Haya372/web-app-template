@@ -82,6 +82,17 @@ src/
 ## Coding Style
 
 - Use Biome for formatting (tabs, double quotes for JSX strings) and linting; always pass `pnpm lint` before pushing.
+- ESLint enforces additional quality rules beyond Biome:
+  - **`eslint-plugin-react`** + **`eslint-plugin-react-hooks`** — JSX correctness and Rules of Hooks.
+  - **`eslint-plugin-jsx-a11y`** — accessibility best practices for JSX elements.
+  - **`eslint-plugin-import-x`** — detects self-imports, cycles, and duplicate imports. Resolution-based rules (`no-unresolved`, `namespace`, `default`) are disabled — TypeScript is the authoritative resolver.
+  - **`eslint-plugin-unicorn`** — modern JavaScript idioms. Several rules are intentionally disabled with comments in `eslint.config.mjs`:
+    - `unicorn/prevent-abbreviations` — project uses common abbreviations (`props`, `fn`, `ref`, …)
+    - `unicorn/filename-case` — allows PascalCase (components) and camelCase (hooks/utils)
+    - `unicorn/no-null` — React APIs and API types legitimately use `null`
+    - `unicorn/prefer-global-this` — pure browser app; `window` is idiomatic
+    - `unicorn/require-module-specifiers` — TypeScript `export {}` module declaration pattern
+    - See `eslint.config.mjs` for the full list and rationale
 - Use `@/*` import alias for cross-feature and shared-module imports; relative paths are fine within the same feature directory.
 - Component filenames and function names use **PascalCase** (`Header.tsx`, `function Header()`).
 - Non-component TypeScript files use **camelCase** (`router.tsx`, `useTheme.ts`).
