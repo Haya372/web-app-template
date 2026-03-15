@@ -5,7 +5,7 @@
   },
   "permissions": {
     "deny": [
-      "Bash(gh config get:*)",
+      "Bash(gh config:*)",
       "Bash(gh auth:*)",
       "Bash(gh secret:*)",
       "Bash(gh project:*)",

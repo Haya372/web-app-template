@@ -6,7 +6,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { callCreatePost } from '@/features/posts/api/createPost'
-import { getToken } from '@/features/auth/utils/tokenStorage'
+import { getToken } from '@/utils/tokenStorage'
 
 function useCreatePostFormSchema() {
   const { t } = useTranslation()

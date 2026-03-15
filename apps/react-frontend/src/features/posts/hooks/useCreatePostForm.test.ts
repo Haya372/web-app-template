@@ -9,7 +9,7 @@
  *
  * Mocks:
  *  - @/features/posts/api/createPost   callCreatePost  vi.mock
- *  - @/features/auth/utils/tokenStorage getToken       vi.mock
+ *  - @/utils/tokenStorage getToken       vi.mock
  *  - @tanstack/react-router             useNavigate    vi.mock
  *  - @repo/ui                           toast          vi.mock
  */
@@ -39,7 +39,7 @@ vi.mock("@/features/posts/api/createPost", () => ({
 	callCreatePost: vi.fn(),
 }))
 
-vi.mock("@/features/auth/utils/tokenStorage", () => ({
+vi.mock("@/utils/tokenStorage", () => ({
 	getToken: mockGetToken,
 }))
 

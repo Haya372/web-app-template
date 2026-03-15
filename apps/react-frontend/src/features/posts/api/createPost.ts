@@ -1,5 +1,5 @@
 import { postV1Posts } from "@/generated/sdk.gen"
-import { getToken } from "@/features/auth/utils/tokenStorage"
+import { getToken } from "@/utils/tokenStorage"
 import type { CreatePostResponse } from "@/features/posts/types/post"
 
 export async function callCreatePost(content: string): Promise<CreatePostResponse> {

@@ -9,13 +9,13 @@ vi.mock("@/generated/sdk.gen", () => ({
 	postV1Posts: vi.fn(),
 }))
 
-vi.mock("@/features/auth/utils/tokenStorage", () => ({
+vi.mock("@/utils/tokenStorage", () => ({
 	getToken: vi.fn(),
 }))
 
 // Import after vi.mock so that the mocks are already in place
 import { postV1Posts } from "@/generated/sdk.gen"
-import { getToken } from "@/features/auth/utils/tokenStorage"
+import { getToken } from "@/utils/tokenStorage"
 
 const mockPostV1Posts = postV1Posts as ReturnType<typeof vi.fn>
 const mockGetToken = getToken as ReturnType<typeof vi.fn>
