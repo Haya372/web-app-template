@@ -6,6 +6,7 @@ import (
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
+	generated "github.com/Haya372/web-app-template/go-backend/internal/infrastructure/http/generated"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/service"
 	"github.com/labstack/echo/v5"
 )
@@ -20,14 +21,14 @@ func JWTMiddleware(jwtService service.JwtService) echo.MiddlewareFunc {
 		return func(c *echo.Context) error {
 			authHeader := c.Request().Header.Get("Authorization")
 			if !strings.HasPrefix(authHeader, "Bearer ") {
-				return writeProblem(c, http.StatusUnauthorized, buildUnauthorizedProblem())
+				return writeUnauthorized(c)
 			}
 
 			token := strings.TrimPrefix(authHeader, "Bearer ")
 
 			claims, err := jwtService.ValidateToken(c.Request().Context(), token)
 			if err != nil {
-				return writeProblem(c, http.StatusUnauthorized, buildUnauthorizedProblem())
+				return writeUnauthorized(c)
 			}
 
 			// Propagate userID into both the Echo context and the Go request
@@ -41,10 +42,12 @@ func JWTMiddleware(jwtService service.JwtService) echo.MiddlewareFunc {
 	}
 }
 
-func buildUnauthorizedProblem() problemDetails {
-	return problemDetails{
-		Type:   vo.UnauthorizedErrorCode,
+func writeUnauthorized(c *echo.Context) error {
+	c.Response().Header().Set(echo.HeaderContentType, problemContentType)
+
+	return c.JSON(http.StatusUnauthorized, generated.ProblemDetails{
+		Type:   string(vo.UnauthorizedErrorCode),
 		Title:  vo.UnauthorizedErrorCode.Title(),
 		Status: http.StatusUnauthorized,
-	}
+	})
 }
