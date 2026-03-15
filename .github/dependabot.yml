@@ -21,48 +21,34 @@ updates:
       prefix: "chore(go-backend)"
 
   - package-ecosystem: "docker-compose"
-    directory: "/go-backend"
+    directory: "/"
     open-pull-requests-limit: 1
     schedule:
       interval: "weekly"
     labels:
       - "dependencies"
       - "dependabot"
+    groups:
+      docker-compose:
+        patterns:
+          - "*"
     commit-message:
-      prefix: "chore(go-backend docker)"
+      prefix: "chore(docker)"
 
   - package-ecosystem: "docker"
-    directory: "/go-backend"
+    directory: "/"
     open-pull-requests-limit: 1
     schedule:
       interval: "weekly"
     labels:
       - "dependencies"
       - "dependabot"
+    groups:
+      docker:
+        patterns:
+          - "*"
     commit-message:
-      prefix: "chore(go-backend docker)"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/e2e"
-    open-pull-requests-limit: 1
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "dependabot"
-    commit-message:
-      prefix: "chore(e2e docker)"
-
-  - package-ecosystem: "docker"
-    directory: "/e2e"
-    open-pull-requests-limit: 1
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "dependabot"
-    commit-message:
-      prefix: "chore(e2e docker)"
+      prefix: "chore(docker)"
 
   # TODO: fix　to suit your requirements
   - package-ecosystem: "github-actions"

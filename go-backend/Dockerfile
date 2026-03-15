@@ -15,12 +15,15 @@ COPY openapi/ /openapi/
 RUN make generate
 RUN go build -o server ./cmd/server/main.go
 
-FROM alpine:latest
+FROM alpine:3.21
 
-RUN apk --no-cache add ca-certificates tzdata wget
+RUN apk --no-cache add ca-certificates tzdata && \
+    addgroup -S appuser && adduser -S appuser -G appuser
 
 WORKDIR /app
-COPY --from=builder /app/server .
+COPY --from=builder --chown=appuser:appuser /app/server .
+
+USER appuser
 
 EXPOSE 8080
 CMD ["./server"]

@@ -61,6 +61,9 @@ infrastructure (adapters) → usecase → domain
 - HTTP error responses: `application/problem+json` with stable `type`/`title`/`status` fields; no internal diagnostics in public payloads (ADR-0006)
 - Transactions start in `usecase` via `TransactionManager.Do`, propagate via `context`; nested `TransactionManager.Do` calls are forbidden (ADR-0007)
 - `wire` is used only at the composition root (`cmd/`)
+- **depguard enforces import boundaries at lint time** — violations in `internal/domain` or `internal/usecase` cause `make lint` to fail:
+  - `internal/domain/**` must not import `echo`, `wire`, `pgx`/`pgconn`/`pgtype`, `database/sql`, `internal/usecase`, or `internal/infrastructure`
+  - `internal/usecase/**` must not import `echo`, `wire`, `pgx`/`pgconn`/`pgtype`, `database/sql`, or `internal/infrastructure`
 
 **Code generation:**
 
