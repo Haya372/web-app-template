@@ -27,7 +27,7 @@ Verify there are commits ahead of `main` to merge. If there are no commits, stop
 Infer the following from the commit history and diff:
 
 - **Title** — Follow `<type>(optional-scope): summary` format (no issue number in title). Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `perf`. Keep under 72 characters. **Write in English.**
-- **Linked issues** — Identify issue numbers from commit messages (e.g., `#12`). If none are found, ask the user.
+- **Linked issues** — Identify issue numbers from commit messages (e.g., `#12`) or branch name (e.g. `feature/42-foo` → `#42`). If none are found, omit the `Closes` line.
 - **Breaking changes** — Check if any API routes, response shapes, or public interfaces changed. Breaking changes require a note in `docs/operations/`.
 - **ADR/docs updates** — Check whether `docs/decisions/` or `docs/guidelines/` files were added or modified.
 
@@ -42,7 +42,7 @@ Identify which `make` targets are relevant to the changes:
 | DB schema / queries | `make generate && make migrate-local` |
 | Frontend (React) | `pnpm lint && pnpm test` (run from `apps/react-frontend/`) |
 
-Report which targets were run and whether they passed. If tests have not been run, prompt the user to run them before creating the PR.
+Run the relevant targets and report the results. If a target fails, fix the issue before creating the PR. Do **not** prompt the user for permission to run tests — execute them autonomously.
 
 ### 4. Handle breaking API changes
 
