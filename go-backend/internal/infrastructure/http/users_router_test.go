@@ -4,6 +4,7 @@ package http_test
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -53,16 +54,6 @@ func TestSignup(t *testing.T) {
 			problemType:  "VALIDATION_ERROR",
 		},
 		{
-			name: "Illegal Email Format",
-			request: clientgen.SignupRequest{
-				Name:     "Test",
-				Email:    "test",
-				Password: "password",
-			},
-			responseCode: http.StatusBadRequest,
-			problemType:  "VALIDATION_ERROR",
-		},
-		{
 			name: "Empty Name",
 			request: clientgen.SignupRequest{
 				Email:    "test@example.com",
@@ -92,6 +83,25 @@ func TestSignup(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestSignup_IllegalEmailFormat(t *testing.T) {
+	// openapi_types.Email rejects invalid emails client-side, so send raw JSON.
+	resp := rawPost(t, "/v1/users/signup", map[string]string{
+		"name":     "Test",
+		"email":    "test",
+		"password": "password",
+	})
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+	var problem clientgen.ProblemDetails
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&problem))
+	assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+
+	err := testDb.Cleanup()
+	require.NoError(t, err)
 }
 
 func TestSignup_DuplicateRequest(t *testing.T) {
@@ -164,16 +174,6 @@ func TestLogin(t *testing.T) {
 			responseCode: http.StatusBadRequest,
 			problemType:  "VALIDATION_ERROR",
 		},
-		{
-			name:  "Invalid email",
-			setup: true,
-			request: clientgen.LoginRequest{
-				Email:    "invalid",
-				Password: "password",
-			},
-			responseCode: http.StatusBadRequest,
-			problemType:  "VALIDATION_ERROR",
-		},
 	}
 
 	for _, tt := range tests {
@@ -211,6 +211,24 @@ func TestLogin(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestLogin_InvalidEmail(t *testing.T) {
+	// openapi_types.Email rejects invalid emails client-side, so send raw JSON.
+	resp := rawPost(t, "/v1/users/login", map[string]string{
+		"email":    "invalid",
+		"password": "password",
+	})
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+	var problem clientgen.ProblemDetails
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&problem))
+	assert.Equal(t, "VALIDATION_ERROR", problem.Type)
+
+	err := testDb.Cleanup()
+	require.NoError(t, err)
 }
 
 func TestListUsers(t *testing.T) {

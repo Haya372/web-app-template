@@ -33,8 +33,19 @@ func (r *routerImpl) AddRoute(e *echo.Echo) {
 	//
 	// oapi-codegen generates chi-server target code that uses net/http types, so
 	// we adapt each method to Echo v5 here rather than using the chi router.
+	// NewStrictHandlerWithOptions lets us replace the default RequestErrorHandlerFunc
+	// (which uses http.Error / plain text) with our problem+json handler.
+	strictHandler := generated.NewStrictHandlerWithOptions(r.handler, nil, generated.StrictHTTPServerOptions{
+		RequestErrorHandlerFunc: apiErrorHandler,
+		ResponseErrorHandlerFunc: func(w stdhttp.ResponseWriter, _ *stdhttp.Request, err error) {
+			w.Header().Set("Content-Type", problemContentType)
+			w.WriteHeader(stdhttp.StatusInternalServerError)
+			_ = writeJSONError(w, err)
+		},
+	})
+
 	siw := &generated.ServerInterfaceWrapper{
-		Handler:          generated.NewStrictHandler(r.handler, nil),
+		Handler:          strictHandler,
 		ErrorHandlerFunc: apiErrorHandler,
 	}
 

@@ -3,7 +3,9 @@
 package http_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"log"
 	stdHTTP "net/http"
 	"net/http/httptest"
@@ -69,6 +71,31 @@ func withBearerToken(token string) clientgen.RequestEditorFn {
 
 		return nil
 	}
+}
+
+// rawPost sends a POST request with a JSON body directly, bypassing typed-client
+// email validation. Use this when testing server-side rejection of invalid input
+// that the generated client would reject before sending.
+func rawPost(t *testing.T, path string, body any) *stdHTTP.Response {
+	t.Helper()
+
+	data, err := json.Marshal(body)
+	require.NoError(t, err)
+
+	req, err := stdHTTP.NewRequestWithContext(
+		context.Background(),
+		stdHTTP.MethodPost,
+		testServer.URL+path,
+		bytes.NewReader(data),
+	)
+	require.NoError(t, err)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := stdHTTP.DefaultClient.Do(req)
+	require.NoError(t, err)
+
+	return resp
 }
 
 // signupAndGetToken creates a user via signup, logs in, optionally assigns a
