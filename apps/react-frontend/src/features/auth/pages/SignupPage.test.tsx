@@ -53,7 +53,7 @@ const mockPostV1UsersSignup = postV1UsersSignup as ReturnType<typeof vi.fn>
 
 function mountSignupPage(): HTMLDivElement {
 	const container = document.createElement("div")
-	document.body.appendChild(container)
+	document.body.append(container)
 	act(() => {
 		createRoot(container).render(<SignupPage />)
 	})
@@ -83,7 +83,7 @@ function fillInput(input: HTMLInputElement, value: string): void {
 
 function clearBody(): void {
 	while (document.body.firstChild) {
-		document.body.removeChild(document.body.firstChild)
+		document.body.firstChild.remove()
 	}
 }
 
@@ -206,7 +206,7 @@ describe("SignupPage — client-side validation", () => {
 describe("SignupPage — loading state", () => {
 	it("disables the submit button while the API call is in-flight", async () => {
 		mockPostV1UsersSignup.mockImplementation(
-			() => new Promise<never>(() => undefined),
+			() => new Promise<never>(() => {}),
 		)
 
 		const container = mountSignupPage()

@@ -14,8 +14,7 @@
  *  - @repo/ui                          toast          vi.mock
  */
 
-import { createElement } from "react"
-import { act } from "react"
+import { createElement, act  } from "react"
 import { createRoot } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -126,7 +125,7 @@ function TestComponent(): React.ReactElement {
 
 function mountTestComponent(): HTMLDivElement {
 	const container = document.createElement("div")
-	document.body.appendChild(container)
+	document.body.append(container)
 	act(() => {
 		createRoot(container).render(createElement(TestComponent))
 	})
@@ -156,7 +155,7 @@ function fillTextarea(textarea: HTMLTextAreaElement, value: string): void {
 
 function clearBody(): void {
 	while (document.body.firstChild) {
-		document.body.removeChild(document.body.firstChild)
+		document.body.firstChild.remove()
 	}
 }
 
@@ -377,7 +376,7 @@ describe("useCreatePostForm — loading state", () => {
 		mockGetToken.mockReturnValue("valid-jwt-token")
 		// Never resolves — keeps isSubmitting true
 		mockPostV1Posts.mockImplementation(
-			() => new Promise<never>(() => undefined),
+			() => new Promise<never>(() => {}),
 		)
 
 		const container = mountTestComponent()

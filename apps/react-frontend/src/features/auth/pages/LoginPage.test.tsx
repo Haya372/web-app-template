@@ -73,7 +73,7 @@ const mockSaveToken = saveToken as ReturnType<typeof vi.fn>
 
 function mountLoginPage(): HTMLDivElement {
 	const container = document.createElement("div")
-	document.body.appendChild(container)
+	document.body.append(container)
 	act(() => {
 		createRoot(container).render(<LoginPage />)
 	})
@@ -103,7 +103,7 @@ function fillInput(input: HTMLInputElement, value: string): void {
 
 function clearBody(): void {
 	while (document.body.firstChild) {
-		document.body.removeChild(document.body.firstChild)
+		document.body.firstChild.remove()
 	}
 }
 
@@ -200,7 +200,7 @@ describe("LoginPage — client-side validation", () => {
 describe("LoginPage — loading state", () => {
 	it("disables the submit button while the API call is in-flight", async () => {
 		mockPostV1UsersLogin.mockImplementation(
-			() => new Promise<never>(() => undefined),
+			() => new Promise<never>(() => {}),
 		)
 
 		const container = mountLoginPage()

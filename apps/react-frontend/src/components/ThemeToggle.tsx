@@ -17,13 +17,13 @@ function applyTheme(mode: ThemeMode) {
 }
 
 export default function ThemeToggle() {
-  const [mode, setMode] = useState<ThemeMode>('system')
+  // Lazy initializer reads stored preference once on mount — avoids calling
+  // setState synchronously inside an effect (react-hooks/set-state-in-effect).
+  const [mode, setMode] = useState<ThemeMode>(() => getStoredMode())
 
   useEffect(() => {
-    const initial = getStoredMode()
-    setMode(initial)
-    applyTheme(initial)
-  }, [])
+    applyTheme(mode)
+  }, [mode])
 
   useEffect(() => {
     if (mode !== 'system') return

@@ -127,7 +127,7 @@ const mockUseCreatePostForm = useCreatePostForm as ReturnType<typeof vi.fn>
 
 function mountNewPostPage(): HTMLDivElement {
 	const container = document.createElement("div")
-	document.body.appendChild(container)
+	document.body.append(container)
 	act(() => {
 		createRoot(container).render(<NewPostPage />)
 	})
@@ -144,7 +144,7 @@ async function submitForm(form: HTMLFormElement): Promise<void> {
 
 function clearBody(): void {
 	while (document.body.firstChild) {
-		document.body.removeChild(document.body.firstChild)
+		document.body.firstChild.remove()
 	}
 }
 

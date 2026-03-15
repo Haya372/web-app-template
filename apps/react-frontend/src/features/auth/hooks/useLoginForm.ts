@@ -36,8 +36,8 @@ export function useLoginForm() {
       if (error || !data) throw new Error(String(response.status))
       saveToken(data.token)
       navigate({ to: '/' })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : ''
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ''
       toast.error(
         message === '401'
           ? t('login.error.invalidCredentials')
