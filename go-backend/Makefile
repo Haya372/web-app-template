@@ -42,8 +42,8 @@ generate-api:
 	oapi-codegen -config oapi-codegen-server.yaml ../openapi/openapi.yaml
 	oapi-codegen -config oapi-codegen-client.yaml ../openapi/openapi.yaml
 
-.PHONY: generate generate-db-client generate-di-container generate-api
-generate: generate-db-client generate-di-container generate-api
+.PHONY: generate generate-db-client generate-api generate-di-container
+generate: generate-db-client generate-api generate-di-container
 	go generate ./...
 
 .PHONY: migrate-local
