@@ -39,6 +39,8 @@ generate-di-container:
 
 .PHONY: generate-api
 generate-api:
+	mkdir -p internal/infrastructure/http/generated
+	mkdir -p test/integration/client/generated
 	oapi-codegen -config oapi-codegen-server.yaml ../openapi/openapi.yaml
 	oapi-codegen -config oapi-codegen-client.yaml ../openapi/openapi.yaml
 
