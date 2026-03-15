@@ -4,7 +4,7 @@
  * Uses ReactDOM + manual DOM querying since @testing-library/react is not installed.
  *
  * Mocks:
- *  - @/features/auth/api/signup   callSignup vi.mock
+ *  - @/generated/sdk.gen   postV1UsersSignup vi.mock
  *  - @tanstack/react-router       useNavigate vi.mock
  *
  * Note: errors are shown inline in the page (NOT via toast).
@@ -26,8 +26,8 @@ const { mockNavigate } = vi.hoisted(() => ({
 // Module-level mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@/features/auth/api/signup", () => ({
-	callSignup: vi.fn(),
+vi.mock("@/generated/sdk.gen", () => ({
+	postV1UsersSignup: vi.fn(),
 }))
 
 vi.mock("@tanstack/react-router", () => ({
@@ -38,14 +38,14 @@ vi.mock("@tanstack/react-router", () => ({
 // Imports after mocks
 // ---------------------------------------------------------------------------
 
-import { callSignup } from "@/features/auth/api/signup"
+import { postV1UsersSignup } from "@/generated/sdk.gen"
 import { SignupPage } from "./SignupPage"
 
 // ---------------------------------------------------------------------------
 // Typed mock references
 // ---------------------------------------------------------------------------
 
-const mockCallSignup = callSignup as ReturnType<typeof vi.fn>
+const mockPostV1UsersSignup = postV1UsersSignup as ReturnType<typeof vi.fn>
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -93,7 +93,7 @@ function clearBody(): void {
 
 beforeEach(() => {
 	vi.stubEnv("VITE_API_BASE_URL", "http://localhost:8080")
-	mockCallSignup.mockReset()
+	mockPostV1UsersSignup.mockReset()
 	mockNavigate.mockReset()
 })
 
@@ -190,12 +190,12 @@ describe("SignupPage — client-side validation", () => {
 		expect(container.textContent).toContain("Password is required")
 	})
 
-	it("does not call callSignup when validation fails", async () => {
+	it("does not call postV1UsersSignup when validation fails", async () => {
 		const container = mountSignupPage()
 		const form = container.querySelector<HTMLFormElement>("form")
 		await submitForm(form as HTMLFormElement)
 
-		expect(mockCallSignup).not.toHaveBeenCalled()
+		expect(mockPostV1UsersSignup).not.toHaveBeenCalled()
 	})
 })
 
@@ -205,7 +205,7 @@ describe("SignupPage — client-side validation", () => {
 
 describe("SignupPage — loading state", () => {
 	it("disables the submit button while the API call is in-flight", async () => {
-		mockCallSignup.mockImplementation(
+		mockPostV1UsersSignup.mockImplementation(
 			() => new Promise<never>(() => undefined),
 		)
 
@@ -239,7 +239,11 @@ describe("SignupPage — loading state", () => {
 
 describe("SignupPage — successful signup", () => {
 	it("navigates to '/login' after a successful signup", async () => {
-		mockCallSignup.mockResolvedValue(undefined)
+		mockPostV1UsersSignup.mockResolvedValue({
+			data: { id: "u1", name: "Alice", email: "alice@example.com", status: "active", createdAt: "2026-03-15T00:00:00Z" },
+			error: undefined,
+			response: { status: 201 },
+		})
 
 		const container = mountSignupPage()
 		const nameInput = container.querySelector<HTMLInputElement>(
@@ -271,24 +275,19 @@ describe("SignupPage — failed signup", () => {
 	const errorCases = [
 		{
 			name: "shows 'Email already registered' inline error on a 409 conflict",
-			error: new Error("409"),
+			mock: { data: undefined, error: {}, response: { status: 409 } },
 			expectedMessage: "Email already registered",
 		},
 		{
 			name: "shows generic inline error on a 500 server error",
-			error: new Error("500"),
-			expectedMessage: "Signup failed",
-		},
-		{
-			name: "shows generic inline error on a network-level failure",
-			error: new Error("Network failure"),
+			mock: { data: undefined, error: {}, response: { status: 500 } },
 			expectedMessage: "Signup failed",
 		},
 	]
 
-	for (const { name, error, expectedMessage } of errorCases) {
+	for (const { name, mock, expectedMessage } of errorCases) {
 		it(name, async () => {
-			mockCallSignup.mockRejectedValue(error)
+			mockPostV1UsersSignup.mockResolvedValue(mock)
 
 			const container = mountSignupPage()
 			const nameInput = container.querySelector<HTMLInputElement>(
@@ -313,8 +312,36 @@ describe("SignupPage — failed signup", () => {
 		})
 	}
 
+	it("shows generic inline error on a network-level failure", async () => {
+		mockPostV1UsersSignup.mockRejectedValue(new Error("Network failure"))
+
+		const container = mountSignupPage()
+		const nameInput = container.querySelector<HTMLInputElement>(
+			'input[name="name"], input[placeholder*="name" i]',
+		)
+		const emailInput = container.querySelector<HTMLInputElement>(
+			'input[type="email"], input[name="email"]',
+		)
+		const passwordInput = container.querySelector<HTMLInputElement>(
+			'input[type="password"]',
+		)
+		const form = container.querySelector<HTMLFormElement>("form")
+
+		fillInput(nameInput as HTMLInputElement, "Alice")
+		fillInput(emailInput as HTMLInputElement, "alice@example.com")
+		fillInput(passwordInput as HTMLInputElement, "password123")
+
+		await submitForm(form as HTMLFormElement)
+
+		expect(container.textContent).toContain("Signup failed")
+	})
+
 	it("re-enables the submit button after a failed signup", async () => {
-		mockCallSignup.mockRejectedValue(new Error("500"))
+		mockPostV1UsersSignup.mockResolvedValue({
+			data: undefined,
+			error: {},
+			response: { status: 500 },
+		})
 
 		const container = mountSignupPage()
 		const nameInput = container.querySelector<HTMLInputElement>(

@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-import { callCreatePost } from '@/features/posts/api/createPost'
+import { postV1Posts } from '@/generated/sdk.gen'
 import { getToken } from '@/utils/tokenStorage'
 
 function useCreatePostFormSchema() {
@@ -48,15 +48,21 @@ export function useCreatePostForm() {
 
   async function onSubmit(values: CreatePostFormValues) {
     try {
-      await callCreatePost(values.content)
+      const token = getToken()
+      const { data, error, response } = await postV1Posts({
+        body: { content: values.content },
+        baseUrl: import.meta.env.VITE_API_BASE_URL,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
+      if (error || !data) throw new Error(String(response.status))
       toast.success(t('posts.new.success'))
       form.reset()
     } catch (err) {
-      // callCreatePost throws new Error(String(response.status)) for HTTP errors.
+      // postV1Posts throws on network-level failures; for HTTP errors we throw
+      // new Error(String(response.status)) ourselves above.
       // Only a server-returned 401 redirects to login; all other failures show
-      // a generic toast. The pre-flight "Unauthenticated" error from
-      // callCreatePost (no token) is already prevented by the mount guard above,
-      // so it does not need special handling here.
+      // a generic toast. The pre-flight mount guard already redirects if no
+      // token is present, so an auth failure here is unexpected but handled.
       if (err instanceof Error && err.message === '401') {
         void navigate({ to: '/login' })
       } else {
