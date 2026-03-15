@@ -18,10 +18,10 @@ importers:
   apps/react-frontend:
     dependencies:
       '@hey-api/client-fetch':
-        specifier: ^0.13.1
+        specifier: 0.13.1
         version: 0.13.1(@hey-api/openapi-ts@0.94.1(typescript@5.9.3))
       '@hey-api/openapi-ts':
-        specifier: ^0.94.1
+        specifier: 0.94.1
         version: 0.94.1(typescript@5.9.3)
       '@hookform/resolvers':
         specifier: 5.2.2
@@ -55,7 +55,7 @@ importers:
         specifier: 2.4.7
         version: 2.4.7
       '@eslint/compat':
-        specifier: ^2.0.3
+        specifier: 2.0.3
         version: 2.0.3(eslint@10.0.3(jiti@2.6.1))
       '@tailwindcss/typography':
         specifier: 0.5.19
@@ -85,19 +85,19 @@ importers:
         specifier: 10.0.3
         version: 10.0.3(jiti@2.6.1)
       eslint-plugin-import-x:
-        specifier: ^4.16.2
+        specifier: 4.16.2
         version: 4.16.2(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-jsx-a11y:
-        specifier: ^6.10.2
+        specifier: 6.10.2
         version: 6.10.2(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-react:
-        specifier: ^7.37.5
+        specifier: 7.37.5
         version: 7.37.5(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-react-hooks:
-        specifier: ^7.0.1
+        specifier: 7.0.1
         version: 7.0.1(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-unicorn:
-        specifier: ^63.0.0
+        specifier: 63.0.0
         version: 63.0.0(eslint@10.0.3(jiti@2.6.1))
       jsdom:
         specifier: 28.1.0
