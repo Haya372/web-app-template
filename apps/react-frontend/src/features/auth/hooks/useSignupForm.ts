@@ -37,8 +37,8 @@ export function useSignupForm() {
       })
       if (error || !data) throw new Error(String(response.status))
       navigate({ to: '/login' })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : ''
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ''
       setErrorMessage(
         message === '409'
           ? t('signup.error.emailAlreadyRegistered')

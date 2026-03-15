@@ -57,13 +57,13 @@ export function useCreatePostForm() {
       if (error || !data) throw new Error(String(response.status))
       toast.success(t('posts.new.success'))
       form.reset()
-    } catch (err) {
+    } catch (error) {
       // postV1Posts throws on network-level failures; for HTTP errors we throw
       // new Error(String(response.status)) ourselves above.
       // Only a server-returned 401 redirects to login; all other failures show
       // a generic toast. The pre-flight mount guard already redirects if no
       // token is present, so an auth failure here is unexpected but handled.
-      if (err instanceof Error && err.message === '401') {
+      if (error instanceof Error && error.message === '401') {
         void navigate({ to: '/login' })
       } else {
         toast.error(t('posts.new.error.generic'))
