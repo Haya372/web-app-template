@@ -4,7 +4,6 @@ version = "2"
 default = "all"
 disable = [
   "wsl",
-  "depguard",
   "wrapcheck",
   "revive",
   "noinlineerr",
@@ -39,3 +38,29 @@ path = "internal/domain/vo/error.go"
 linters = [
   "mnd",
 ]
+
+# depguard: enforce Clean Architecture import boundaries (ADR-0004)
+[linters.settings.depguard.rules.domain-no-framework]
+  files = ["**/internal/domain/**"]
+  deny = [
+    {pkg = "github.com/labstack/echo", desc = "domain must not import echo; Echo types must stay in the HTTP adapter layer (ADR-0004)"},
+    {pkg = "github.com/google/wire", desc = "domain must not import wire; wire is reserved for the composition root (ADR-0004)"},
+    {pkg = "github.com/jackc/pgx", desc = "domain must not import pgx; DB access belongs in the infrastructure layer (ADR-0004)"},
+    {pkg = "github.com/jackc/pgconn", desc = "domain must not import pgconn (ADR-0004)"},
+    {pkg = "github.com/jackc/pgtype", desc = "domain must not import pgtype (ADR-0004)"},
+    {pkg = "database/sql", desc = "domain must not import database/sql; DB access belongs in the infrastructure layer (ADR-0004)"},
+    {pkg = "github.com/Haya372/web-app-template/go-backend/internal/usecase", desc = "domain must not depend on usecase; dependency must flow inward only (ADR-0004)"},
+    {pkg = "github.com/Haya372/web-app-template/go-backend/internal/infrastructure", desc = "domain must not depend on infrastructure; dependency must flow inward only (ADR-0004)"},
+  ]
+
+[linters.settings.depguard.rules.usecase-no-framework]
+  files = ["**/internal/usecase/**"]
+  deny = [
+    {pkg = "github.com/labstack/echo", desc = "usecase must not import echo; Echo types must stay in the HTTP adapter layer (ADR-0004)"},
+    {pkg = "github.com/google/wire", desc = "usecase must not import wire; wire is reserved for the composition root (ADR-0004)"},
+    {pkg = "github.com/jackc/pgx", desc = "usecase must not import pgx; DB access belongs in the infrastructure layer (ADR-0004)"},
+    {pkg = "github.com/jackc/pgconn", desc = "usecase must not import pgconn (ADR-0004)"},
+    {pkg = "github.com/jackc/pgtype", desc = "usecase must not import pgtype (ADR-0004)"},
+    {pkg = "database/sql", desc = "usecase must not import database/sql; DB access belongs in the infrastructure layer (ADR-0004)"},
+    {pkg = "github.com/Haya372/web-app-template/go-backend/internal/infrastructure", desc = "usecase must not depend on infrastructure; dependency must flow inward only (ADR-0004)"},
+  ]
