@@ -1,5 +1,5 @@
+import { postV1Posts } from "@/generated/sdk.gen"
 import { getToken } from "@/features/auth/utils/tokenStorage"
-import { createPostResponseSchema } from "@/features/posts/types/post"
 import type { CreatePostResponse } from "@/features/posts/types/post"
 
 export async function callCreatePost(content: string): Promise<CreatePostResponse> {
@@ -13,19 +13,15 @@ export async function callCreatePost(content: string): Promise<CreatePostRespons
 		throw new Error("Unauthenticated: no token available")
 	}
 
-	const response = await fetch(`${baseUrl}/v1/posts`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
-		},
-		body: JSON.stringify({ content }),
+	const { data, error, response } = await postV1Posts({
+		body: { content },
+		baseUrl,
+		headers: { Authorization: `Bearer ${token}` },
 	})
 
-	if (!response.ok) {
+	if (error || !data) {
 		throw new Error(String(response.status))
 	}
 
-	const data: unknown = await response.json()
-	return createPostResponseSchema.parse(data)
+	return data
 }

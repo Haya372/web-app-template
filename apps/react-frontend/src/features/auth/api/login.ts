@@ -1,4 +1,4 @@
-import { loginResponseSchema } from "@/features/auth/types/auth"
+import { postV1UsersLogin } from "@/generated/sdk.gen"
 import type { LoginResponse } from "@/features/auth/types/auth"
 
 export async function callLogin(
@@ -10,18 +10,14 @@ export async function callLogin(
 		throw new Error("VITE_API_BASE_URL is not set")
 	}
 
-	const response = await fetch(`${baseUrl}/v1/users/login`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({ email, password }),
+	const { data, error, response } = await postV1UsersLogin({
+		body: { email, password },
+		baseUrl,
 	})
 
-	if (!response.ok) {
+	if (error || !data) {
 		throw new Error(String(response.status))
 	}
 
-	const data: unknown = await response.json()
-	return loginResponseSchema.parse(data)
+	return data
 }

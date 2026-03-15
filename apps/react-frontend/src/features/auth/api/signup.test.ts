@@ -2,17 +2,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { callSignup } from "@/features/auth/api/signup"
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Module mocks
 // ---------------------------------------------------------------------------
 
-/** Builds a minimal Response-like object that globalThis.fetch can return. */
-function makeFetchResponse(body: unknown, status: number): Response {
-	return {
-		ok: status >= 200 && status < 300,
-		status,
-		json: () => Promise.resolve(body),
-	} as Response
-}
+vi.mock("@/generated/sdk.gen", () => ({
+	postV1UsersSignup: vi.fn(),
+}))
+
+// Import after vi.mock so that the mock is already in place
+import { postV1UsersSignup } from "@/generated/sdk.gen"
+
+const mockPostV1UsersSignup = postV1UsersSignup as ReturnType<typeof vi.fn>
+
+// ---------------------------------------------------------------------------
+// Fixtures
+// ---------------------------------------------------------------------------
 
 const VALID_RESPONSE = {
 	id: "550e8400-e29b-41d4-a716-446655440000",
@@ -30,67 +34,42 @@ const API_BASE_URL = "https://api.example.com"
 
 describe("callSignup", () => {
 	beforeEach(() => {
-		// Expose VITE_API_BASE_URL so the module under test can read it
 		vi.stubEnv("VITE_API_BASE_URL", API_BASE_URL)
 	})
 
 	afterEach(() => {
-		vi.unstubAllGlobals()
 		vi.unstubAllEnvs()
+		vi.resetAllMocks()
 	})
 
 	describe("happy path — 2xx response", () => {
-		it("resolves with parsed JSON when the server returns 201", async () => {
-			vi.stubGlobal(
-				"fetch",
-				vi.fn().mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201)),
-			)
+		it("resolves with data when the server returns 201", async () => {
+			mockPostV1UsersSignup.mockResolvedValue({
+				data: VALID_RESPONSE,
+				error: undefined,
+				response: { status: 201, ok: true },
+			})
 
 			const result = await callSignup("Alice", "user@example.com", "P@ssw0rd!")
 
 			expect(result).toEqual(VALID_RESPONSE)
 		})
 
-		it("sends a POST request to the correct endpoint", async () => {
-			const mockFetch = vi
-				.fn()
-				.mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201))
-			vi.stubGlobal("fetch", mockFetch)
+		it("calls postV1UsersSignup with the correct name, email, and password body", async () => {
+			mockPostV1UsersSignup.mockResolvedValue({
+				data: VALID_RESPONSE,
+				error: undefined,
+				response: { status: 201, ok: true },
+			})
 
 			await callSignup("Alice", "user@example.com", "P@ssw0rd!")
 
-			expect(mockFetch).toHaveBeenCalledOnce()
-			const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit]
-			expect(url).toBe(`${API_BASE_URL}/v1/users/signup`)
-			expect(init.method).toBe("POST")
-		})
-
-		it("sends Content-Type: application/json header", async () => {
-			const mockFetch = vi
-				.fn()
-				.mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201))
-			vi.stubGlobal("fetch", mockFetch)
-
-			await callSignup("Alice", "user@example.com", "P@ssw0rd!")
-
-			const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
-			const headers = new Headers(init.headers as HeadersInit)
-			expect(headers.get("Content-Type")).toBe("application/json")
-		})
-
-		it("sends name, email, and password serialised as JSON in the request body", async () => {
-			const mockFetch = vi
-				.fn()
-				.mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201))
-			vi.stubGlobal("fetch", mockFetch)
-
-			const name = "Alice"
-			const email = "user@example.com"
-			const password = "P@ssw0rd!"
-			await callSignup(name, email, password)
-
-			const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
-			expect(JSON.parse(init.body as string)).toEqual({ name, email, password })
+			expect(mockPostV1UsersSignup).toHaveBeenCalledOnce()
+			expect(mockPostV1UsersSignup).toHaveBeenCalledWith(
+				expect.objectContaining({
+					body: { name: "Alice", email: "user@example.com", password: "P@ssw0rd!" },
+				}),
+			)
 		})
 	})
 
@@ -103,12 +82,11 @@ describe("callSignup", () => {
 
 		for (const { name, status } of errorCases) {
 			it(`throws an error containing the status code on ${name}`, async () => {
-				vi.stubGlobal(
-					"fetch",
-					vi
-						.fn()
-						.mockResolvedValue(makeFetchResponse({ message: "error" }, status)),
-				)
+				mockPostV1UsersSignup.mockResolvedValue({
+					data: undefined,
+					error: { type: "ERROR", title: "error", status },
+					response: { status, ok: false },
+				})
 
 				await expect(
 					callSignup("Alice", "user@example.com", "P@ssw0rd!"),
@@ -118,9 +96,9 @@ describe("callSignup", () => {
 	})
 
 	describe("network / runtime errors", () => {
-		it("propagates a network-level error when fetch itself rejects", async () => {
+		it("propagates a network-level error when the SDK rejects", async () => {
 			const networkError = new Error("Network failure")
-			vi.stubGlobal("fetch", vi.fn().mockRejectedValue(networkError))
+			mockPostV1UsersSignup.mockRejectedValue(networkError)
 
 			await expect(
 				callSignup("Alice", "user@example.com", "P@ssw0rd!"),
@@ -131,7 +109,6 @@ describe("callSignup", () => {
 	describe("configuration errors", () => {
 		it("throws when VITE_API_BASE_URL is not set", async () => {
 			vi.unstubAllEnvs()
-			// Ensure the env var is absent
 			vi.stubEnv("VITE_API_BASE_URL", "")
 
 			await expect(

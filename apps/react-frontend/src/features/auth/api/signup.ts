@@ -1,4 +1,4 @@
-import { signupResponseSchema } from "@/features/auth/types/auth"
+import { postV1UsersSignup } from "@/generated/sdk.gen"
 import type { SignupResponse } from "@/features/auth/types/auth"
 
 export async function callSignup(
@@ -11,18 +11,14 @@ export async function callSignup(
 		throw new Error("VITE_API_BASE_URL is not set")
 	}
 
-	const response = await fetch(`${baseUrl}/v1/users/signup`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({ name, email, password }),
+	const { data, error, response } = await postV1UsersSignup({
+		body: { name, email, password },
+		baseUrl,
 	})
 
-	if (!response.ok) {
+	if (error || !data) {
 		throw new Error(String(response.status))
 	}
 
-	const data: unknown = await response.json()
-	return signupResponseSchema.parse(data)
+	return data
 }

@@ -5,27 +5,24 @@ import { callCreatePost } from "@/features/posts/api/createPost"
 // Module mocks
 // ---------------------------------------------------------------------------
 
+vi.mock("@/generated/sdk.gen", () => ({
+	postV1Posts: vi.fn(),
+}))
+
 vi.mock("@/features/auth/utils/tokenStorage", () => ({
 	getToken: vi.fn(),
 }))
 
-// Import after vi.mock so that the mock is already in place
+// Import after vi.mock so that the mocks are already in place
+import { postV1Posts } from "@/generated/sdk.gen"
 import { getToken } from "@/features/auth/utils/tokenStorage"
 
+const mockPostV1Posts = postV1Posts as ReturnType<typeof vi.fn>
 const mockGetToken = getToken as ReturnType<typeof vi.fn>
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Fixtures
 // ---------------------------------------------------------------------------
-
-/** Builds a minimal Response-like object that globalThis.fetch can return. */
-function makeFetchResponse(body: unknown, status: number): Response {
-	return {
-		ok: status >= 200 && status < 300,
-		status,
-		json: () => Promise.resolve(body),
-	} as Response
-}
 
 const VALID_RESPONSE = {
 	id: "550e8400-e29b-41d4-a716-446655440000",
@@ -42,80 +39,57 @@ const API_BASE_URL = "https://api.example.com"
 
 describe("callCreatePost", () => {
 	beforeEach(() => {
-		// Expose VITE_API_BASE_URL so the module under test can read it
 		vi.stubEnv("VITE_API_BASE_URL", API_BASE_URL)
-		// Provide a token for every test by default
 		mockGetToken.mockReturnValue("test-jwt-token")
 	})
 
 	afterEach(() => {
-		vi.unstubAllGlobals()
 		vi.unstubAllEnvs()
+		vi.resetAllMocks()
 	})
 
 	describe("happy path — 2xx response", () => {
-		it("resolves with parsed JSON when the server returns 201", async () => {
-			vi.stubGlobal(
-				"fetch",
-				vi.fn().mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201)),
-			)
+		it("resolves with data when the server returns 201", async () => {
+			mockPostV1Posts.mockResolvedValue({
+				data: VALID_RESPONSE,
+				error: undefined,
+				response: { status: 201, ok: true },
+			})
 
 			const result = await callCreatePost("Hello World!")
 
 			expect(result).toEqual(VALID_RESPONSE)
 		})
 
-		it("sends a POST request to the correct endpoint", async () => {
-			const mockFetch = vi
-				.fn()
-				.mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201))
-			vi.stubGlobal("fetch", mockFetch)
+		it("calls postV1Posts with the correct content body", async () => {
+			mockPostV1Posts.mockResolvedValue({
+				data: VALID_RESPONSE,
+				error: undefined,
+				response: { status: 201, ok: true },
+			})
 
 			await callCreatePost("Hello World!")
 
-			expect(mockFetch).toHaveBeenCalledOnce()
-			const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit]
-			expect(url).toBe(`${API_BASE_URL}/v1/posts`)
-			expect(init.method).toBe("POST")
+			expect(mockPostV1Posts).toHaveBeenCalledOnce()
+			expect(mockPostV1Posts).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { content: "Hello World!" } }),
+			)
 		})
 
-		it("sends Content-Type: application/json header", async () => {
-			const mockFetch = vi
-				.fn()
-				.mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201))
-			vi.stubGlobal("fetch", mockFetch)
+		it("passes the Authorization Bearer header from getToken", async () => {
+			mockPostV1Posts.mockResolvedValue({
+				data: VALID_RESPONSE,
+				error: undefined,
+				response: { status: 201, ok: true },
+			})
 
 			await callCreatePost("Hello World!")
 
-			const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
-			const headers = new Headers(init.headers as HeadersInit)
-			expect(headers.get("Content-Type")).toBe("application/json")
-		})
-
-		it("sends Authorization Bearer header with the token from getToken", async () => {
-			const mockFetch = vi
-				.fn()
-				.mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201))
-			vi.stubGlobal("fetch", mockFetch)
-
-			await callCreatePost("Hello World!")
-
-			const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
-			const headers = new Headers(init.headers as HeadersInit)
-			expect(headers.get("Authorization")).toBe("Bearer test-jwt-token")
-		})
-
-		it("sends the content serialised as JSON in the request body", async () => {
-			const mockFetch = vi
-				.fn()
-				.mockResolvedValue(makeFetchResponse(VALID_RESPONSE, 201))
-			vi.stubGlobal("fetch", mockFetch)
-
-			const content = "Hello World!"
-			await callCreatePost(content)
-
-			const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
-			expect(JSON.parse(init.body as string)).toEqual({ content })
+			expect(mockPostV1Posts).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headers: { Authorization: "Bearer test-jwt-token" },
+				}),
+			)
 		})
 	})
 
@@ -129,12 +103,11 @@ describe("callCreatePost", () => {
 
 		for (const { name, status } of errorCases) {
 			it(`throws an error containing the status code on ${name}`, async () => {
-				vi.stubGlobal(
-					"fetch",
-					vi
-						.fn()
-						.mockResolvedValue(makeFetchResponse({ message: "error" }, status)),
-				)
+				mockPostV1Posts.mockResolvedValue({
+					data: undefined,
+					error: { type: "ERROR", title: "error", status },
+					response: { status, ok: false },
+				})
 
 				await expect(callCreatePost("Hello World!")).rejects.toThrow(
 					String(status),
@@ -144,9 +117,9 @@ describe("callCreatePost", () => {
 	})
 
 	describe("network / runtime errors", () => {
-		it("propagates a network-level error when fetch itself rejects", async () => {
+		it("propagates a network-level error when the SDK rejects", async () => {
 			const networkError = new Error("Network failure")
-			vi.stubGlobal("fetch", vi.fn().mockRejectedValue(networkError))
+			mockPostV1Posts.mockRejectedValue(networkError)
 
 			await expect(callCreatePost("Hello World!")).rejects.toThrow(
 				"Network failure",
@@ -156,14 +129,12 @@ describe("callCreatePost", () => {
 
 	describe("authentication errors", () => {
 		it("throws before making a network request when getToken returns null", async () => {
-			const mockFetch = vi.fn()
-			vi.stubGlobal("fetch", mockFetch)
 			mockGetToken.mockReturnValue(null)
 
 			await expect(callCreatePost("Hello World!")).rejects.toThrow(
 				"Unauthenticated",
 			)
-			expect(mockFetch).not.toHaveBeenCalled()
+			expect(mockPostV1Posts).not.toHaveBeenCalled()
 		})
 	})
 })

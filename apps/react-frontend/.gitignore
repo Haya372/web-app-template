@@ -17,3 +17,6 @@ routeTree.gen.ts
 
 # claude
 .claude/agent-memory/*
+
+# openapi-ts generated client
+src/generated/
