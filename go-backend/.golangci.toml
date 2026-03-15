@@ -39,3 +39,6 @@ path = "internal/domain/vo/error.go"
 linters = [
   "mnd",
 ]
+
+[linters.settings.exhaustive]
+default-signifies-exhaustive = true

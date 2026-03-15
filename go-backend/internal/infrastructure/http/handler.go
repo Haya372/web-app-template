@@ -70,7 +70,7 @@ func (h *serverHandler) PostV1UsersSignup(
 	}
 
 	return generated.PostV1UsersSignup201JSONResponse{
-		Id:        openapi_types.UUID(output.Id),
+		Id:        output.Id,
 		Name:      output.Name,
 		Email:     openapi_types.Email(output.Email),
 		Status:    output.Status.String(),
@@ -170,7 +170,7 @@ func (h *serverHandler) GetV1Users(
 	users := make([]generated.UserResponse, 0, len(output.Users))
 	for _, u := range output.Users {
 		users = append(users, generated.UserResponse{
-			Id:        openapi_types.UUID(u.Id),
+			Id:        u.Id,
 			Name:      u.Name,
 			Email:     openapi_types.Email(u.Email),
 			Status:    u.Status,
@@ -231,8 +231,8 @@ func (h *serverHandler) PostV1Posts(
 	}
 
 	return generated.PostV1Posts201JSONResponse{
-		Id:        openapi_types.UUID(output.Id),
-		UserId:    openapi_types.UUID(output.UserId),
+		Id:        output.Id,
+		UserId:    output.UserId,
 		Content:   output.Content,
 		CreatedAt: output.CreatedAt,
 	}, nil
@@ -256,13 +256,14 @@ func mapSignupError(err error) generated.PostV1UsersSignupResponseObject {
 					domainErrToProblem(domainErr),
 				),
 			}
+		default:
 		}
 	}
 
+	internalResp := generated.InternalServerErrorApplicationProblemPlusJSONResponse(internalProblem())
+
 	return generated.PostV1UsersSignup500ApplicationProblemPlusJSONResponse{
-		InternalServerErrorApplicationProblemPlusJSONResponse: generated.InternalServerErrorApplicationProblemPlusJSONResponse(
-			internalProblem(),
-		),
+		InternalServerErrorApplicationProblemPlusJSONResponse: internalResp,
 	}
 }
 
@@ -282,13 +283,14 @@ func mapLoginError(err error) generated.PostV1UsersLoginResponseObject {
 					domainErrToProblem(domainErr),
 				),
 			}
+		default:
 		}
 	}
 
+	internalResp := generated.InternalServerErrorApplicationProblemPlusJSONResponse(internalProblem())
+
 	return generated.PostV1UsersLogin500ApplicationProblemPlusJSONResponse{
-		InternalServerErrorApplicationProblemPlusJSONResponse: generated.InternalServerErrorApplicationProblemPlusJSONResponse(
-			internalProblem(),
-		),
+		InternalServerErrorApplicationProblemPlusJSONResponse: internalResp,
 	}
 }
 
@@ -314,13 +316,14 @@ func mapListUsersError(err error) generated.GetV1UsersResponseObject {
 					domainErrToProblem(domainErr),
 				),
 			}
+		default:
 		}
 	}
 
+	internalResp := generated.InternalServerErrorApplicationProblemPlusJSONResponse(internalProblem())
+
 	return generated.GetV1Users500ApplicationProblemPlusJSONResponse{
-		InternalServerErrorApplicationProblemPlusJSONResponse: generated.InternalServerErrorApplicationProblemPlusJSONResponse(
-			internalProblem(),
-		),
+		InternalServerErrorApplicationProblemPlusJSONResponse: internalResp,
 	}
 }
 
@@ -340,13 +343,14 @@ func mapCreatePostError(err error) generated.PostV1PostsResponseObject {
 					domainErrToProblem(domainErr),
 				),
 			}
+		default:
 		}
 	}
 
+	internalResp := generated.InternalServerErrorApplicationProblemPlusJSONResponse(internalProblem())
+
 	return generated.PostV1Posts500ApplicationProblemPlusJSONResponse{
-		InternalServerErrorApplicationProblemPlusJSONResponse: generated.InternalServerErrorApplicationProblemPlusJSONResponse(
-			internalProblem(),
-		),
+		InternalServerErrorApplicationProblemPlusJSONResponse: internalResp,
 	}
 }
 
@@ -422,6 +426,7 @@ func validationProblem(detail string, errors map[string][]string) generated.Prob
 
 func unauthorizedProblem() generated.ProblemDetails {
 	title := vo.UnauthorizedErrorCode.Title()
+
 	return generated.ProblemDetails{
 		Type:   string(vo.UnauthorizedErrorCode),
 		Title:  title,

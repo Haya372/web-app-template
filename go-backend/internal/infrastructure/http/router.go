@@ -41,6 +41,7 @@ func (r *routerImpl) AddRoute(e *echo.Echo) {
 	wrap := func(h func(stdhttp.ResponseWriter, *stdhttp.Request)) echo.HandlerFunc {
 		return func(c *echo.Context) error {
 			h(c.Response(), c.Request())
+
 			return nil
 		}
 	}

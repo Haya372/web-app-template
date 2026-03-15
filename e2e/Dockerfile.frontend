@@ -12,6 +12,7 @@ COPY apps/react-frontend/package.json ./apps/react-frontend/
 RUN pnpm install --frozen-lockfile
 
 # Copy all source files
+COPY openapi/ ./openapi/
 COPY packages/ui/ ./packages/ui/
 COPY apps/react-frontend/ ./apps/react-frontend/
 
