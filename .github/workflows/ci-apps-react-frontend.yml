@@ -5,6 +5,7 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - "apps/react-frontend/**"
+      - "openapi/**"
       - ".github/workflows/ci-apps-react-frontend.yml"
       - ".github/actions/setup-pnpm-workspace/**"
       - "!**.md"
