@@ -183,7 +183,6 @@ func runMigrations(ctx context.Context, manager db.DbManager, dbDirPath string) 
 	})
 }
 
-
 func (d *localTestDb) Terminate() error {
 	d.pool.Close()
 

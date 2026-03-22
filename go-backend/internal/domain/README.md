@@ -4,10 +4,10 @@
 
 ```
 domain
+├── aggregate
+│   └── repository
 ├── entity
 │   └── repository
-├── snapshot
-│   └── reader
 └── vo
 ```
 
@@ -27,7 +27,7 @@ domain
 * `PermissionCode`
 * `Email`
 
-> Value Object は Entity や Snapshot の構成要素として使用される。
+> Value Object は Entity や Aggregate の構成要素として使用される。
 
 ---
 
@@ -52,56 +52,45 @@ domain
 
 ---
 
-## `snapshot/`
+## `aggregate/`
 
-**不変な「ある時点の状態」を表すドメイン概念**
+**複数の Entity をまとめたドメインの集約（Aggregate）**
 
-* 複数の Entity を束ねた読み取り専用の構造
-* 不変（immutable）
-* I/O を行わない
+* Aggregate Root（通常は主要な Entity）を中心に構成される
+* 複数の Entity・VO を束ねた整合性境界を持つ
+* 不変条件（invariant）を集約単位で維持する
+* 不変（immutable）— I/O を行わない
 * 「状態から自明に導ける」軽量な判定ロジックを持ってよい
-* QueryService経由で取得する（**更新はしない**）
+* Repository 経由で取得する（**更新は各 Entity のリポジトリを使う**）
 
-Snapshot は、**複数の UseCase で共通して利用される状態表現**として定義される。
+Aggregate は、**複数の UseCase で共通して利用される整合した状態表現**として定義される。
 
 ### 例
 
-* `UserWithPermission`（User + Permissions の状態）
-* `AccountStatusSnapshot`
-* `OrganizationSettingsSnapshot`
+* `UserPermissionAggregate`（User + Permissions の整合した集約）
 
 ```go
-type UserWithPermission interface {
-  UserId()        str
-  HasPermission(pc vo.PermissionCode) bool
+type UserPermissionAggregate struct {
+    UserId      uuid.UUID
+    User        entity.User
+    Permissions []vo.Permission
 }
 
-type userWithPermissionImpl struct {
-  user        User
-  permissions []Permission
-}
-
-func (u *userWithPermissionImpl) HasPermission(pc vo.PermissionCode) bool {
-  for _, p := range u.permissions {
-    if p.code == pc {
-      return true
-    }
-  }
-  return false
-}
-
-// 更新する場合はUseCase内で以下のように更新する
-...
-userId := userWithPermission.UserId()
-user := userRepository.FindById(ctx, userId)
-
-if _, err := userRepository.Update(ctx, user); err != nil {
-  return err
+func (a *UserPermissionAggregate) HasPermission(p vo.Permission) bool {
+    return slices.Contains(a.Permissions, p)
 }
 ```
 
-> Snapshot は Entity の代替ではなく、
-> **「ある時点の状態を切り取ったドメイン概念」**として扱う。
+> Aggregate の更新が必要な場合は、UseCase 内で各 Entity のリポジトリを使う：
+
+```go
+userId := agg.UserId
+user := userRepository.FindById(ctx, userId)
+
+if _, err := userRepository.Update(ctx, user); err != nil {
+    return err
+}
+```
 
 ---
 
@@ -110,11 +99,11 @@ if _, err := userRepository.Update(ctx, user); err != nil {
 * ドメイン層は **I/O（DB / 外部API / Cache など）に依存しない**
 * 永続化や読み取り最適化に関する「接続口」はドメイン層に **インターフェース（Port）として定義**する
 
-  * `repository/`: Entity（集約）を取得・保存するための I/F
-  * `snapshot/reader/`: Snapshot を構築するための読み取り専用 I/F
+  * `entity/repository/`: Entity（集約ルート）を取得・保存するための I/F
+  * `aggregate/repository/`: Aggregate を取得するための I/F
 * 実装（DBクエリ、ORM、HTTPクライアント等）はインフラ層に置き、依存関係は **domain → interface（port） ← infra** の形にする
-* Entity を肥大化させないため、読み取り専用の状態表現は Snapshot として切り出す
-* Snapshot は DTO ではなく、**ドメインの言葉として命名**する
+* Entity を肥大化させないため、複数の Entity にまたがる状態表現は Aggregate として切り出す
+* Aggregate は DTO ではなく、**ドメインの言葉として命名**する
 
 ---
 
@@ -128,5 +117,5 @@ if _, err := userRepository.Update(ctx, user); err != nil {
 ---
 
 この構成により、
-**「更新の概念（Entity）」「値の表現（VO）」「状態の切り取り（Snapshot）」**
+**「更新の概念（Entity）」「値の表現（VO）」「整合した状態の集約（Aggregate）」**
 を明確に分離し、ドメイン層をシンプルかつ拡張しやすく保つ。

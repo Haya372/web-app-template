@@ -9,7 +9,6 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/http"
 	infraquery "github.com/Haya372/web-app-template/go-backend/internal/infrastructure/query"
-	infrareader "github.com/Haya372/web-app-template/go-backend/internal/infrastructure/reader"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/repository"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/service"
 	commandpost "github.com/Haya372/web-app-template/go-backend/internal/usecase/command/post"
@@ -36,7 +35,7 @@ var usecaseSet = wire.NewSet(
 
 var querySet = wire.NewSet(
 	infraquery.NewUserQueryService,
-	infrareader.NewUserPermissionReader,
+	repository.NewUserPermissionRepository,
 	queryuser.NewListUsersUseCase,
 )
 

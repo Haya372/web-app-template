@@ -27,11 +27,11 @@ const (
 )
 
 var (
-	errMissingJWTSecret  = errors.New("AUTH_JWT_SECRET is required")
-	errInvalidJWTTTL     = errors.New("AUTH_JWT_TTL_MINUTES must be positive int")
-	errInvalidJWTFormat  = errors.New("invalid JWT format")
-	errInvalidSignature  = errors.New("invalid JWT signature")
-	errTokenExpired      = errors.New("JWT token has expired")
+	errMissingJWTSecret = errors.New("AUTH_JWT_SECRET is required")
+	errInvalidJWTTTL    = errors.New("AUTH_JWT_TTL_MINUTES must be positive int")
+	errInvalidJWTFormat = errors.New("invalid JWT format")
+	errInvalidSignature = errors.New("invalid JWT signature")
+	errTokenExpired     = errors.New("JWT token has expired")
 )
 
 type jwtConfig struct {
