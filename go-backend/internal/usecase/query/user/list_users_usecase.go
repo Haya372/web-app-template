@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
-	"github.com/Haya372/web-app-template/go-backend/internal/domain/snapshot/reader"
+	aggregaterepository "github.com/Haya372/web-app-template/go-backend/internal/domain/aggregate/repository"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
@@ -19,16 +19,16 @@ const (
 )
 
 var (
-	errInvalidLimit      = errors.New("limit out of range")
-	errInvalidOffset     = errors.New("offset must be non-negative")
+	errInvalidLimit       = errors.New("limit out of range")
+	errInvalidOffset      = errors.New("offset must be non-negative")
 	errLacksUsersListPerm = errors.New("user lacks users:list permission")
 )
 
 type listUsersUseCaseImpl struct {
-	tracer           trace.Tracer
-	logger           common.Logger
-	userQueryService UserQueryService
-	permissionReader reader.UserPermissionReader
+	tracer               trace.Tracer
+	logger               common.Logger
+	userQueryService     UserQueryService
+	permissionRepository aggregaterepository.UserPermissionRepository
 }
 
 func (uc *listUsersUseCaseImpl) Execute(
@@ -39,7 +39,7 @@ func (uc *listUsersUseCaseImpl) Execute(
 
 	uc.logger.Info(ctx, "list users requested", "limit", input.Limit, "offset", input.Offset)
 
-	snap, err := uc.permissionReader.FindByUserId(ctx, input.UserId)
+	agg, err := uc.permissionRepository.FindByUserId(ctx, input.UserId)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -47,7 +47,7 @@ func (uc *listUsersUseCaseImpl) Execute(
 		return nil, err
 	}
 
-	if !snap.HasPermission(vo.PermissionUsersList) {
+	if !agg.HasPermission(vo.PermissionUsersList) {
 		err = vo.NewForbiddenError("insufficient permissions", nil, errLacksUsersListPerm)
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -91,12 +91,12 @@ func (uc *listUsersUseCaseImpl) Execute(
 }
 
 func NewListUsersUseCase(
-	userQueryService UserQueryService, permissionReader reader.UserPermissionReader,
+	userQueryService UserQueryService, permissionRepository aggregaterepository.UserPermissionRepository,
 ) ListUsersUseCase {
 	return &listUsersUseCaseImpl{
-		tracer:           otel.Tracer("ListUsersUseCase"),
-		logger:           common.NewLogger(),
-		userQueryService: userQueryService,
-		permissionReader: permissionReader,
+		tracer:               otel.Tracer("ListUsersUseCase"),
+		logger:               common.NewLogger(),
+		userQueryService:     userQueryService,
+		permissionRepository: permissionRepository,
 	}
 }

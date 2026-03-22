@@ -1,4 +1,4 @@
-package reader
+package repository
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/common"
+	"github.com/Haya372/web-app-template/go-backend/internal/domain/aggregate"
+	aggregaterepository "github.com/Haya372/web-app-template/go-backend/internal/domain/aggregate/repository"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/entity"
-	"github.com/Haya372/web-app-template/go-backend/internal/domain/snapshot"
-	snapshotreader "github.com/Haya372/web-app-template/go-backend/internal/domain/snapshot/reader"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/db"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/sqlc"
@@ -21,15 +21,15 @@ import (
 
 var errUserNotFound = errors.New("user not found")
 
-type userPermissionReaderImpl struct {
+type userPermissionRepositoryImpl struct {
 	tracer    trace.Tracer
 	logger    common.Logger
 	dbManager db.DbManager
 }
 
-func (r *userPermissionReaderImpl) FindByUserId(
+func (r *userPermissionRepositoryImpl) FindByUserId(
 	ctx context.Context, userId uuid.UUID,
-) (*snapshot.UserPermissionSnapshot, error) {
+) (*aggregate.UserPermissionAggregate, error) {
 	ctx, span := r.tracer.Start(ctx, "FindByUserId")
 	defer span.End()
 
@@ -47,7 +47,7 @@ func (r *userPermissionReaderImpl) FindByUserId(
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(otelcodes.Error, err.Error())
-		r.logger.Error(ctx, "failed to query user permission snapshot", "error", err)
+		r.logger.Error(ctx, "failed to query user permission aggregate", "error", err)
 
 		return nil, err
 	}
@@ -80,16 +80,16 @@ func (r *userPermissionReaderImpl) FindByUserId(
 		}
 	}
 
-	return &snapshot.UserPermissionSnapshot{
+	return &aggregate.UserPermissionAggregate{
 		UserId:      userId,
 		User:        user,
 		Permissions: perms,
 	}, nil
 }
 
-func NewUserPermissionReader(dbManager db.DbManager) snapshotreader.UserPermissionReader {
-	return &userPermissionReaderImpl{
-		tracer:    otel.Tracer("UserPermissionReader"),
+func NewUserPermissionRepository(dbManager db.DbManager) aggregaterepository.UserPermissionRepository {
+	return &userPermissionRepositoryImpl{
+		tracer:    otel.Tracer("UserPermissionRepository"),
 		logger:    common.NewLogger(),
 		dbManager: dbManager,
 	}

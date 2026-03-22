@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Haya372/web-app-template/go-backend/internal/domain/snapshot"
+	"github.com/Haya372/web-app-template/go-backend/internal/domain/aggregate"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
-	mock_reader "github.com/Haya372/web-app-template/go-backend/test/mock/domain/snapshot/reader"
+	mock_repository "github.com/Haya372/web-app-template/go-backend/test/mock/domain/aggregate/repository"
 	mock_query "github.com/Haya372/web-app-template/go-backend/test/mock/usecase/query"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -20,15 +20,15 @@ import (
 func newTestUseCase(
 	t *testing.T,
 	queryService user.UserQueryService,
-	permReader *mock_reader.MockUserPermissionReader,
+	permRepo *mock_repository.MockUserPermissionRepository,
 ) user.ListUsersUseCase {
 	t.Helper()
 
-	return user.NewListUsersUseCase(queryService, permReader)
+	return user.NewListUsersUseCase(queryService, permRepo)
 }
 
-func withPermission(userID uuid.UUID, perms ...vo.Permission) *snapshot.UserPermissionSnapshot {
-	return &snapshot.UserPermissionSnapshot{
+func withPermission(userID uuid.UUID, perms ...vo.Permission) *aggregate.UserPermissionAggregate {
+	return &aggregate.UserPermissionAggregate{
 		UserId:      userID,
 		Permissions: perms,
 	}
@@ -44,14 +44,14 @@ func TestListUsersUseCase_HappyCase(t *testing.T) {
 		{Id: uuid.New(), Name: "Bob", Email: "bob@example.com", Status: "ACTIVE", CreatedAt: now},
 	}
 
-	permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-	permReader.EXPECT().FindByUserId(gomock.Any(), userID).
+	permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+	permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
 		Return(withPermission(userID, vo.PermissionUsersList), nil).Times(1)
 
 	queryService := mock_query.NewMockUserQueryService(ctrl)
 	queryService.EXPECT().FindAll(gomock.Any(), 20, 0).Return(expectedUsers, 2, nil).Times(1)
 
-	uc := newTestUseCase(t, queryService, permReader)
+	uc := newTestUseCase(t, queryService, permRepo)
 	output, err := uc.Execute(context.Background(), user.ListUsersInput{UserId: userID, Limit: 20, Offset: 0})
 
 	require.NoError(t, err)
@@ -70,14 +70,14 @@ func TestListUsersUseCase_Pagination(t *testing.T) {
 		{Id: uuid.New(), Name: "Carol", Email: "carol@example.com", Status: "ACTIVE", CreatedAt: now},
 	}
 
-	permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-	permReader.EXPECT().FindByUserId(gomock.Any(), userID).
+	permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+	permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
 		Return(withPermission(userID, vo.PermissionUsersList), nil).Times(1)
 
 	queryService := mock_query.NewMockUserQueryService(ctrl)
 	queryService.EXPECT().FindAll(gomock.Any(), 5, 10).Return(expectedUsers, 42, nil).Times(1)
 
-	uc := newTestUseCase(t, queryService, permReader)
+	uc := newTestUseCase(t, queryService, permRepo)
 	output, err := uc.Execute(context.Background(), user.ListUsersInput{UserId: userID, Limit: 5, Offset: 10})
 
 	require.NoError(t, err)
@@ -89,14 +89,14 @@ func TestListUsersUseCase_EmptyResult(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	userID := uuid.New()
 
-	permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-	permReader.EXPECT().FindByUserId(gomock.Any(), userID).
+	permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+	permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
 		Return(withPermission(userID, vo.PermissionUsersList), nil).Times(1)
 
 	queryService := mock_query.NewMockUserQueryService(ctrl)
 	queryService.EXPECT().FindAll(gomock.Any(), 20, 0).Return(nil, 0, nil).Times(1)
 
-	uc := newTestUseCase(t, queryService, permReader)
+	uc := newTestUseCase(t, queryService, permRepo)
 	output, err := uc.Execute(context.Background(), user.ListUsersInput{UserId: userID, Limit: 20, Offset: 0})
 
 	require.NoError(t, err)
@@ -120,15 +120,15 @@ func TestListUsersUseCase_InvalidLimit(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			userID := uuid.New()
 
-			permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-			permReader.EXPECT().FindByUserId(gomock.Any(), userID).
+			permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+			permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
 				Return(withPermission(userID, vo.PermissionUsersList), nil).Times(1)
 
 			queryService := mock_query.NewMockUserQueryService(ctrl)
 			// FindAll must not be called on invalid input
 			queryService.EXPECT().FindAll(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-			uc := newTestUseCase(t, queryService, permReader)
+			uc := newTestUseCase(t, queryService, permRepo)
 			output, err := uc.Execute(
 				context.Background(), user.ListUsersInput{UserId: userID, Limit: tt.limit, Offset: 0},
 			)
@@ -147,14 +147,14 @@ func TestListUsersUseCase_InvalidOffset(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	userID := uuid.New()
 
-	permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-	permReader.EXPECT().FindByUserId(gomock.Any(), userID).
+	permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+	permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
 		Return(withPermission(userID, vo.PermissionUsersList), nil).Times(1)
 
 	queryService := mock_query.NewMockUserQueryService(ctrl)
 	queryService.EXPECT().FindAll(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-	uc := newTestUseCase(t, queryService, permReader)
+	uc := newTestUseCase(t, queryService, permRepo)
 	output, err := uc.Execute(context.Background(), user.ListUsersInput{UserId: userID, Limit: 20, Offset: -1})
 
 	require.Error(t, err)
@@ -169,14 +169,14 @@ func TestListUsersUseCase_QueryServiceError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	userID := uuid.New()
 
-	permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-	permReader.EXPECT().FindByUserId(gomock.Any(), userID).
+	permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+	permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
 		Return(withPermission(userID, vo.PermissionUsersList), nil).Times(1)
 
 	queryService := mock_query.NewMockUserQueryService(ctrl)
 	queryService.EXPECT().FindAll(gomock.Any(), 20, 0).Return(nil, 0, errors.New("db error")).Times(1)
 
-	uc := newTestUseCase(t, queryService, permReader)
+	uc := newTestUseCase(t, queryService, permRepo)
 	output, err := uc.Execute(context.Background(), user.ListUsersInput{UserId: userID, Limit: 20, Offset: 0})
 
 	require.Error(t, err)
@@ -187,14 +187,14 @@ func TestListUsersUseCase_ForbiddenWhenNoPermission(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	userID := uuid.New()
 
-	permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-	permReader.EXPECT().FindByUserId(gomock.Any(), userID).
+	permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+	permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
 		Return(withPermission(userID), nil).Times(1)
 
 	queryService := mock_query.NewMockUserQueryService(ctrl)
 	queryService.EXPECT().FindAll(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-	uc := newTestUseCase(t, queryService, permReader)
+	uc := newTestUseCase(t, queryService, permRepo)
 	output, err := uc.Execute(context.Background(), user.ListUsersInput{UserId: userID, Limit: 20, Offset: 0})
 
 	require.Error(t, err)
@@ -206,18 +206,18 @@ func TestListUsersUseCase_ForbiddenWhenNoPermission(t *testing.T) {
 	assert.Equal(t, 403, voErr.Status())
 }
 
-func TestListUsersUseCase_ForbiddenWhenPermissionReaderError(t *testing.T) {
+func TestListUsersUseCase_ForbiddenWhenPermissionRepositoryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	userID := uuid.New()
 
-	permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-	permReader.EXPECT().FindByUserId(gomock.Any(), userID).
-		Return(nil, errors.New("reader error")).Times(1)
+	permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+	permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
+		Return(nil, errors.New("repository error")).Times(1)
 
 	queryService := mock_query.NewMockUserQueryService(ctrl)
 	queryService.EXPECT().FindAll(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-	uc := newTestUseCase(t, queryService, permReader)
+	uc := newTestUseCase(t, queryService, permRepo)
 	output, err := uc.Execute(context.Background(), user.ListUsersInput{UserId: userID, Limit: 20, Offset: 0})
 
 	require.Error(t, err)
@@ -233,14 +233,14 @@ func TestListUsersUseCase_AllowedWhenOneOfMultipleRolesHasPermission(t *testing.
 		{Id: uuid.New(), Name: "Dave", Email: "dave@example.com", Status: "ACTIVE", CreatedAt: now},
 	}
 
-	permReader := mock_reader.NewMockUserPermissionReader(ctrl)
-	permReader.EXPECT().FindByUserId(gomock.Any(), userID).
+	permRepo := mock_repository.NewMockUserPermissionRepository(ctrl)
+	permRepo.EXPECT().FindByUserId(gomock.Any(), userID).
 		Return(withPermission(userID, vo.PermissionUsersCreate, vo.PermissionUsersList), nil).Times(1)
 
 	queryService := mock_query.NewMockUserQueryService(ctrl)
 	queryService.EXPECT().FindAll(gomock.Any(), 20, 0).Return(expectedUsers, 1, nil).Times(1)
 
-	uc := newTestUseCase(t, queryService, permReader)
+	uc := newTestUseCase(t, queryService, permRepo)
 	output, err := uc.Execute(context.Background(), user.ListUsersInput{UserId: userID, Limit: 20, Offset: 0})
 
 	require.NoError(t, err)

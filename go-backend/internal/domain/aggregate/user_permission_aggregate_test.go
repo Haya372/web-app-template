@@ -1,15 +1,15 @@
-package snapshot_test
+package aggregate_test
 
 import (
 	"testing"
 
-	"github.com/Haya372/web-app-template/go-backend/internal/domain/snapshot"
+	"github.com/Haya372/web-app-template/go-backend/internal/domain/aggregate"
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUserPermissionSnapshot_HasPermission(t *testing.T) {
+func TestUserPermissionAggregate_HasPermission(t *testing.T) {
 	userID := uuid.New()
 
 	tests := []struct {
@@ -31,7 +31,7 @@ func TestUserPermissionSnapshot_HasPermission(t *testing.T) {
 			expected:    false,
 		},
 		{
-			name:        "returns false when snapshot has no permissions",
+			name:        "returns false when aggregate has no permissions",
 			permissions: nil,
 			check:       vo.PermissionUsersList,
 			expected:    false,
@@ -57,11 +57,11 @@ func TestUserPermissionSnapshot_HasPermission(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &snapshot.UserPermissionSnapshot{
+			a := &aggregate.UserPermissionAggregate{
 				UserId:      userID,
 				Permissions: tt.permissions,
 			}
-			assert.Equal(t, tt.expected, s.HasPermission(tt.check))
+			assert.Equal(t, tt.expected, a.HasPermission(tt.check))
 		})
 	}
 }
