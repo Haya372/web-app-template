@@ -68,10 +68,10 @@ func TestCreatePostUseCase_FailureCase(t *testing.T) {
 	userId := uuid.New()
 
 	tests := []struct {
-		name      string
-		input     post.CreatePostInput
-		repoErr   error
-		txErr     error
+		name    string
+		input   post.CreatePostInput
+		repoErr error
+		txErr   error
 	}{
 		{
 			name: "empty content returns error",

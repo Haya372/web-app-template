@@ -104,4 +104,3 @@ func NewDuplicateEmailError(err error) error {
 		err:     err,
 	}
 }
-
