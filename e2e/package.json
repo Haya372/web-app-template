@@ -21,9 +21,9 @@
   },
   "devDependencies": {
     "@types/node": "24.12.0",
-    "@biomejs/biome": "2.4.7",
+    "@biomejs/biome": "2.4.8",
     "@playwright/test": "1.58.2",
-    "knip": "5.86.0",
+    "knip": "5.88.1",
     "lint-staged": "16.4.0",
     "npm-run-all2": "8.0.4",
     "typescript": "5.9.3",
