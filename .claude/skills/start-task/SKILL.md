@@ -1,143 +1,151 @@
 ---
 name: start-task
-description: "Start working on a GitHub Issue end-to-end: fetch the issue, plan with task-progress-guide.md, implement via TDD (test-writer, code-implementer, code-reviewer agents), commit, and open a PR."
+description: "Start working on a GitHub Issue end-to-end: fetch the issue, check/create a design doc (design-plan), create a feature branch, implement via TDD (implement-tdd skill per task), commit, and open a PR."
 argument-hint: "<issue-number>"
-user-invokable: true
+user-invocable: true
 ---
 
 # Start Task Skill
+
+GitHub IssueをEnd-to-Endで実装する。設計書がなければ自動生成し、TDDで実装してPRを開くまでを一気通貫で行う。
 
 ## Context
 
 - Current branch: !`git branch --show-current`
 - Recent commits: !`git log --oneline -5`
-- Open tasks: !`echo "(task list will be populated during execution)"`
+
+---
 
 ## Workflow
 
 ### Step 0: Parse arguments
 
-`$ARGUMENTS` must contain a GitHub Issue number (e.g. `42` or `#42`).
-Extract the numeric part and assign it to `ISSUE_NUMBER`.
-If no number is found, stop and ask the user: "Which issue number should I start on?"
+`$ARGUMENTS` にGitHub Issue番号（例: `42` または `#42`）が含まれているはず。
+数値部分を抽出して `ISSUE_NUMBER` に代入する。
+番号が見つからない場合は止まってユーザーに確認する: "Which issue number should I start on?"
 
-### Step 1: Fetch the Issue
+---
 
-Run the following to get full issue details:
+### Step 1: Issueを取得する
 
 ```bash
-gh issue view $ISSUE_NUMBER --json number,title,body,labels,assignees
+gh issue view $ISSUE_NUMBER --json number,title,body,labels,assignees,comments
 ```
 
-Read the output carefully:
-- Understand the **summary**, **background**, **goals**, and **acceptance criteria** (the "完了条件" section).
-- Identify which layers are touched: Backend (Go), Frontend, DB migration, Docs.
-- List the concrete sub-tasks from the "やること" (To-do) section of the issue body.
+以下を把握する:
+- **目的・背景**: このIssueが解決しようとしていること
+- **スコープ**: 対象レイヤー（Backend / Frontend / DB / E2E）
+- **完了条件**: 「完了条件」「Acceptance Criteria」セクション
+- **タスクリスト**: 「やること」セクションの具体的なサブタスク
 
-If the issue body is missing or too vague, stop and ask the user to clarify before continuing.
+Issueの本文が空またはあいまいすぎる場合は止まってユーザーに確認する。
 
-### Step 2: Create a feature branch
+---
 
-Branch name format: `feature/<ISSUE_NUMBER>-<short-slug>`
+### Step 2: 設計書を確認する
 
-Where `<short-slug>` is a lowercase, hyphen-separated English summary of the issue title (max 5 words).
+Issueのコメント一覧から `## 実装設計書` を含むコメントを探す。
+
+**設計書コメントがある場合:**
+- 設計書の内容を読み込む
+- Step 3 へ進む
+
+**設計書コメントがない場合:**
+- ユーザーに以下を伝える:
+  ```
+  設計書が見つかりませんでした。design-plan スキルを実行して設計書を作成します。
+  ```
+- **design-plan** スキルを実行する:
+  ```
+  Skill: design-plan
+  Args: $ISSUE_NUMBER
+  ```
+- design-plan が完了したら Step 3 へ進む
+
+---
+
+### Step 3: featureブランチを作成する
+
+現在 `main` ブランチにいることを確認してから分岐する。
+
+ブランチ名フォーマット: `feature/<ISSUE_NUMBER>-<short-slug>`
+
+`<short-slug>` はIssueタイトルを小文字・ハイフン区切り英語に変換したもの（最大5単語）。
 
 ```bash
+git checkout main && git pull origin main
 git checkout -b feature/<ISSUE_NUMBER>-<short-slug>
 ```
 
-### Step 3: Register tasks in the task list
+---
 
-Use `TaskCreate` to register each sub-task identified in Step 1.
-Use `TaskUpdate` to set up dependency chains (`addBlockedBy`) where ordering matters (e.g., domain logic before HTTP handler, backend before frontend).
+### Step 4: タスクをタスクリストに登録する
 
-Always create at minimum:
-- One task per layer touched (Backend, Frontend, DB, Docs)
-- An E2E task if UI or user-facing API endpoints are added or changed (see `.claude/skills/start-task/e2e-context.md`)
-- A final "commit & PR" task that is blocked by all implementation tasks
+`TaskCreate` を使って Step 1 で特定したサブタスクをそれぞれ登録する。
+`TaskUpdate` で依存関係（`addBlockedBy`）を設定する（例: ドメインロジック → HTTPハンドラ、Backend → Frontend の順）。
 
-### Step 4: Implement following TDD (Red → Green → Refactor)
+最低限以下を作成する:
+- タッチするレイヤーごとに1タスク（Backend / Frontend / DB / Docs）
+- UIまたはユーザー向けAPIが追加・変更される場合はE2Eタスク（`.claude/skills/start-task/e2e-context.md` 参照）
+- すべての実装タスクに blocked by された「commit & PR」タスク
 
-Consult `docs/guidlines/task-progress-guide.md` for the full TDD flow.
-Process each implementation task in dependency order.
+---
 
-For each task, execute the following sub-steps **sequentially**:
+### Step 5: 各タスクをTDDで実装する
 
-#### 4a. Test-first (Red)
+依存関係の順にタスクを処理する。各タスクの開始前に `TaskUpdate` でステータスを `in_progress` に更新する。
 
-Invoke the **test-writer** agent:
+各タスクに対して **implement-tdd** スキルを呼び出す:
 
 ```
-Agent: test-writer
-Prompt: "Write failing tests for the following task based on the acceptance
-criteria. Task: <task subject and description>. Issue context: <issue body
-excerpt>. Follow TDD red phase — tests must fail at this point."
+Skill: implement-tdd
+Args: <layer> <task subject and description>
+      Issue context: <issue body excerpt and design doc excerpt>
 ```
 
-Verify tests fail before moving on (run `make test-unit` or the relevant
-test command). Mark the task as `in_progress`.
+- `layer`: タスクが属するレイヤー（`backend` / `frontend` / `e2e`）
+- implement-tdd が完了（LGTM）したら `TaskUpdate` でステータスを `completed` に更新する
+- すべての実装タスクが `completed` になるまで繰り返す
 
-#### 4b. Implement (Green)
+---
 
-Refer to the context file for the task's layer and invoke the code-implementer agent using the "Implement prompt" section:
-- Backend (Go): `.claude/skills/start-task/backend-context.md`
-- Frontend (React): `.claude/skills/start-task/frontend-context.md`
+### Step 6: 最終品質ゲートを通す
 
-Confirm all tests pass before moving on.
+タッチしたレイヤーごとにコンテキストファイルの「Quality gate」コマンドをすべて実行する:
+- Backend (Go): `.claude/skills/implement-tdd/backend-context.md`
+- Frontend (React): `.claude/skills/implement-tdd/frontend-context.md`
 
-#### 4c. Refactor & review (Refactor)
+いずれかが失敗またはカバレッジが低下した場合は修正してから再実行する。
 
-Refer to the context file for the task's layer and invoke the code-reviewer agent using the "Review prompt" section:
-- Backend (Go): `.claude/skills/start-task/backend-context.md`
-- Frontend (React): `.claude/skills/start-task/frontend-context.md`
+---
 
-Apply any critical feedback, then run the commands in the "Quality gate" section of the same context file.
+### Step 7: コミットする
 
-Mark the task as `completed` once all checks pass.
-
-#### 4e. Process the E2E task (if created in Step 3)
-
-If an E2E task was registered, process it like any other task.
-Refer to `.claude/skills/start-task/e2e-context.md` for the test-writer prompt and test execution commands.
-
-#### 4f. Repeat for each task
-
-Continue until every implementation task is `completed`.
-
-### Step 5: Final quality gate
-
-For each layer touched by this PR, refer to its context file and run all commands in the "Quality gate" section:
-- Backend (Go): `.claude/skills/start-task/backend-context.md`
-- Frontend (React): `.claude/skills/start-task/frontend-context.md`
-
-If any target fails or coverage regresses, investigate and fix before proceeding.
-
-### Step 6: Commit
-
-Use the **commit** skill to commit all changes.
-Pass the issue number as argument so it appears in every commit message.
+**commit** スキルを呼び出す:
 
 ```
 Skill: commit
 Args: $ISSUE_NUMBER
 ```
 
-### Step 7: Open a Pull Request
+---
 
-Use the **create-pr** skill to open the PR against `main`.
+### Step 8: PRを作成する
+
+**create-pr** スキルを呼び出す:
 
 ```
 Skill: create-pr
 ```
 
-The PR description must follow the template in the create-pr skill (Japanese body) and include `Closes #<ISSUE_NUMBER>`.
+PRの説明文には `Closes #<ISSUE_NUMBER>` を含める。
 
 ---
 
 ## Safety rules
 
-- Never start on `main` — always create a feature branch first.
-- Never skip tests. If tests cannot be written (e.g., pure config change), document why.
-- Never commit secrets or credentials.
-- If any step fails or produces unclear results, stop and report to the user before continuing.
-- Use `TaskUpdate` to keep task statuses current throughout the workflow.
+- `main` ブランチで作業を始めてはいけない。必ずfeatureブランチを先に作成する。
+- テストをスキップしてはいけない。テストが書けない場合（純粋な設定変更など）は理由をドキュメントに残す。
+- シークレットや認証情報をコミットしてはいけない。
+- いずれかのステップが失敗または不明確な結果を返した場合は、継続する前にユーザーに報告する。
+- `TaskUpdate` でタスクステータスをワークフロー全体を通して最新に保つ。
