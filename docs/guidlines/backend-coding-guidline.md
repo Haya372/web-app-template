@@ -106,6 +106,84 @@ func SaveUser(ctx context.Context, u *entity.User) error {
 }
 ```
 
+## 命名規則
+
+### スコープに応じた命名の詳細度
+
+識別子の名前は**スコープの広さに比例して詳細に**する。スコープが広いほど名前だけで意図が伝わる必要があり、省略は禁止する。
+
+| スコープ | 方針 | 例 |
+|---|---|---|
+| エクスポート済み関数・メソッド・型 | 省略禁止。ドメイン用語をそのまま使う | `CalculateDiscountedPrice`, `UserRepository` |
+| パッケージ変数・構造体フィールド | 省略禁止。文脈から切り離しても意味が伝わること | `maxRetryCount`, `CreatedAt` |
+| 関数・メソッドのローカル変数 | 役割が明確なら短縮可。ただし 1 文字は原則禁止 | `user`, `repo`, `ctx` は可。`u`, `r` は不可 |
+| ループカウンタ・ごく短いクロージャ | 慣用的な 1 文字（`i`, `v`, `k`）のみ許容 | `for i, v := range items` |
+
+```go
+// good
+func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*SignupOutput, error) {
+    hashedPassword, err := vo.NewHashedPassword(input.Password)
+    ...
+}
+
+// bad: 省略により何を表すか不明
+func (u *sUCImpl) Exec(c context.Context, in SIn) (*SOut, error) {
+    hp, e := vo.NewHP(in.P)
+    ...
+}
+```
+
+### 名前が表すべき内容
+
+- **bool 型の変数・フィールド:** `is` / `has` / `can` / `should` プレフィックスを付ける（例: `isActive`, `hasPermission`）
+- **エラー変数:** `err` を使い、複数必要な場合のみ `createErr`, `validateErr` のように接頭語で区別する
+- **インターフェイス:** 実装ではなく役割を表す名前にする（例: `UserRepository`, `TransactionManager`）。`IFoo` や `FooInterface` は使わない
+- **ユビキタス言語:** ドメイン用語は設計書・会話・コードで統一する。略語への読み替えは禁止（例: `user` を `u` に、`repository` を `repo` に略さない）
+
+## 単一責任の原則（SRP）
+
+「クラス・関数・モジュールが変更される理由は 1 つであるべき」という原則を全レイヤーで守る。
+
+### 判断基準
+
+- 関数・メソッドの説明に **「〜して、さらに〜する」** という `and` が必要になったら分割を検討する
+- 1 つの関数が 20 行を超えたら、単一責任を守っているか見直す（目安）
+- 変更理由が複数想定される場合（例: 「バリデーションロジックが変わるとき」と「DB スキーマが変わるとき」の両方で触れる関数）は分割する
+
+### レイヤー別の責任範囲
+
+| レイヤー | 責任 | 含めてはいけないもの |
+|---|---|---|
+| Domain（Entity/VO） | 不変条件の保持とビジネスルール | SQL・HTTP・ログ・外部サービス呼び出し |
+| UseCase | 「何を・いつ・どの順序で」実行するか | HTTPリクエスト/レスポンス型、SQL |
+| Infrastructure | 外部 I/O の実装（DB・HTTP クライアント等） | ビジネスルール、ユースケース固有のロジック |
+| Handler（HTTP 層） | リクエスト解析・UseCase 呼び出し・レスポンス整形 | ビジネスロジック、トランザクション管理 |
+
+```go
+// good: Handler は解析・委譲・整形のみ
+func (h *userHandler) Signup(c echo.Context) error {
+    var req SignupRequest
+    if err := c.Bind(&req); err != nil {
+        return err
+    }
+    output, err := h.signupUseCase.Execute(c.Request().Context(), toInput(req))
+    if err != nil {
+        return err
+    }
+    return c.JSON(http.StatusCreated, toResponse(output))
+}
+
+// bad: Handler にバリデーションや DB 操作が混在している
+func (h *userHandler) Signup(c echo.Context) error {
+    email := c.FormValue("email")
+    if !strings.Contains(email, "@") { // バリデーションはドメイン層の責務
+        return c.JSON(http.StatusBadRequest, ...)
+    }
+    h.db.ExecContext(c.Request().Context(), "INSERT ...") // DB アクセスはインフラ層の責務
+    return c.JSON(http.StatusCreated, ...)
+}
+```
+
 ## コーディングスタイル
 - `go fmt`, `goimports`（必要に応じて `gofumpt`）を保存時に適用し、`golangci-lint` 等の静的解析を常に走らせる
 - エラーハンドリングは `errors.Is/As` や `%w` によるラップを徹底し、HTTP レイヤーではエラーコードとレスポンスボディのマッピングを一箇所に集約する

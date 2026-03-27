@@ -126,6 +126,77 @@ useEffect(() => {
 - コンポーネントの Props は `interface` で定義する（合併型など `interface` で表現できない場合のみ `type`）
 - エクスポートする関数には明示的な戻り値の型を付ける
 
+## 命名規則
+
+### スコープに応じた命名の詳細度
+
+識別子の名前は**スコープの広さに比例して詳細に**する。スコープが広いほど名前だけで意図が伝わる必要があり、省略は禁止する。
+
+| スコープ | 方針 | 例 |
+|---|---|---|
+| エクスポートされるコンポーネント・関数・型 | 省略禁止。役割が名前だけで伝わること | `UserProfileCard`, `fetchUserById`, `AuthTokenPayload` |
+| モジュールスコープの変数・定数 | 省略禁止。文脈から切り離しても意味が伝わること | `maxRetryCount`, `defaultPageSize` |
+| 関数内のローカル変数 | 役割が明確なら短縮可。ただし 1 文字は原則禁止 | `user`, `token`, `error` は可。`u`, `t`, `e` は不可 |
+| ループカウンタ・ごく短いコールバック | 慣用的な 1 文字（`i`, `v`）のみ許容 | `items.map((item, i) => ...)` |
+
+```tsx
+// good
+export function UserProfileCard({ userId }: UserProfileCardProps) {
+  const { data: userProfile, isLoading } = useUserProfile(userId)
+  ...
+}
+
+// bad: 省略により何を表すか不明
+export function UPC({ uid }: UPCProps) {
+  const { data: d, isLoading: ld } = useUP(uid)
+  ...
+}
+```
+
+### 名前が表すべき内容
+
+- **bool 型の変数・Props:** `is` / `has` / `can` / `should` プレフィックスを付ける（例: `isLoading`, `hasError`, `isDisabled`）
+- **イベントハンドラ:** `handle` + イベント対象 + 動作（例: `handleSubmitForm`, `handleDeleteItem`）
+- **カスタムフック:** `use` プレフィックス必須。フックが返す状態・操作を端的に表す名前（例: `useUserProfile`, `useAuthToken`）
+- **型・インターフェイス:** 役割を表す名前。`I` プレフィックスや `Type` サフィックスは使わない（例: `UserProfileCardProps`, `AuthTokenPayload`）
+
+## 単一責任の原則（SRP）
+
+「コンポーネント・関数・フックが変更される理由は 1 つであるべき」という原則を守る。
+
+### 判断基準
+
+- 関数・コンポーネントの説明に **「〜して、さらに〜する」** という `and` が必要になったら分割を検討する
+- コンポーネントが「表示」と「データ取得」の両方に責任を持つ場合は、フックに切り出してコンポーネントは表示のみに集中させる
+- Props が 5 個を超えてきたら、コンポーネントが複数の関心事を扱っていないか見直す（目安）
+
+### 責任の分離パターン
+
+| 単位 | 責任 | 含めてはいけないもの |
+|---|---|---|
+| コンポーネント | 受け取ったデータの表示・ユーザー操作のハンドリング | `fetch`・`useQuery` 等のデータ取得、ビジネスロジック |
+| カスタムフック | データ取得・状態管理・副作用のカプセル化 | JSX のレンダリング |
+| `api/` の fetch 関数 | 1 エンドポイントとの通信と型変換のみ | キャッシュ管理、UI の状態 |
+| ユーティリティ関数 | 純粋な変換・計算 | 副作用・状態・ネットワーク通信 |
+
+```tsx
+// good: コンポーネントは表示のみ、データ取得はフックに分離
+export function UserProfile({ userId }: UserProfileProps) {
+  const { userProfile, isLoading } = useUserProfile(userId)
+  if (isLoading) return <Spinner />
+  return <ProfileCard name={userProfile.name} email={userProfile.email} />
+}
+
+// bad: データ取得と表示が混在している
+export function UserProfile({ userId }: UserProfileProps) {
+  const [user, setUser] = useState(null)
+  useEffect(() => {          // データ取得はフックの責務
+    fetch(`/api/users/${userId}`).then(r => r.json()).then(setUser)
+  }, [userId])
+  return <div>{user?.name}</div>
+}
+```
+
 ## コーディングスタイル
 
 - コンポーネント名・ファイル名は PascalCase、フック・ユーティリティ・非コンポーネントファイルは camelCase

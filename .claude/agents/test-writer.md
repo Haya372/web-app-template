@@ -113,6 +113,7 @@ pnpm test:agent src/features/auth/pages/LoginPage.test.tsx -t "renders an email 
 
 Before finalizing, verify:
 - [ ] All exported functions / component behaviours have at least one test
+- [ ] **Every executable statement is reached by at least one test case (statement coverage / C0)**
 - [ ] Happy path and error/edge cases are covered
 - [ ] `vi.mock` is declared before the import of the mocked module
 - [ ] `document.body` is cleaned up in `afterEach`
@@ -139,9 +140,10 @@ The layer of the code under test determines the test type:
 | `internal/usecase` | Unit | `make test-unit` | none |
 | `internal/infrastructure` | Integration | `make test-integration` | `//go:build integration` |
 
-**Coverage targets (from guidelines):**
-- Overall: ≥80% branch coverage
-- Critical use cases: ≥90% branch coverage
+**Coverage targets (statement coverage / C0):**
+- Overall: ≥80% statement coverage (C0)
+- Critical use cases: ≥90% statement coverage (C0)
+- Every executable statement in the code under test must be reached by at least one test case
 
 ## Workflow
 
@@ -150,9 +152,11 @@ The layer of the code under test determines the test type:
 - Check `test/mock/` for available generated mocks (mockgen)
 - Verify build tags and package naming conventions in use
 
-### Step 2: Code Analysis
+### Step 2: Code Analysis (Statement Coverage / C0)
 - Read and understand all code paths in the target file
 - Identify public interfaces, exported functions, and observable behaviors
+- **List every executable statement** — assignments, function calls, return statements, error checks
+- Ensure every listed statement will be reached by at least one test case
 - Map conditional branches, error returns, and side effects
 - Note which dependencies need to be mocked (repositories, services, txManager)
 
@@ -304,6 +308,7 @@ func TestCreate_HappyCase(t *testing.T) {
 
 Before finalizing, verify:
 - [ ] All exported functions/methods have at least one test
+- [ ] **Every executable statement is reached by at least one test case (statement coverage / C0)**
 - [ ] Both happy path and failure/error cases are covered
 - [ ] Table-driven format is used wherever multiple cases exist
 - [ ] Test case names are in English and clearly describe the scenario

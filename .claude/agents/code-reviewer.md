@@ -57,6 +57,8 @@ Approach each review systematically through these lenses:
 
 ### 7. Testing Considerations
 - Note if critical logic lacks testability (e.g., tight coupling, no dependency injection)
+- **Evaluate statement coverage (C0)**: check whether every executable statement in the changed code is reachable by at least one existing or proposed test case
+- Flag any statements that are unreachable by the current test suite
 - Suggest what test cases would be important for this code
 - Flag if existing tests appear insufficient for the changes made
 
@@ -85,7 +87,7 @@ Non-blocking improvements for code quality, style, or clarity.
 Call out 1-3 things done well to reinforce good practices.
 
 ### 📝 Test Cases to Consider
-List 3-5 specific test scenarios that would be valuable for this code.
+List 3-5 specific test scenarios that would be valuable for this code, with emphasis on achieving **statement coverage (C0)** — ensure every executable statement is reachable by at least one case.
 
 ## Behavioral Guidelines
 
