@@ -2,12 +2,18 @@
   "name": "web-app-template",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@10.30.3",
   "devDependencies": {
     "husky": "8.0.3",
     "turbo": "2.8.20"
   },
   "scripts": {
     "prepare": "husky install",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "dev": "turbo run dev",
     "test:e2e": "pnpm --filter e2e test:e2e"
   }
 }
