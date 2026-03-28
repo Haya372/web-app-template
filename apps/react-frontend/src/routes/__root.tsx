@@ -1,23 +1,17 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { Toaster } from '@repo/ui'
-import Footer from '@/components/Footer'
-import Header from '@/components/Header'
+import { Outlet, createRootRoute } from "@tanstack/react-router"
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+import { Toaster } from "@repo/ui"
 
 export const Route = createRootRoute({
-  component: RootLayout,
+	component: RootLayout,
 })
 
 function RootLayout() {
-  return (
-    <>
-      <div className="min-h-screen bg-background font-sans antialiased">
-        <Header />
-        <Outlet />
-        <Footer />
-      </div>
-      <Toaster />
-      <TanStackRouterDevtools />
-    </>
-  )
+	return (
+		<div className="min-h-screen bg-background font-sans antialiased">
+			<Outlet />
+			<Toaster />
+			{import.meta.env.DEV && <TanStackRouterDevtools />}
+		</div>
+	)
 }
