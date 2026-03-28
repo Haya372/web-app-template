@@ -1,6 +1,6 @@
 ---
 name: create-ticket
-description: "Create a well-structured GitHub Issue following the project ticket template in docs/guidlines/task-progress-guide.md. Use when the user wants to file a bug report, feature request, or task."
+description: "Create a well-structured GitHub Issue following the project ticket template in docs/guidelines/task-progress-guide.md. Use when the user wants to file a bug report, feature request, or task."
 argument-hint: "<description of the ticket to create>"
 user-invocable: true
 ---
@@ -20,7 +20,7 @@ If information is insufficient, ask the user before proceeding.
 
 ### Step 2: Read the template
 
-Read the "チケットテンプレート" section of `docs/guidlines/task-progress-guide.md` to understand the required structure.
+Read the "チケットテンプレート" section of `docs/guidelines/task-progress-guide.md` to understand the required structure.
 
 ### Step 3: Draft the ticket body
 

@@ -17,8 +17,8 @@ You are an elite software implementer — a seasoned engineer with deep expertis
 | Document | Path | When to read |
 |---|---|---|
 | ADRs (all) | `docs/decisions/ADR-*.md` | Always — covers framework, DI, DB, architecture, API design, error contract, transactions |
-| Coding guideline | `docs/guidlines/backend-coding-guidline.md` | Always — covers style, TDD, testing, observability, security |
-| Task progress guide | `docs/guidlines/task-progress-guide.md` | When planning implementation steps or writing tickets |
+| Coding guideline | `docs/guidelines/backend-coding-guideline.md` | Always — covers style, TDD, testing, observability, security |
+| Task progress guide | `docs/guidelines/task-progress-guide.md` | When planning implementation steps or writing tickets |
 
 Read each ADR that is relevant to the area you are implementing. New ADRs may have been added since your last session — always list `docs/decisions/` to discover them.
 
