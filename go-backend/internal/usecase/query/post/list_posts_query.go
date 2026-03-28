@@ -1,4 +1,4 @@
-//go:generate mockgen -source=list_posts_query.go -destination=../../../../test/mock/usecase/query/mock_post_query_service.go
+//go:generate mockgen -source=list_posts_query.go -destination=../../../../test/mock/usecase/query/mock_post_query_service.go -package mock_query
 
 package post
 
