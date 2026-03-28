@@ -52,10 +52,10 @@ func TestUserPermissionRepository_FindByUserId_WithViewerRole(t *testing.T) {
 	defer func() { require.NoError(t, testDb.Cleanup()) }()
 
 	u := seedUser(t)
-	assignRole(t, u.Id().String(), viewerRoleID)
+	assignRole(t, u.ID().String(), viewerRoleID)
 
 	r := repository.NewUserPermissionRepository(testDb.DbManager())
-	agg, err := r.FindByUserId(context.Background(), u.Id())
+	agg, err := r.FindByUserID(context.Background(), u.ID())
 
 	require.NoError(t, err)
 	assert.True(t, agg.HasPermission(vo.PermissionUsersList))
@@ -67,7 +67,7 @@ func TestUserPermissionRepository_FindByUserId_NoRole(t *testing.T) {
 	u := seedUser(t)
 
 	r := repository.NewUserPermissionRepository(testDb.DbManager())
-	agg, err := r.FindByUserId(context.Background(), u.Id())
+	agg, err := r.FindByUserID(context.Background(), u.ID())
 
 	require.NoError(t, err)
 	require.NotNil(t, agg)
@@ -79,11 +79,11 @@ func TestUserPermissionRepository_FindByUserId_MultipleRoles(t *testing.T) {
 	defer func() { require.NoError(t, testDb.Cleanup()) }()
 
 	u := seedUser(t)
-	assignRole(t, u.Id().String(), adminRoleID)
-	assignRole(t, u.Id().String(), viewerRoleID)
+	assignRole(t, u.ID().String(), adminRoleID)
+	assignRole(t, u.ID().String(), viewerRoleID)
 
 	r := repository.NewUserPermissionRepository(testDb.DbManager())
-	agg, err := r.FindByUserId(context.Background(), u.Id())
+	agg, err := r.FindByUserID(context.Background(), u.ID())
 
 	require.NoError(t, err)
 	assert.True(t, agg.HasPermission(vo.PermissionUsersList))
@@ -93,7 +93,7 @@ func TestUserPermissionRepository_FindByUserId_UserNotFound(t *testing.T) {
 	defer func() { require.NoError(t, testDb.Cleanup()) }()
 
 	r := repository.NewUserPermissionRepository(testDb.DbManager())
-	agg, err := r.FindByUserId(context.Background(), uuid.New())
+	agg, err := r.FindByUserID(context.Background(), uuid.New())
 
 	assert.Error(t, err)
 	assert.Nil(t, agg)
