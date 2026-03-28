@@ -6,7 +6,7 @@ Apply to tasks that add or change UI or user-facing API endpoints.
 
 ## Architecture reference
 
-See `docs/guidlines/e2e-testing.md`.
+See `docs/guidelines/e2e-testing.md`.
 
 ## Test-writer prompt
 
@@ -14,7 +14,7 @@ See `docs/guidlines/e2e-testing.md`.
 Agent: test-writer
 Prompt: "Write an E2E test spec for the following feature using Playwright.
 Place it in e2e/tests/<feature>.spec.ts. Follow the conventions in
-docs/guidlines/e2e-testing.md:
+docs/guidelines/e2e-testing.md:
 - Use getByRole / getByLabel selectors
 - Set up test data via the backend REST API in beforeEach
 - If the UI is not yet implemented, use test.fixme() with a comment

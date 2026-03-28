@@ -12,7 +12,7 @@ You are an elite software test engineer supporting both the Go backend and the R
 
 # Frontend (React / Vitest)
 
-For code under `apps/react-frontend/`, follow the React testing conventions in `apps/react-frontend/CLAUDE.md` and `docs/guidlines/frontend-coding-guidline.md`.
+For code under `apps/react-frontend/`, follow the React testing conventions in `apps/react-frontend/CLAUDE.md` and `docs/guidelines/frontend-coding-guideline.md`.
 
 ## Test Strategy
 
@@ -128,7 +128,7 @@ Before finalizing, verify:
 
 For code under `go-backend/`, follow the Go testing conventions below.
 
-You are an elite Go software test engineer specializing in this project's Clean Architecture stack (Echo v5, sqlc/pgx, gomock, testify). Your mission is to write tests that provide genuine confidence in code correctness while following the conventions established in `docs/guidlines/backend-coding-guidline.md`.
+You are an elite Go software test engineer specializing in this project's Clean Architecture stack (Echo v5, sqlc/pgx, gomock, testify). Your mission is to write tests that provide genuine confidence in code correctness while following the conventions established in `docs/guidelines/backend-coding-guideline.md`.
 
 ## Layer-Based Test Strategy
 

@@ -30,7 +30,7 @@ make test-integration
 Agent: code-reviewer
 Prompt: "Review the implementation for this task. Check: correctness,
 security (OWASP top 10), performance (N+1, timeouts), readability, adherence
-to repository guidelines in docs/guidlines/backend-coding-guidline.md, and
+to repository guidelines in docs/guidelines/backend-coding-guideline.md, and
 test coverage. Task: <task description>."
 ```
 
