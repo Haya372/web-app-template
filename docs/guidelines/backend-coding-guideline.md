@@ -133,6 +133,24 @@ func (u *sUCImpl) Exec(c context.Context, in SIn) (*SOut, error) {
 }
 ```
 
+### 頭字語・イニシャリズム（Initialisms）
+
+Go の公式スタイルガイド（[Effective Go](https://go.dev/doc/effective_go#mixed-caps) および [Go Code Review Comments — Initialisms](https://github.com/golang/go/wiki/CodeReviewComments#initialisms)）に従い、頭字語は一貫した大文字／小文字で書く。
+
+| 正しい例 | 誤った例 |
+|---|---|
+| `userID` | `userId` |
+| `parseURL` | `parseUrl` |
+| `httpClient` | `httpClient` ✓ (小文字始まりは全小文字) |
+| `HTTPClient` | `HttpClient` |
+| `toJSON` | `toJson` |
+| `apiKey` | `apiKey` ✓ (小文字始まりは全小文字) |
+
+**理由:**
+- `golangci-lint`（`revive` の `var-naming` ルール）がこのスタイルを強制する
+- `sqlc` などのコード生成ツールが Go 標準に従い `ID`/`URL` を生成するため、規約を統一することで境界での変換処理が不要になる
+- Go コミュニティ全体の慣習に合わせることで、外部ライブラリや生成コードとの一貫性を保てる
+
 ### 名前が表すべき内容
 
 - **bool 型の変数・フィールド:** `is` / `has` / `can` / `should` プレフィックスを付ける（例: `isActive`, `hasPermission`）
