@@ -14,6 +14,14 @@ LIMIT $1 OFFSET $2;
 -- name: CountUsers :one
 SELECT COUNT(*) FROM users;
 
+-- name: FindAllPosts :many
+SELECT id, user_id, content, created_at FROM posts
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
+
+-- name: CountPosts :one
+SELECT COUNT(*) FROM posts;
+
 -- name: CreatePost :one
 INSERT INTO posts(id, user_id, content, created_at)
 VALUES ($1, $2, $3, $4)
