@@ -129,6 +129,17 @@ pnpm test:agent src/features/auth/pages/LoginPage.test.tsx -t "renders an email 
 
 The `-t` flag matches against the full test name (`describe` block + `it` label concatenated). Use a unique substring to target a single case.
 
+## Authentication State Management
+
+Global auth state is managed by `AuthProvider` in `src/features/auth/contexts/AuthContext.tsx`. Key rules:
+
+- Access auth state via `useAuth()` — never consume `AuthContext` directly with `useContext`.
+- Token persistence is handled by `src/features/auth/utils/tokenStorage.ts` (pure localStorage API). Do **not** call `saveToken`/`removeToken` directly from components or hooks — always go through `login()`/`logout()` from `useAuth()`.
+- Protected routes are guarded in `src/routes/_authenticated.tsx` via `beforeLoad`. Since `beforeLoad` runs outside React, it calls `getToken()` directly rather than `useAuth()`.
+- `AuthProvider` is placed inside `RootLayout` in `src/routes/__root.tsx`, making `useAuth()` available in all routes.
+
+See [ADR-0011](../../docs/decisions/ADR-0011-FRONTEND-AUTH-STATE-MANAGEMENT.md) for design rationale.
+
 ## Security
 
 - Never hardcode API endpoints, tokens, or secrets — read them from environment variables (`import.meta.env.*`).
