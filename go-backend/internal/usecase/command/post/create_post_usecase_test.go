@@ -17,8 +17,8 @@ import (
 )
 
 func TestCreatePostUseCase_HappyCase(t *testing.T) {
-	userId := uuid.New()
-	postId := uuid.New()
+	userID := uuid.New()
+	postID := uuid.New()
 	createdAt := time.Date(2026, 3, 8, 0, 0, 0, 0, time.UTC)
 	content := "Hello, world!"
 
@@ -29,7 +29,7 @@ func TestCreatePostUseCase_HappyCase(t *testing.T) {
 		{
 			name: "Success to create post",
 			input: post.CreatePostInput{
-				UserId:  userId,
+				UserID:  userID,
 				Content: content,
 			},
 		},
@@ -44,8 +44,8 @@ func TestCreatePostUseCase_HappyCase(t *testing.T) {
 			postRepository := mock_repository.NewMockPostRepository(ctrl)
 			mockPost := mock_entity.NewMockPost(ctrl)
 
-			mockPost.EXPECT().Id().Return(postId).AnyTimes()
-			mockPost.EXPECT().UserId().Return(userId).AnyTimes()
+			mockPost.EXPECT().ID().Return(postID).AnyTimes()
+			mockPost.EXPECT().UserID().Return(userID).AnyTimes()
 			mockPost.EXPECT().Content().Return(content).AnyTimes()
 			mockPost.EXPECT().CreatedAt().Return(createdAt).AnyTimes()
 
@@ -56,8 +56,8 @@ func TestCreatePostUseCase_HappyCase(t *testing.T) {
 
 			require.NoError(t, err)
 			require.NotNil(t, output)
-			assert.Equal(t, postId, output.Id)
-			assert.Equal(t, userId, output.UserId)
+			assert.Equal(t, postID, output.ID)
+			assert.Equal(t, userID, output.UserID)
 			assert.Equal(t, content, output.Content)
 			assert.Equal(t, createdAt, output.CreatedAt)
 		})
@@ -65,7 +65,7 @@ func TestCreatePostUseCase_HappyCase(t *testing.T) {
 }
 
 func TestCreatePostUseCase_FailureCase(t *testing.T) {
-	userId := uuid.New()
+	userID := uuid.New()
 
 	tests := []struct {
 		name    string
@@ -76,14 +76,14 @@ func TestCreatePostUseCase_FailureCase(t *testing.T) {
 		{
 			name: "empty content returns error",
 			input: post.CreatePostInput{
-				UserId:  userId,
+				UserID:  userID,
 				Content: "",
 			},
 		},
 		{
 			name: "repository error propagates",
 			input: post.CreatePostInput{
-				UserId:  userId,
+				UserID:  userID,
 				Content: "valid content",
 			},
 			repoErr: errors.New("db error"),
@@ -91,7 +91,7 @@ func TestCreatePostUseCase_FailureCase(t *testing.T) {
 		{
 			name: "transaction error propagates",
 			input: post.CreatePostInput{
-				UserId:  userId,
+				UserID:  userID,
 				Content: "valid content",
 			},
 			txErr: errors.New("tx error"),

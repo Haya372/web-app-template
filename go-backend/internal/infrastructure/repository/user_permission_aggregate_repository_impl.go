@@ -27,13 +27,13 @@ type userPermissionRepositoryImpl struct {
 	dbManager db.DbManager
 }
 
-func (r *userPermissionRepositoryImpl) FindByUserId(
-	ctx context.Context, userId uuid.UUID,
+func (r *userPermissionRepositoryImpl) FindByUserID(
+	ctx context.Context, userID uuid.UUID,
 ) (*aggregate.UserPermissionAggregate, error) {
-	ctx, span := r.tracer.Start(ctx, "FindByUserId")
+	ctx, span := r.tracer.Start(ctx, "FindByUserID")
 	defer span.End()
 
-	pgID := pgtype.UUID{Bytes: userId, Valid: true}
+	pgID := pgtype.UUID{Bytes: userID, Valid: true}
 
 	var rows []sqlc.FindUserPermissionSnapshotRow
 
@@ -81,7 +81,7 @@ func (r *userPermissionRepositoryImpl) FindByUserId(
 	}
 
 	return &aggregate.UserPermissionAggregate{
-		UserId:      userId,
+		UserID:      userID,
 		User:        user,
 		Permissions: perms,
 	}, nil

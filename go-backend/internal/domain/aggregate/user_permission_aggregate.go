@@ -11,7 +11,7 @@ import (
 // UserPermissionAggregate is an aggregate combining a user's identity and their
 // effective permissions, derived from all roles assigned to the user.
 type UserPermissionAggregate struct {
-	UserId      uuid.UUID
+	UserID      uuid.UUID
 	User        entity.User
 	Permissions []vo.Permission
 }

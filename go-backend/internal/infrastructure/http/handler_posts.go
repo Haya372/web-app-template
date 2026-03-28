@@ -20,8 +20,8 @@ func (h *serverHandler) PostV1Posts(
 	ctx, span := h.tracer.Start(ctx, "createPost")
 	defer span.End()
 
-	userIdStr := common.UserIdFromContext(ctx)
-	if userIdStr == "" {
+	userIDStr := common.UserIDFromContext(ctx)
+	if userIDStr == "" {
 		h.logger.Error(ctx, "user ID missing from context — JWT middleware may not be applied")
 		span.SetStatus(codes.Error, "missing user ID in context")
 
@@ -32,7 +32,7 @@ func (h *serverHandler) PostV1Posts(
 		}, nil
 	}
 
-	userId, err := uuid.Parse(userIdStr)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		parseErr := vo.NewValidationError("invalid user ID in token", nil, err)
 		span.RecordError(parseErr)
@@ -46,7 +46,7 @@ func (h *serverHandler) PostV1Posts(
 	}
 
 	output, err := h.createPostUseCase.Execute(ctx, commandpost.CreatePostInput{
-		UserId:  userId,
+		UserID:  userID,
 		Content: req.Body.Content,
 	})
 	if err != nil {
@@ -57,8 +57,8 @@ func (h *serverHandler) PostV1Posts(
 	}
 
 	return generated.PostV1Posts201JSONResponse{
-		Id:        output.Id,
-		UserId:    output.UserId,
+		Id:        output.ID,
+		UserId:    output.UserID,
 		Content:   output.Content,
 		CreatedAt: output.CreatedAt,
 	}, nil

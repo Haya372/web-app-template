@@ -39,7 +39,7 @@ func (uc *listUsersUseCaseImpl) Execute(
 
 	uc.logger.Info(ctx, "list users requested", "limit", input.Limit, "offset", input.Offset)
 
-	agg, err := uc.permissionRepository.FindByUserId(ctx, input.UserId)
+	agg, err := uc.permissionRepository.FindByUserID(ctx, input.UserID)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())

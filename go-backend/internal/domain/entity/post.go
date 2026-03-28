@@ -11,8 +11,8 @@ import (
 
 // Post represents a post domain entity.
 type Post interface {
-	Id() uuid.UUID
-	UserId() uuid.UUID
+	ID() uuid.UUID
+	UserID() uuid.UUID
 	Content() string
 	CreatedAt() time.Time
 }
@@ -24,11 +24,11 @@ type postImpl struct {
 	createdAt time.Time
 }
 
-func (p *postImpl) Id() uuid.UUID {
+func (p *postImpl) ID() uuid.UUID {
 	return p.id
 }
 
-func (p *postImpl) UserId() uuid.UUID {
+func (p *postImpl) UserID() uuid.UUID {
 	return p.userId
 }
 
@@ -41,7 +41,7 @@ func (p *postImpl) CreatedAt() time.Time {
 }
 
 // NewPost creates a new Post with a generated UUID, validating the content.
-func NewPost(userId uuid.UUID, content string, createdAt time.Time) (Post, error) {
+func NewPost(userID uuid.UUID, content string, createdAt time.Time) (Post, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
@@ -54,17 +54,17 @@ func NewPost(userId uuid.UUID, content string, createdAt time.Time) (Post, error
 
 	return &postImpl{
 		id:        id,
-		userId:    userId,
+		userId:    userID,
 		content:   string(*c),
 		createdAt: createdAt,
 	}, nil
 }
 
 // ReconstructPost rebuilds a Post from persisted values without validation.
-func ReconstructPost(id, userId uuid.UUID, content string, createdAt time.Time) Post {
+func ReconstructPost(id, userID uuid.UUID, content string, createdAt time.Time) Post {
 	return &postImpl{
 		id:        id,
-		userId:    userId,
+		userId:    userID,
 		content:   content,
 		createdAt: createdAt,
 	}

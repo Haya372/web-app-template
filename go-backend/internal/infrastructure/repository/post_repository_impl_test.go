@@ -46,7 +46,7 @@ func TestCreatePost_HappyCase(t *testing.T) {
 			name: "Create post success",
 			post: entity.ReconstructPost(
 				uuid.New(),
-				user.Id(),
+				user.ID(),
 				"Hello, world!",
 				time.Date(2026, 3, 8, 12, 0, 0, 0, time.UTC),
 			),
@@ -60,8 +60,8 @@ func TestCreatePost_HappyCase(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.NotNil(t, created)
-			assert.Equal(t, tt.post.Id(), created.Id())
-			assert.Equal(t, tt.post.UserId(), created.UserId())
+			assert.Equal(t, tt.post.ID(), created.ID())
+			assert.Equal(t, tt.post.UserID(), created.UserID())
 			assert.Equal(t, tt.post.Content(), created.Content())
 		})
 	}

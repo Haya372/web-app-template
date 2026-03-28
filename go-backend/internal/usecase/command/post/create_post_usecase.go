@@ -19,13 +19,13 @@ type CreatePostUseCase interface {
 }
 
 type CreatePostInput struct {
-	UserId  uuid.UUID
+	UserID  uuid.UUID
 	Content string
 }
 
 type CreatePostOutput struct {
-	Id        uuid.UUID
-	UserId    uuid.UUID
+	ID        uuid.UUID
+	UserID    uuid.UUID
 	Content   string
 	CreatedAt time.Time
 }
@@ -41,7 +41,7 @@ func (uc *createPostUseCaseImpl) Execute(ctx context.Context, input CreatePostIn
 	ctx, span := uc.tracer.Start(ctx, "execute")
 	defer span.End()
 
-	post, err := entity.NewPost(input.UserId, input.Content, time.Now())
+	post, err := entity.NewPost(input.UserID, input.Content, time.Now())
 	if err != nil {
 		uc.logger.Error(ctx, "failed to create Post", "error", err)
 		span.RecordError(err)
@@ -73,8 +73,8 @@ func (uc *createPostUseCaseImpl) Execute(ctx context.Context, input CreatePostIn
 	}
 
 	return &CreatePostOutput{
-		Id:        created.Id(),
-		UserId:    created.UserId(),
+		ID:        created.ID(),
+		UserID:    created.UserID(),
 		Content:   created.Content(),
 		CreatedAt: created.CreatedAt(),
 	}, nil

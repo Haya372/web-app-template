@@ -33,8 +33,8 @@ func JWTMiddleware(jwtService service.JwtService) echo.MiddlewareFunc {
 
 			// Propagate userID into both the Echo context and the Go request
 			// context so it is available to use cases for logging.
-			c.Set("userID", claims.UserId)
-			ctx := common.WithUserId(c.Request().Context(), claims.UserId)
+			c.Set("userID", claims.UserID)
+			ctx := common.WithUserID(c.Request().Context(), claims.UserID)
 			c.SetRequest(c.Request().WithContext(ctx))
 
 			return next(c)

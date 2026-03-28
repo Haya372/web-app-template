@@ -43,7 +43,7 @@ func TestCreate_HappyCase(t *testing.T) {
 
 			assert.Nil(t, err)
 			assert.NotNil(t, user)
-			assert.Equal(t, user.Id(), tt.user.Id())
+			assert.Equal(t, user.ID(), tt.user.ID())
 			assert.Equal(t, user.Email(), tt.user.Email())
 			assert.Equal(t, user.PasswordHash(), tt.user.PasswordHash())
 			assert.Equal(t, user.Name(), tt.user.Name())

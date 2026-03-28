@@ -57,7 +57,7 @@ func TestJwtService_GenerateUserAccessToken(t *testing.T) {
 
 	var claims jwtClaims
 	require.NoError(t, json.Unmarshal(payload, &claims))
-	assert.Equal(t, user.Id().String(), claims.Subject)
+	assert.Equal(t, user.ID().String(), claims.Subject)
 	assert.GreaterOrEqual(t, claims.IssuedAt, now.Add(-time.Second).Unix())
 	assert.LessOrEqual(t, claims.IssuedAt, time.Now().UTC().Add(time.Second).Unix())
 
@@ -106,7 +106,7 @@ func TestJwtService_ValidateToken_Valid(t *testing.T) {
 	claims, err := svc.ValidateToken(t.Context(), token.Value)
 	require.NoError(t, err)
 	require.NotNil(t, claims)
-	assert.Equal(t, user.Id().String(), claims.UserId)
+	assert.Equal(t, user.ID().String(), claims.UserID)
 }
 
 func TestJwtService_ValidateToken_InvalidFormat(t *testing.T) {

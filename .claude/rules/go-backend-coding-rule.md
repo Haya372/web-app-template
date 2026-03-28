@@ -12,10 +12,11 @@ paths:
 
 ## Naming Conventions
 
-- Do not use consecutive uppercase letters in identifiers. Use mixed-case abbreviations instead.
-  - `Id` instead of `ID`
-  - `Url` instead of `URL`
-  - `Http` instead of `HTTP`
-  - `Json` instead of `JSON`
-  - `Api` instead of `API`
+- Follow Go's initialisms convention: acronyms and initialisms in identifiers must be written in consistent case (all-caps or all-lowercase).
+  - `ID` instead of `Id`
+  - `URL` instead of `Url`
+  - `HTTP` instead of `Http`
+  - `JSON` instead of `Json`
+  - `API` instead of `Api`
   - This applies to struct fields, function names, variable names, and type names.
+  - Rationale: Effective Go and the Go Code Review Comments guide require this style. `golangci-lint` (`revive`) enforces it, and `sqlc`-generated code uses it — keeping consistent avoids conversion boilerplate at layer boundaries.

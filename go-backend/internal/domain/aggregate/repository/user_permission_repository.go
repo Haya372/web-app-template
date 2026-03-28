@@ -11,5 +11,5 @@ import (
 
 // UserPermissionRepository is the port for fetching a user's effective permission aggregate.
 type UserPermissionRepository interface {
-	FindByUserId(ctx context.Context, userId uuid.UUID) (*aggregate.UserPermissionAggregate, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) (*aggregate.UserPermissionAggregate, error)
 }

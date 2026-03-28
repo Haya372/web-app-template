@@ -58,7 +58,7 @@ func TestUserPermissionAggregate_HasPermission(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &aggregate.UserPermissionAggregate{
-				UserId:      userID,
+				UserID:      userID,
 				Permissions: tt.permissions,
 			}
 			assert.Equal(t, tt.expected, a.HasPermission(tt.check))

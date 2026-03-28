@@ -16,7 +16,7 @@ var (
 )
 
 type User interface {
-	Id() uuid.UUID
+	ID() uuid.UUID
 	Email() string
 	PasswordHash() []byte
 	ComparePassword(raw string) (bool, error)
@@ -35,7 +35,7 @@ type userImpl struct {
 	status       vo.UserStatus
 }
 
-func (u *userImpl) Id() uuid.UUID {
+func (u *userImpl) ID() uuid.UUID {
 	return u.id
 }
 

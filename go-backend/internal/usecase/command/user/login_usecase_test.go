@@ -31,7 +31,7 @@ func TestLoginUseCase_HappyCase(t *testing.T) {
 	userRepository.EXPECT().FindByEmail(gomock.Any(), "test@example.com").Return(mockUser, nil).Times(1)
 	mockUser.EXPECT().Status().Return(vo.UserStatusActive).Times(1)
 	mockUser.EXPECT().ComparePassword("password").Return(true, nil).Times(1)
-	mockUser.EXPECT().Id().Return(userID).Times(1)
+	mockUser.EXPECT().ID().Return(userID).Times(1)
 	mockUser.EXPECT().Name().Return("Test").Times(1)
 	mockUser.EXPECT().Email().Return("test@example.com").Times(1)
 
@@ -54,7 +54,7 @@ func TestLoginUseCase_HappyCase(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "token", output.Token)
 	assert.Equal(t, expiresAt, output.ExpiresAt)
-	assert.Equal(t, userID.String(), output.UserId)
+	assert.Equal(t, userID.String(), output.UserID)
 	assert.Equal(t, "Test", output.UserName)
 	assert.Equal(t, "test@example.com", output.UserEmail)
 }

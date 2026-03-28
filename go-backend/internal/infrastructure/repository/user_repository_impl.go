@@ -30,7 +30,7 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user entity.User) (enti
 
 	err := r.dbManager.QueriesFunc(ctx, func(ctx context.Context, queries sqlc.Queries) error {
 		return queries.CreateUser(ctx, sqlc.CreateUserParams{
-			ID:           toPgtypeUuid(user.Id()),
+			ID:           toPgtypeUuid(user.ID()),
 			Email:        user.Email(),
 			PasswordHash: user.PasswordHash(),
 			Name:         user.Name(),
