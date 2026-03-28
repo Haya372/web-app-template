@@ -72,5 +72,5 @@ generate: generate-db-client generate-api
 
 .PHONY: migrate-local
 migrate-local:
-	psqldef -U postgres -W postgres -h localhost -p 55432 backend --apply < db/schema/schema.sql
+	psqldef -U postgres -W postgres -h localhost -p $${DB_PORT:-55432} backend --apply < db/schema/schema.sql
 	docker exec -it db psql backend -U postgres -f /seeds/master/seed.sql

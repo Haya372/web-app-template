@@ -75,8 +75,13 @@ func NewServer(r Router) *echo.Echo {
 }
 
 func NewEchoConfig() echo.StartConfig {
+	port := os.Getenv("APP_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	return echo.StartConfig{
-		Address:         ":8080",
+		Address:         ":" + port,
 		GracefulTimeout: gracefulTimeout,
 	}
 }
