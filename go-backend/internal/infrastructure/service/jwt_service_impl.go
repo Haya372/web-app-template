@@ -71,7 +71,7 @@ func (g *jwtServiceImpl) GenerateUserAccessToken(
 		Type:      "JWT",
 	}
 	claims := jwtClaims{
-		Subject:   user.Id().String(),
+		Subject:   user.ID().String(),
 		ExpiresAt: expiresAt.Unix(),
 		IssuedAt:  now.Unix(),
 	}
@@ -148,7 +148,7 @@ func (g *jwtServiceImpl) ValidateToken(ctx context.Context, token string) (*serv
 		return nil, errTokenExpired
 	}
 
-	return &service.TokenClaims{UserId: claims.Subject}, nil
+	return &service.TokenClaims{UserID: claims.Subject}, nil
 }
 
 func NewJwtService() (service.JwtService, error) {

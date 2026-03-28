@@ -11,7 +11,7 @@ import (
 
 // UserDto is a read-only projection of a user; password_hash is intentionally excluded.
 type UserDto struct {
-	Id        uuid.UUID
+	ID        uuid.UUID
 	Name      string
 	Email     string
 	Status    string
@@ -25,7 +25,7 @@ type UserQueryService interface {
 
 // ListUsersInput holds the validated parameters for the list-users query.
 type ListUsersInput struct {
-	UserId uuid.UUID
+	UserID uuid.UUID
 	Limit  int
 	Offset int
 }

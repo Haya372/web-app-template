@@ -65,7 +65,7 @@ func (s *userQueryServiceImpl) FindAll(ctx context.Context, limit, offset int) (
 		}
 
 		dtos = append(dtos, usecasequery.UserDto{
-			Id:        uuid.UUID(row.ID.Bytes),
+			ID:        uuid.UUID(row.ID.Bytes),
 			Name:      row.Name,
 			Email:     row.Email,
 			Status:    status.String(),

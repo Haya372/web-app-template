@@ -35,7 +35,7 @@ func (h *serverHandler) PostV1UsersSignup(
 	}
 
 	return generated.PostV1UsersSignup201JSONResponse{
-		Id:        output.Id,
+		Id:        output.ID,
 		Name:      output.Name,
 		Email:     openapi_types.Email(output.Email),
 		Status:    output.Status.String(),
@@ -70,7 +70,7 @@ func (h *serverHandler) PostV1UsersLogin(
 			Id    string              `json:"id"`
 			Name  string              `json:"name"`
 		}{
-			Id:    output.UserId,
+			Id:    output.UserID,
 			Name:  output.UserName,
 			Email: openapi_types.Email(output.UserEmail),
 		},
@@ -85,8 +85,8 @@ func (h *serverHandler) GetV1Users(
 	ctx, span := h.tracer.Start(ctx, "listUsers")
 	defer span.End()
 
-	userIdStr := common.UserIdFromContext(ctx)
-	if userIdStr == "" {
+	userIDStr := common.UserIDFromContext(ctx)
+	if userIDStr == "" {
 		h.logger.Error(ctx, "user ID missing from context — JWT middleware may not be applied")
 		span.SetStatus(codes.Error, "missing user ID in context")
 
@@ -97,7 +97,7 @@ func (h *serverHandler) GetV1Users(
 		}, nil
 	}
 
-	userId, err := uuid.Parse(userIdStr)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		parseErr := vo.NewValidationError("invalid user ID in token", nil, err)
 		span.RecordError(parseErr)
@@ -121,7 +121,7 @@ func (h *serverHandler) GetV1Users(
 	}
 
 	output, err := h.listUsersUseCase.Execute(ctx, queryuser.ListUsersInput{
-		UserId: userId,
+		UserID: userID,
 		Limit:  limit,
 		Offset: offset,
 	})
@@ -135,7 +135,7 @@ func (h *serverHandler) GetV1Users(
 	users := make([]generated.UserResponse, 0, len(output.Users))
 	for _, u := range output.Users {
 		users = append(users, generated.UserResponse{
-			Id:        u.Id,
+			Id:        u.ID,
 			Name:      u.Name,
 			Email:     openapi_types.Email(u.Email),
 			Status:    u.Status,

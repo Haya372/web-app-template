@@ -26,7 +26,7 @@ type SignupInput struct {
 }
 
 type SignupOutput struct {
-	Id        uuid.UUID
+	ID        uuid.UUID
 	Name      string
 	Email     string
 	CreatedAt time.Time
@@ -72,7 +72,7 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*S
 	}
 
 	return &SignupOutput{
-		Id:        user.Id(),
+		ID:        user.ID(),
 		Name:      user.Name(),
 		Email:     user.Email(),
 		CreatedAt: user.CreatedAt(),

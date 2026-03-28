@@ -49,7 +49,7 @@ func TestUserQueryService_FindAll_ReturnsUsers(t *testing.T) {
 
 	// Verify password_hash is not exposed in the DTO.
 	for _, u := range users {
-		assert.NotEmpty(t, u.Id)
+		assert.NotEmpty(t, u.ID)
 		assert.NotEmpty(t, u.Email)
 		assert.NotEmpty(t, u.Name)
 		assert.NotEmpty(t, u.Status)

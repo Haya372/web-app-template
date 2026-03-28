@@ -19,13 +19,13 @@ const (
 	viewerRoleID = "00000000-0000-0000-0000-000000000002"
 )
 
-func assignRole(t *testing.T, userId, roleId string) {
+func assignRole(t *testing.T, userID, roleID string) {
 	t.Helper()
 
 	_, err := testDb.Pool().Exec(
 		context.Background(),
 		"INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-		userId, roleId,
+		userID, roleID,
 	)
 	require.NoError(t, err)
 }
@@ -34,15 +34,15 @@ func TestUserPermissionRepository_FindByUserId_WithAdminRole(t *testing.T) {
 	defer func() { require.NoError(t, testDb.Cleanup()) }()
 
 	u := seedUser(t)
-	assignRole(t, u.Id().String(), adminRoleID)
+	assignRole(t, u.ID().String(), adminRoleID)
 
 	r := repository.NewUserPermissionRepository(testDb.DbManager())
-	agg, err := r.FindByUserId(context.Background(), u.Id())
+	agg, err := r.FindByUserID(context.Background(), u.ID())
 
 	require.NoError(t, err)
 	require.NotNil(t, agg)
 
-	assert.Equal(t, u.Id(), agg.UserId)
+	assert.Equal(t, u.ID(), agg.UserID)
 	assert.Equal(t, u.Email(), agg.User.Email())
 	assert.Equal(t, u.Name(), agg.User.Name())
 	assert.True(t, agg.HasPermission(vo.PermissionUsersList))

@@ -143,7 +143,7 @@ func TestUser_UpdateStatus(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Equal(t, tt.target, updated.Status())
-			assert.Equal(t, user.Id(), updated.Id())
+			assert.Equal(t, user.ID(), updated.ID())
 			assert.Equal(t, user.CreatedAt(), updated.CreatedAt())
 		})
 	}

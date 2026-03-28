@@ -29,8 +29,8 @@ func (r *postRepositoryImpl) Create(ctx context.Context, post entity.Post) (enti
 		var qErr error
 
 		row, qErr = queries.CreatePost(ctx, sqlc.CreatePostParams{
-			ID:        toPgtypeUuid(post.Id()),
-			UserID:    toPgtypeUuid(post.UserId()),
+			ID:        toPgtypeUuid(post.ID()),
+			UserID:    toPgtypeUuid(post.UserID()),
 			Content:   post.Content(),
 			CreatedAt: toPgtypeTimestamp(post.CreatedAt()),
 		})
