@@ -8,6 +8,7 @@ import (
 	generated "github.com/Haya372/web-app-template/go-backend/internal/infrastructure/http/generated"
 	commandpost "github.com/Haya372/web-app-template/go-backend/internal/usecase/command/post"
 	commanduser "github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
+	querypost "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/post"
 	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -23,6 +24,7 @@ type serverHandler struct {
 	loginUseCase      commanduser.LoginUseCase
 	listUsersUseCase  queryuser.ListUsersUseCase
 	createPostUseCase commandpost.CreatePostUseCase
+	listPostsUseCase  querypost.ListPostsUseCase
 }
 
 // Compile-time assertion that serverHandler satisfies the generated interface.
@@ -33,6 +35,7 @@ func newServerHandler(
 	loginUseCase commanduser.LoginUseCase,
 	listUsersUseCase queryuser.ListUsersUseCase,
 	createPostUseCase commandpost.CreatePostUseCase,
+	listPostsUseCase querypost.ListPostsUseCase,
 ) *serverHandler {
 	return &serverHandler{
 		logger:            common.NewLogger(),
@@ -41,6 +44,7 @@ func newServerHandler(
 		loginUseCase:      loginUseCase,
 		listUsersUseCase:  listUsersUseCase,
 		createPostUseCase: createPostUseCase,
+		listPostsUseCase:  listPostsUseCase,
 	}
 }
 

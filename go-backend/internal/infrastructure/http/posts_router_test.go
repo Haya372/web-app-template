@@ -12,6 +12,115 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestListPosts(t *testing.T) {
+	t.Run("Missing Authorization header returns 401", func(t *testing.T) {
+		resp, err := newTestClient().GetV1PostsWithResponse(context.Background(), nil)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON401)
+		assert.Equal(t, "UNAUTHORIZED", resp.ApplicationproblemJSON401.Type)
+	})
+
+	t.Run("Invalid JWT returns 401", func(t *testing.T) {
+		resp, err := newTestClient().GetV1PostsWithResponse(
+			context.Background(), nil, withBearerToken("this.is.invalid"),
+		)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON401)
+		assert.Equal(t, "UNAUTHORIZED", resp.ApplicationproblemJSON401.Type)
+	})
+
+	t.Run("Authenticated request with no posts returns 200 with empty list", func(t *testing.T) {
+		token, _ := signupAndGetToken(t, "listposts-empty@example.com", "")
+		c := newTestClient()
+
+		resp, err := c.GetV1PostsWithResponse(context.Background(), nil, withBearerToken(token))
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode())
+		require.NotNil(t, resp.JSON200)
+		assert.Equal(t, 0, resp.JSON200.Total)
+		assert.NotNil(t, resp.JSON200.Posts)
+		assert.Empty(t, resp.JSON200.Posts)
+		assert.Equal(t, 20, resp.JSON200.Limit)
+		assert.Equal(t, 0, resp.JSON200.Offset)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("Authenticated request with posts returns 200 with pagination fields echoed", func(t *testing.T) {
+		token, _ := signupAndGetToken(t, "listposts-data@example.com", "")
+		c := newTestClient()
+
+		// Create a post
+		createResp, err := c.PostV1PostsWithResponse(
+			context.Background(),
+			clientgen.CreatePostRequest{Content: "hello list"},
+			withBearerToken(token),
+		)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusCreated, createResp.StatusCode())
+
+		limit := 5
+		offset := 0
+		resp, err := c.GetV1PostsWithResponse(
+			context.Background(),
+			&clientgen.GetV1PostsParams{Limit: &limit, Offset: &offset},
+			withBearerToken(token),
+		)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode())
+		require.NotNil(t, resp.JSON200)
+		assert.Equal(t, 1, resp.JSON200.Total)
+		assert.Len(t, resp.JSON200.Posts, 1)
+		assert.Equal(t, limit, resp.JSON200.Limit)
+		assert.Equal(t, offset, resp.JSON200.Offset)
+		assert.Equal(t, "hello list", resp.JSON200.Posts[0].Content)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("limit=0 returns 400", func(t *testing.T) {
+		token, _ := signupAndGetToken(t, "listposts-badlimit@example.com", "")
+		c := newTestClient()
+
+		limit := 0
+		resp, err := c.GetV1PostsWithResponse(
+			context.Background(),
+			&clientgen.GetV1PostsParams{Limit: &limit},
+			withBearerToken(token),
+		)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON400)
+		assert.Equal(t, "VALIDATION_ERROR", resp.ApplicationproblemJSON400.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("limit=101 above max returns 400", func(t *testing.T) {
+		token, _ := signupAndGetToken(t, "listposts-maxlimit@example.com", "")
+		c := newTestClient()
+
+		limit := 101
+		resp, err := c.GetV1PostsWithResponse(
+			context.Background(),
+			&clientgen.GetV1PostsParams{Limit: &limit},
+			withBearerToken(token),
+		)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON400)
+		assert.Equal(t, "VALIDATION_ERROR", resp.ApplicationproblemJSON400.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+}
+
 func TestCreatePost(t *testing.T) {
 	tests := []struct {
 		name         string

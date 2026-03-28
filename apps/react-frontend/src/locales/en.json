@@ -27,6 +27,14 @@
     }
   },
   "posts": {
+    "list": {
+      "title": "Posts",
+      "empty": "No posts yet",
+      "loading": "Loading posts…",
+      "error": {
+        "generic": "Failed to load posts. Please try again."
+      }
+    },
     "new": {
       "title": "New Post",
       "label": "Content",

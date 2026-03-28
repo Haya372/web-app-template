@@ -13,6 +13,7 @@ import (
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/service"
 	commandpost "github.com/Haya372/web-app-template/go-backend/internal/usecase/command/post"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
+	querypost "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/post"
 	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
 	"github.com/google/wire"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -35,8 +36,10 @@ var usecaseSet = wire.NewSet(
 
 var querySet = wire.NewSet(
 	infraquery.NewUserQueryService,
+	infraquery.NewPostQueryService,
 	repository.NewUserPermissionRepository,
 	queryuser.NewListUsersUseCase,
+	querypost.NewListPostsUseCase,
 )
 
 var dbSet = wire.NewSet(

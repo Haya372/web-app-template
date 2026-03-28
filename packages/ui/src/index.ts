@@ -11,6 +11,7 @@ export {
 	useFormField,
 } from "./components/Form";
 export { Heading } from "./components/Heading";
+export { List, ListItem } from "./components/List";
 export { Typography } from "./components/Typography";
 export { Button, buttonVariants } from "./components/Button";
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./components/Card";
