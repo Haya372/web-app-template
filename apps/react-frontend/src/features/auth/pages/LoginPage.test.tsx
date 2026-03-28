@@ -18,9 +18,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 // Hoisted mock functions (must be defined before vi.mock calls)
 // ---------------------------------------------------------------------------
 
-const { mockNavigate, mockToastError } = vi.hoisted(() => ({
+const { mockNavigate, mockToastError, mockLogin } = vi.hoisted(() => ({
 	mockNavigate: vi.fn(),
 	mockToastError: vi.fn(),
+	mockLogin: vi.fn(),
 }))
 
 // ---------------------------------------------------------------------------
@@ -33,6 +34,17 @@ vi.mock("@/generated/sdk.gen", () => ({
 
 vi.mock("@/utils/tokenStorage", () => ({
 	saveToken: vi.fn(),
+	getToken: vi.fn().mockReturnValue(null),
+	removeToken: vi.fn(),
+}))
+
+vi.mock("@/features/auth/hooks/useAuth", () => ({
+	useAuth: () => ({
+		token: null,
+		isAuthenticated: false,
+		login: mockLogin,
+		logout: vi.fn(),
+	}),
 }))
 
 vi.mock("@tanstack/react-router", () => ({
@@ -57,7 +69,6 @@ vi.mock("@repo/ui", async (importOriginal) => {
 // ---------------------------------------------------------------------------
 
 import { postV1UsersLogin } from "@/generated/sdk.gen"
-import { saveToken } from "@/utils/tokenStorage"
 import { LoginPage } from "./LoginPage"
 
 // ---------------------------------------------------------------------------
@@ -65,7 +76,6 @@ import { LoginPage } from "./LoginPage"
 // ---------------------------------------------------------------------------
 
 const mockPostV1UsersLogin = postV1UsersLogin as ReturnType<typeof vi.fn>
-const mockSaveToken = saveToken as ReturnType<typeof vi.fn>
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -114,7 +124,7 @@ function clearBody(): void {
 beforeEach(() => {
 	vi.stubEnv("VITE_API_BASE_URL", "http://localhost:8080")
 	mockPostV1UsersLogin.mockReset()
-	mockSaveToken.mockReset()
+	mockLogin.mockReset()
 	mockNavigate.mockReset()
 	mockToastError.mockReset()
 })
@@ -234,7 +244,7 @@ describe("LoginPage — successful login", () => {
 		user: { id: "u1", name: "Alice", email: "alice@example.com" },
 	}
 
-	it("calls saveToken with the token returned by the API", async () => {
+	it("calls login with the token returned by the API", async () => {
 		mockPostV1UsersLogin.mockResolvedValue({
 			data: VALID_RESPONSE,
 			error: undefined,
@@ -255,7 +265,7 @@ describe("LoginPage — successful login", () => {
 
 		await submitForm(form as HTMLFormElement)
 
-		expect(mockSaveToken).toHaveBeenCalledWith("jwt-abc-123")
+		expect(mockLogin).toHaveBeenCalledWith("jwt-abc-123")
 	})
 
 	it("navigates to '/' after a successful login", async () => {
