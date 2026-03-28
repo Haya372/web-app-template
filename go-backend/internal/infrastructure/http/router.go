@@ -6,6 +6,7 @@ import (
 	generated "github.com/Haya372/web-app-template/go-backend/internal/infrastructure/http/generated"
 	commandpost "github.com/Haya372/web-app-template/go-backend/internal/usecase/command/post"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/command/user"
+	querypost "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/post"
 	queryuser "github.com/Haya372/web-app-template/go-backend/internal/usecase/query/user"
 	"github.com/Haya372/web-app-template/go-backend/internal/usecase/service"
 	"github.com/labstack/echo/v5"
@@ -63,6 +64,7 @@ func (r *routerImpl) AddRoute(e *echo.Echo) {
 
 	// Protected routes — JWT validation is enforced by the middleware.
 	e.GET("/v1/users", wrap(siw.GetV1Users), JWTMiddleware(r.jwtService))
+	e.GET("/v1/posts", wrap(siw.GetV1Posts), JWTMiddleware(r.jwtService))
 	e.POST("/v1/posts", wrap(siw.PostV1Posts), JWTMiddleware(r.jwtService))
 }
 
@@ -81,6 +83,7 @@ func NewRouter(
 	loginUseCase user.LoginUseCase,
 	listUsersUseCase queryuser.ListUsersUseCase,
 	createPostUseCase commandpost.CreatePostUseCase,
+	listPostsUseCase querypost.ListPostsUseCase,
 	jwtService service.JwtService,
 ) Router {
 	return &routerImpl{
@@ -89,6 +92,7 @@ func NewRouter(
 			loginUseCase,
 			listUsersUseCase,
 			createPostUseCase,
+			listPostsUseCase,
 		),
 		jwtService: jwtService,
 	}
