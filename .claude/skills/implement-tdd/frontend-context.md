@@ -37,7 +37,10 @@ Agent: code-reviewer
 Prompt: "Review the implementation for this task. Check: correctness,
 security (XSS, CSRF), accessibility, performance, readability, adherence
 to repository guidelines in docs/guidelines/frontend-coding-guideline.md, and
-test coverage. Task: <task description>."
+test coverage.
+Task: <task name and description>
+Acceptance criteria: <acceptance criteria bullet points from the issue>
+Design constraints: <ADR references and architectural constraints>"
 ```
 
 ## Quality gate
