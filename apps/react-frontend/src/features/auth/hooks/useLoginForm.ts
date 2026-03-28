@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { postV1UsersLogin } from '@/generated/sdk.gen'
-import { saveToken } from '@/utils/tokenStorage'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 
 function useLoginFormSchema() {
   const { t } = useTranslation()
@@ -21,6 +21,7 @@ export function useLoginForm() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const schema = useLoginFormSchema()
+  const { login } = useAuth()
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
@@ -34,7 +35,7 @@ export function useLoginForm() {
         baseUrl: import.meta.env.VITE_API_BASE_URL,
       })
       if (error || !data) throw new Error(String(response.status))
-      saveToken(data.token)
+      login(data.token)
       navigate({ to: '/' })
     } catch (error) {
       const message = error instanceof Error ? error.message : ''

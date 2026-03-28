@@ -91,6 +91,81 @@ export default function UserCard({ id }: { id: any }) {
 - **グローバル UI 状態（テーマ・モーダル等）:** React Context か軽量ストア（Zustand 等）で管理する。Redux などの重量級ライブラリは導入前にチームで合意する
 - 状態を重複して持たない（derived state は `useMemo` で算出し、コピーして別 state に持たない）
 
+## 認証状態管理
+
+> 設計判断の詳細は [ADR-0011](../decisions/ADR-0011-FRONTEND-AUTH-STATE-MANAGEMENT.md) を参照。
+
+### 設計方針
+
+認証状態（ログイン済みフラグ・JWT トークン）はグローバルなクライアント状態として React Context で管理する。
+サーバー状態（ユーザープロフィール等）は TanStack Query で別途取得し、認証 Context に混在させない。
+
+### 状態管理の階層
+
+| 状態 | 管理場所 | 理由 |
+|------|---------|------|
+| JWT トークン | `AuthContext`（メモリ）+ `tokenStorage`（localStorage） | アプリ全体で参照が必要 |
+| ログイン済みフラグ | `AuthContext` の派生値（`isAuthenticated`） | トークン有無から決定する |
+| ユーザープロフィール | TanStack Query（`useCurrentUser`） | サーバー状態として別管理 |
+| フォームの入力値 | `react-hook-form` | ローカル UI 状態 |
+
+### AuthContext の責務
+
+`features/auth/contexts/AuthContext.tsx` に以下を定義する:
+
+- `token: string | null` — JWT トークン（メモリ上のキャッシュ）
+- `isAuthenticated: boolean` — `token !== null` から派生
+- `login(token: string): void` — トークンを localStorage に保存しメモリを更新
+- `logout(): void` — トークンを localStorage から削除しメモリをクリア
+
+### tokenStorage.ts の責務
+
+`features/auth/utils/tokenStorage.ts` は localStorage への純粋な読み書き API のみを担う。
+コンポーネント・フックからは必ず `useAuth()` 経由で操作し、`tokenStorage` を直接呼ばない。
+
+```typescript
+// good: Context 経由でトークン操作
+const { login, logout } = useAuth()
+login(token) // tokenStorage の保存 + React state の更新を一括で行う
+
+// bad: tokenStorage を直接呼び出す（React の再レンダリングがトリガーされない）
+saveToken(token)
+```
+
+### ルートガード（保護ルートへのアクセス制御）
+
+保護ルートは TanStack Router の `beforeLoad` でアクセス制御を行う。
+`beforeLoad` は React 外部で実行されるため `useAuth()` は使用不可で、`getToken()` を直接参照する。
+
+```typescript
+// src/routes/_authenticated.tsx
+export const Route = createFileRoute('/_authenticated')({
+  beforeLoad: () => {
+    if (!getToken()) {
+      throw redirect({ to: '/login' })
+    }
+  },
+})
+```
+
+`Route.loader` ではなく `beforeLoad` を使う理由は、データ取得前にアクセス制御を行いたいためである。
+
+### Provider の配置
+
+`AuthProvider` は `src/routes/__root.tsx` の `RootLayout` 内に配置し、全ルートで `useAuth()` を参照できるようにする。
+
+### フックの利用
+
+コンポーネント・フックから認証状態を参照する場合は必ず `useAuth()` を経由する。
+
+```typescript
+// good
+const { isAuthenticated, login, logout } = useAuth()
+
+// bad: Context を直接 useContext で消費する（Provider なし時に null になりエラーが不明瞭）
+const auth = useContext(AuthContext)
+```
+
 ## API 呼び出し方針
 
 - データ取得には必ず **TanStack Query** を使用する。`useEffect` + `useState` による手動フェッチは禁止
