@@ -9,4 +9,8 @@ export default defineConfig({
     tailwindcss(),
     viteReact(),
   ],
+  server: {
+    // biome-ignore lint/style/noProcessEnv: vite.config.ts runs in Node.js; VITE_PORT is set by mise from .env.local
+    port: parseInt(process.env.VITE_PORT ?? '3000', 10),
+  },
 })
