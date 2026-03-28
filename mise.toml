@@ -7,3 +7,101 @@ psqldef = "3.9.7"
 
 [env]
 _.file = '.env.local'
+
+[tasks."ports:init"]
+description = "Initialize and register this worktree's port offset"
+# cspell:ignore worktree worktrees envrc
+script = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+main() {
+  local GIT_COMMON_DIR
+  GIT_COMMON_DIR=$(git rev-parse --git-common-dir) || {
+    echo "Fatal: not a git repository" >&2
+    return 1
+  }
+
+  local REGISTRY="$GIT_COMMON_DIR/worktree-ports"
+  local PWD_ESCAPED
+  PWD_ESCAPED=$(printf '%s\n' "$PWD" | sed 's/[[\.*^$()+?{|]/\\&/g')
+
+  if ! touch "$REGISTRY" 2>/dev/null; then
+    echo "Error: Cannot write to registry: $REGISTRY" >&2
+    return 1
+  fi
+
+  local OFFSET
+  if grep -q "^${PWD_ESCAPED}=" "$REGISTRY" 2>/dev/null; then
+    OFFSET=$(grep "^${PWD_ESCAPED}=" "$REGISTRY" | head -1 | cut -d= -f2)
+    echo "Already registered: WORKTREE_OFFSET=$OFFSET"
+  else
+    local USED
+    USED=$(grep -oE '=[0-9]+' "$REGISTRY" 2>/dev/null | sed 's/=//g' || true)
+    OFFSET=0
+    local MAX_OFFSET=900
+    while echo "$USED" | grep -q "^${OFFSET}$" 2>/dev/null; do
+      OFFSET=$((OFFSET + 100))
+      if [ "$OFFSET" -gt "$MAX_OFFSET" ]; then
+        echo "Error: Too many worktrees registered (max 10)" >&2
+        return 1
+      fi
+    done
+    printf '%s=%d\n' "$PWD" "$OFFSET" >> "$REGISTRY"
+    echo "New offset assigned: WORKTREE_OFFSET=$OFFSET"
+  fi
+
+  local ENV_FILE=".env.local"
+  local ENV_TMP="${ENV_FILE}.tmp.$$"
+
+  if [ -f "$ENV_FILE" ]; then
+    grep -v '^WORKTREE_OFFSET=\|^APP_PORT=\|^VITE_PORT=\|^DB_PORT=\|^CORS_ALLOW_ORIGINS=' "$ENV_FILE" > "$ENV_TMP" || true
+  else
+    > "$ENV_TMP"
+  fi
+
+  {
+    echo "WORKTREE_OFFSET=$OFFSET"
+    echo "APP_PORT=$((8080 + OFFSET))"
+    echo "VITE_PORT=$((3000 + OFFSET))"
+    echo "DB_PORT=$((55432 + OFFSET))"
+    echo "CORS_ALLOW_ORIGINS=http://localhost:$((3000 + OFFSET))"
+  } >> "$ENV_TMP"
+
+  mv "$ENV_TMP" "$ENV_FILE"
+  echo "Done: APP_PORT=$((8080+OFFSET)) VITE_PORT=$((3000+OFFSET)) DB_PORT=$((55432+OFFSET))"
+}
+
+main "$@"
+'''
+
+[tasks."ports:clean"]
+description = "Remove this worktree's port registration"
+script = '''
+#!/usr/bin/env bash
+set -euo pipefail
+GIT_COMMON_DIR=$(git rev-parse --git-common-dir)
+REGISTRY="$GIT_COMMON_DIR/worktree-ports"
+PWD_ESCAPED=$(printf '%s\n' "$PWD" | sed 's/[[\.*^$()+?{|]/\\&/g')
+if [ -f "$REGISTRY" ]; then
+  grep -v "^${PWD_ESCAPED}=" "$REGISTRY" > "$REGISTRY.tmp.$$" && mv "$REGISTRY.tmp.$$" "$REGISTRY"
+  echo "Cleaned: $PWD"
+fi
+'''
+
+[tasks."ports:list"]
+description = "Show all registered worktree port assignments"
+script = '''
+#!/usr/bin/env bash
+set -euo pipefail
+GIT_COMMON_DIR=$(git rev-parse --git-common-dir)
+REGISTRY="$GIT_COMMON_DIR/worktree-ports"
+if [ ! -f "$REGISTRY" ] || [ ! -s "$REGISTRY" ]; then
+  echo "No worktrees registered."
+  exit 0
+fi
+echo "Registered worktrees:"
+while IFS='=' read -r path offset; do
+  echo "  [offset=$offset] APP_PORT=$((8080+offset)) VITE_PORT=$((3000+offset)) DB_PORT=$((55432+offset))  $path"
+done < "$REGISTRY"
+'''
