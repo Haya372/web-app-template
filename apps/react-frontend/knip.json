@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "tags": ["-lintignore"],
-  "entry": ["src/main.tsx", "src/router.tsx", "src/routeTree.gen.ts"],
-  "ignoreDependencies": ["@repo/ui", "agent"]
+  "entry": ["src/router.tsx", "src/routeTree.gen.ts"],
+  "ignoreDependencies": ["@repo/ui", "agent", "@hey-api/client-fetch"]
 }
