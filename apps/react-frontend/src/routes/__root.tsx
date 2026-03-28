@@ -1,5 +1,7 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Outlet, createRootRoute } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+import { useState } from "react"
 import { Toaster } from "@repo/ui"
 
 export const Route = createRootRoute({
@@ -7,11 +9,15 @@ export const Route = createRootRoute({
 })
 
 function RootLayout() {
+	const [queryClient] = useState(() => new QueryClient())
+
 	return (
-		<div className="min-h-screen bg-background font-sans antialiased">
-			<Outlet />
-			<Toaster />
-			{import.meta.env.DEV && <TanStackRouterDevtools />}
-		</div>
+		<QueryClientProvider client={queryClient}>
+			<div className="min-h-screen bg-background font-sans antialiased">
+				<Outlet />
+				<Toaster />
+				{import.meta.env.DEV && <TanStackRouterDevtools />}
+			</div>
+		</QueryClientProvider>
 	)
 }
