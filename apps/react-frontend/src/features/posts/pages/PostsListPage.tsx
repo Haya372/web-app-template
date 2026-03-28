@@ -1,4 +1,4 @@
-import { Heading } from "@repo/ui"
+import { Heading, List, ListItem, Typography } from "@repo/ui"
 import { useTranslation } from "react-i18next"
 import { usePostsList } from "@/features/posts/hooks/usePostsList"
 
@@ -12,29 +12,29 @@ export function PostsListPage() {
 
 			<div aria-live="polite" aria-atomic="true">
 				{isLoading && (
-					<p role="status" className="mt-4 text-muted-foreground">
+					<Typography role="status" variant="muted">
 						{t("posts.list.loading")}
-					</p>
+					</Typography>
 				)}
 
 				{isError && (
-					<p role="alert" className="mt-4 text-destructive">
+					<Typography role="alert" variant="muted">
 						{t("posts.list.error.generic")}
-					</p>
+					</Typography>
 				)}
 
 				{!isLoading && !isError && posts !== undefined && posts.length === 0 && (
-					<p className="mt-4 text-muted-foreground">{t("posts.list.empty")}</p>
+					<Typography variant="muted">{t("posts.list.empty")}</Typography>
 				)}
 
 				{!isLoading && !isError && posts !== undefined && posts.length > 0 && (
-					<ul className="mt-6 space-y-4">
+					<List>
 						{posts.map((post) => (
-							<li key={post.id} className="island-shell rounded-xl p-4">
-								<p>{post.content}</p>
-							</li>
+							<ListItem key={post.id}>
+								<Typography>{post.content}</Typography>
+							</ListItem>
 						))}
-					</ul>
+					</List>
 				)}
 			</div>
 		</main>
