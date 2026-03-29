@@ -68,3 +68,50 @@ func TestCreatePost_HappyCase(t *testing.T) {
 
 	testDb.Cleanup()
 }
+
+func TestCreatePost_ForeignKeyViolation(t *testing.T) {
+	defer func() { require.NoError(t, testDb.Cleanup()) }()
+
+	// Use a random UUID that has no corresponding user row to trigger a FK violation.
+	nonExistentUserID := uuid.New()
+	post := entity.ReconstructPost(
+		uuid.New(),
+		nonExistentUserID,
+		"this should fail",
+		time.Date(2026, 3, 8, 12, 0, 0, 0, time.UTC),
+	)
+
+	target := repository.NewPostRepository(testDb.DbManager())
+	_, err := target.Create(context.Background(), post)
+
+	require.Error(t, err)
+}
+
+func TestCreatePost_DuplicateID(t *testing.T) {
+	defer func() { require.NoError(t, testDb.Cleanup()) }()
+
+	user := seedUser(t)
+	fixedID := uuid.New()
+
+	post := entity.ReconstructPost(
+		fixedID,
+		user.ID(),
+		"first post",
+		time.Date(2026, 3, 8, 12, 0, 0, 0, time.UTC),
+	)
+
+	target := repository.NewPostRepository(testDb.DbManager())
+
+	_, err := target.Create(context.Background(), post)
+	require.NoError(t, err)
+
+	duplicate := entity.ReconstructPost(
+		fixedID,
+		user.ID(),
+		"duplicate post",
+		time.Date(2026, 3, 8, 13, 0, 0, 0, time.UTC),
+	)
+	_, err = target.Create(context.Background(), duplicate)
+
+	require.Error(t, err)
+}

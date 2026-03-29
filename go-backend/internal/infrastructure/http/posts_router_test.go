@@ -119,6 +119,71 @@ func TestListPosts(t *testing.T) {
 		err = testDb.Cleanup()
 		require.NoError(t, err)
 	})
+
+	t.Run("all posts appear regardless of authenticated user", func(t *testing.T) {
+		tokenA, _ := signupAndGetToken(t, "multiuser-a@example.com", "")
+		tokenB, _ := signupAndGetToken(t, "multiuser-b@example.com", "")
+		c := newTestClient()
+
+		// User A creates a post
+		createResp, err := c.PostV1PostsWithResponse(
+			context.Background(),
+			clientgen.CreatePostRequest{Content: "Post by user A"},
+			withBearerToken(tokenA),
+		)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusCreated, createResp.StatusCode())
+		postID := createResp.JSON201.Id
+
+		// User B fetches all posts — should include User A's post (no user filtering, Issue #58)
+		resp, err := c.GetV1PostsWithResponse(context.Background(), nil, withBearerToken(tokenB))
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, resp.StatusCode())
+		require.NotNil(t, resp.JSON200)
+		require.GreaterOrEqual(t, resp.JSON200.Total, 1)
+
+		found := false
+		for _, p := range resp.JSON200.Posts {
+			if p.Id == postID {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "User A's post should be visible to User B")
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("pagination with offset returns correct subset", func(t *testing.T) {
+		token, _ := signupAndGetToken(t, "offset-user@example.com", "")
+		c := newTestClient()
+
+		for range 3 {
+			_, err := c.PostV1PostsWithResponse(
+				context.Background(),
+				clientgen.CreatePostRequest{Content: "post content"},
+				withBearerToken(token),
+			)
+			require.NoError(t, err)
+		}
+
+		offset := 2
+		limit := 10
+		resp, err := c.GetV1PostsWithResponse(
+			context.Background(),
+			&clientgen.GetV1PostsParams{Offset: &offset, Limit: &limit},
+			withBearerToken(token),
+		)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, resp.StatusCode())
+		require.NotNil(t, resp.JSON200)
+		assert.Equal(t, 3, resp.JSON200.Total)
+		assert.Len(t, resp.JSON200.Posts, 1)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
 }
 
 func TestCreatePost(t *testing.T) {
@@ -189,4 +254,39 @@ func TestCreatePost(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+
+	t.Run("invalid JWT returns 401", func(t *testing.T) {
+		resp, err := newTestClient().PostV1PostsWithResponse(
+			context.Background(),
+			clientgen.CreatePostRequest{Content: "test"},
+			withBearerToken("invalid-token-string"),
+		)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON401)
+		assert.Equal(t, "UNAUTHORIZED", resp.ApplicationproblemJSON401.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("response includes userId matching authenticated user", func(t *testing.T) {
+		token, userID := signupAndGetToken(t, "post-fields@example.com", "")
+		c := newTestClient()
+
+		resp, err := c.PostV1PostsWithResponse(
+			context.Background(),
+			clientgen.CreatePostRequest{Content: "field check"},
+			withBearerToken(token),
+		)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusCreated, resp.StatusCode())
+		require.NotNil(t, resp.JSON201)
+
+		assert.Equal(t, userID, resp.JSON201.UserId.String())
+		assert.NotZero(t, resp.JSON201.CreatedAt)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
 }
