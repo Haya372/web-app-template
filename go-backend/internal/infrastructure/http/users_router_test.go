@@ -343,4 +343,48 @@ func TestListUsers(t *testing.T) {
 		err = testDb.Cleanup()
 		require.NoError(t, err)
 	})
+
+	t.Run("limit 101 returns 400", func(t *testing.T) {
+		token, _ := signupAndGetToken(t, "limit101@example.com", adminRoleID)
+		c := newTestClient()
+
+		limit := 101
+		resp, err := c.GetV1UsersWithResponse(
+			context.Background(),
+			&clientgen.GetV1UsersParams{Limit: &limit},
+			withBearerToken(token),
+		)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode())
+		require.NotNil(t, resp.ApplicationproblemJSON400)
+		assert.Equal(t, "VALIDATION_ERROR", resp.ApplicationproblemJSON400.Type)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
+
+	t.Run("pagination with offset returns correct subset", func(t *testing.T) {
+		// Ensure a clean slate so the exact total=3 assertion is reliable.
+		require.NoError(t, testDb.Cleanup())
+		// 1 admin + 2 regular users = 3 total; offset=2 → 1 user returned
+		token, _ := signupAndGetToken(t, "offset-admin@example.com", adminRoleID)
+		signupAndGetToken(t, "offset-user1@example.com", "")
+		signupAndGetToken(t, "offset-user2@example.com", "")
+
+		offset := 2
+		limit := 10
+		resp, err := newTestClient().GetV1UsersWithResponse(
+			context.Background(),
+			&clientgen.GetV1UsersParams{Offset: &offset, Limit: &limit},
+			withBearerToken(token),
+		)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, resp.StatusCode())
+		require.NotNil(t, resp.JSON200)
+		assert.Equal(t, 3, resp.JSON200.Total)
+		assert.Len(t, resp.JSON200.Users, 1)
+
+		err = testDb.Cleanup()
+		require.NoError(t, err)
+	})
 }

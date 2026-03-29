@@ -107,3 +107,48 @@ func TestUserQueryService_FindAll_OrderedByCreatedAtDesc(t *testing.T) {
 	assert.Contains(t, emails, "first@example.com")
 	assert.Contains(t, emails, "second@example.com")
 }
+
+func TestUserQueryService_FindAll_BeyondOffsetReturnsEmpty(t *testing.T) {
+	defer func() { require.NoError(t, testDb.Cleanup()) }()
+
+	seedUser(t, "beyond@example.com")
+
+	svc := query.NewUserQueryService(testDb.DbManager())
+	users, total, err := svc.FindAll(context.Background(), 10, 100)
+
+	require.NoError(t, err)
+	assert.Equal(t, 1, total)
+	assert.Empty(t, users)
+}
+
+func TestUserQueryService_FindAll_MapsFieldsCorrectly(t *testing.T) {
+	defer func() { require.NoError(t, testDb.Cleanup()) }()
+
+	created := seedUser(t, "mapping@example.com")
+
+	svc := query.NewUserQueryService(testDb.DbManager())
+	users, total, err := svc.FindAll(context.Background(), 10, 0)
+
+	require.NoError(t, err)
+	assert.Equal(t, 1, total)
+	require.Len(t, users, 1)
+	assert.Equal(t, created.ID(), users[0].ID)
+	assert.Equal(t, "mapping@example.com", users[0].Email)
+	assert.Equal(t, "Test User", users[0].Name)
+	assert.Equal(t, vo.UserStatusActive.String(), users[0].Status)
+}
+
+func TestUserQueryService_FindAll_TotalAndCountAreConsistent(t *testing.T) {
+	defer func() { require.NoError(t, testDb.Cleanup()) }()
+
+	for i := range 3 {
+		seedUser(t, "user"+string(rune('a'+i))+"consistent@example.com")
+	}
+
+	svc := query.NewUserQueryService(testDb.DbManager())
+	users, total, err := svc.FindAll(context.Background(), 1, 0)
+
+	require.NoError(t, err)
+	assert.Equal(t, 3, total)
+	assert.Len(t, users, 1)
+}
