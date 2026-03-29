@@ -10,7 +10,7 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/jackc/pgx/v5 v5.9.1
 	github.com/labstack/echo/v5 v5.0.4
-	github.com/oapi-codegen/runtime v1.3.0
+	github.com/oapi-codegen/runtime v1.3.1
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.41.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.41.0
@@ -31,7 +31,6 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
