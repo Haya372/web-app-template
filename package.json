@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.30.3",
   "devDependencies": {
     "husky": "8.0.3",
-    "turbo": "2.8.20"
+    "turbo": "2.8.21"
   },
   "scripts": {
     "prepare": "husky install",
