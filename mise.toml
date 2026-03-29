@@ -7,3 +7,16 @@ psqldef = "3.9.7"
 
 [env]
 _.file = '.env.local'
+
+# cspell:ignore worktree worktrees
+[tasks."ports:init"]
+description = "Initialize and register this worktree's port offset"
+run = "bash scripts/ports-init.sh"
+
+[tasks."ports:clean"]
+description = "Remove this worktree's port registration"
+run = "bash scripts/ports-clean.sh"
+
+[tasks."ports:list"]
+description = "Show all registered worktree port assignments"
+run = "bash scripts/ports-list.sh"

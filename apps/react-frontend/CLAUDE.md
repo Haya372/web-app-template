@@ -4,6 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+Run from the **repository root** for worktree port setup:
+
+```bash
+# Assign a unique port offset to this worktree (run once per new worktree)
+mise run ports:init
+
+# Show all registered worktree port assignments
+mise run ports:list
+
+# Remove this worktree's registration before deleting it
+mise run ports:clean
+```
+
+See `docs/guidelines/worktree-parallel-dev.md` for details.
+
 Run from `apps/react-frontend/`:
 
 ```bash

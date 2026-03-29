@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000",
+    "dev": "vite",
     "generate": "run-p generate:*",
     "generate:api": "openapi-ts",
     "generate:route": "tsr generate",
