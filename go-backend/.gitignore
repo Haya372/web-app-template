@@ -1,4 +1,5 @@
 # Auto generated
+internal/infrastructure/grpc/gen
 internal/infrastructure/sqlc
 internal/infrastructure/di/wire_gen.go
 internal/infrastructure/http/generated
