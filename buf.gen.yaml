@@ -1,0 +1,24 @@
+version: v2
+inputs:
+  - directory: proto
+plugins:
+  # Go protobuf message types
+  - remote: buf.build/protocolbuffers/go
+    out: go-backend/internal/infrastructure/grpc/gen
+    opt:
+      - paths=source_relative
+  # Go Connect-RPC server stubs
+  - remote: buf.build/connectrpc/go
+    out: go-backend/internal/infrastructure/grpc/gen
+    opt:
+      - paths=source_relative
+  # TypeScript protobuf message types
+  - remote: buf.build/bufbuild/es
+    out: apps/react-frontend/src/generated/proto
+    opt:
+      - target=ts
+  # TypeScript Connect-RPC client stubs
+  - remote: buf.build/connectrpc/es
+    out: apps/react-frontend/src/generated/proto
+    opt:
+      - target=ts
