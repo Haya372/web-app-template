@@ -9,6 +9,10 @@ inputs:
     description: sqlc version
     required: true
     default: '1.30.0'
+  buf-version:
+    description: buf version
+    required: true
+    default: '1.66.1'
 runs:
   using: composite
   steps:
@@ -17,6 +21,10 @@ runs:
       with:
         go-version: ${{ inputs.go-version }}
         cache-dependency-path: go-backend/go.sum
+    - name: Setup buf
+      uses: bufbuild/buf-setup-action@v1
+      with:
+        version: ${{ inputs.buf-version }}
     - name: Setup sqlc
       uses: sqlc-dev/setup-sqlc@c0209b9199cd1cce6a14fc27cabcec491b651761 # v4
       with:

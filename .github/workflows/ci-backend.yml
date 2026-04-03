@@ -4,6 +4,8 @@ on:
     paths:
       - "go-backend/**"
       - "openapi/**"
+      - "proto/**"
+      - "buf.gen.yaml"
       - ".github/workflows/ci-backend.yml"
       - ".github/actions/setup-backend/**"
       - "!**.md"
@@ -12,10 +14,12 @@ on:
       - "!go-backend/.gitignore"
   push:
     branches:
-      - 'main'
+      - main
     paths:
       - "go-backend/**"
       - "openapi/**"
+      - "proto/**"
+      - "buf.gen.yaml"
       - ".github/workflows/ci-backend.yml"
       - ".github/actions/setup-backend/**"
       - "!**.md"
@@ -43,6 +47,7 @@ jobs:
         with:
           go-version: '1.25.6'
           sqlc-version: '1.30.0'
+          buf-version: '1.66.1'
       - name: Setup golang-ci
         uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
         with:
@@ -78,6 +83,7 @@ jobs:
         with:
           go-version: '1.25.6'
           sqlc-version: '1.30.0'
+          buf-version: '1.66.1'
       - name: Run test
         run: make test-coverage
         env:
