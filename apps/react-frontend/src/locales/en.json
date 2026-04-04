@@ -1,76 +1,76 @@
 {
-  "signup": {
-    "title": "Create account",
-    "name": {
-      "label": "Name",
-      "placeholder": "Your name"
-    },
-    "email": {
-      "label": "Email",
-      "placeholder": "you@example.com"
-    },
-    "password": {
-      "label": "Password",
-      "placeholder": "Password"
-    },
-    "submit": "Sign up",
-    "submitting": "Signing up…",
-    "error": {
-      "emailAlreadyRegistered": "Email already registered",
-      "generic": "Signup failed. Please try again."
-    },
-    "validation": {
-      "nameRequired": "Name is required",
-      "emailRequired": "Email is required",
-      "emailInvalid": "Invalid email address",
-      "passwordRequired": "Password is required"
-    }
-  },
-  "posts": {
-    "list": {
-      "title": "Posts",
-      "empty": "No posts yet",
-      "loading": "Loading posts…",
-      "error": {
-        "generic": "Failed to load posts. Please try again."
-      }
-    },
-    "new": {
-      "title": "New Post",
-      "label": "Content",
-      "submit": "Post",
-      "charCount": "{{current}} / {{max}}",
-      "success": "Post created successfully",
-      "validation": {
-        "contentRequired": "Content is required",
-        "contentTooLong": "Content must be 280 characters or less"
-      },
-      "error": {
-        "generic": "Failed to create post. Please try again."
-      }
-    }
-  },
-  "login": {
-    "title": "Sign in",
-    "email": {
-      "label": "Email",
-      "placeholder": "you@example.com"
-    },
-    "password": {
-      "label": "Password",
-      "placeholder": "Password"
-    },
-    "submit": "Sign in",
-    "submitting": "Signing in…",
-    "error": {
-      "invalidCredentials": "Invalid email or password",
-      "generic": "Login failed. Please try again."
-    },
-    "validation": {
-      "emailRequired": "Email is required",
-      "emailInvalid": "Invalid email address",
-      "passwordRequired": "Password is required"
-    },
-    "signupLink": "Don't have an account? Sign up"
-  }
+	"signup": {
+		"title": "Create account",
+		"name": {
+			"label": "Name",
+			"placeholder": "Your name"
+		},
+		"email": {
+			"label": "Email",
+			"placeholder": "you@example.com"
+		},
+		"password": {
+			"label": "Password",
+			"placeholder": "Password"
+		},
+		"submit": "Sign up",
+		"submitting": "Signing up…",
+		"error": {
+			"emailAlreadyRegistered": "Email already registered",
+			"generic": "Signup failed. Please try again."
+		},
+		"validation": {
+			"nameRequired": "Name is required",
+			"emailRequired": "Email is required",
+			"emailInvalid": "Invalid email address",
+			"passwordRequired": "Password is required"
+		}
+	},
+	"posts": {
+		"list": {
+			"title": "Posts",
+			"empty": "No posts yet",
+			"loading": "Loading posts…",
+			"error": {
+				"generic": "Failed to load posts. Please try again."
+			}
+		},
+		"new": {
+			"title": "New Post",
+			"label": "Content",
+			"submit": "Post",
+			"charCount": "{{current}} / {{max}}",
+			"success": "Post created successfully",
+			"validation": {
+				"contentRequired": "Content is required",
+				"contentTooLong": "Content must be 280 characters or less"
+			},
+			"error": {
+				"generic": "Failed to create post. Please try again."
+			}
+		}
+	},
+	"login": {
+		"title": "Sign in",
+		"email": {
+			"label": "Email",
+			"placeholder": "you@example.com"
+		},
+		"password": {
+			"label": "Password",
+			"placeholder": "Password"
+		},
+		"submit": "Sign in",
+		"submitting": "Signing in…",
+		"error": {
+			"invalidCredentials": "Invalid email or password",
+			"generic": "Login failed. Please try again."
+		},
+		"validation": {
+			"emailRequired": "Email is required",
+			"emailInvalid": "Invalid email address",
+			"passwordRequired": "Password is required"
+		},
+		"signupLink": "Don't have an account? Sign up"
+	}
 }

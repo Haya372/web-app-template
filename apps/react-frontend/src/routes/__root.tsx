@@ -1,16 +1,16 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { Outlet, createRootRoute } from "@tanstack/react-router"
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
-import { useState } from "react"
-import { Toaster } from "@repo/ui"
-import { AuthProvider } from "@/features/auth/contexts/AuthContext"
+import { Toaster } from "@repo/ui";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { useState } from "react";
+import { AuthProvider } from "@/features/auth/contexts/AuthContext";
 
 export const Route = createRootRoute({
 	component: RootLayout,
-})
+});
 
 function RootLayout() {
-	const [queryClient] = useState(() => new QueryClient())
+	const [queryClient] = useState(() => new QueryClient());
 
 	return (
 		<QueryClientProvider client={queryClient}>
@@ -22,5 +22,5 @@ function RootLayout() {
 				</div>
 			</AuthProvider>
 		</QueryClientProvider>
-	)
+	);
 }

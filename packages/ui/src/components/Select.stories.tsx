@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectLabel,
-	SelectGroup,
 	SelectTrigger,
 	SelectValue,
 } from "./Select";

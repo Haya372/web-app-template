@@ -1,10 +1,10 @@
-import { Heading, List, ListItem, Typography } from "@repo/ui"
-import { useTranslation } from "react-i18next"
-import { usePostsList } from "@/features/posts/hooks/usePostsList"
+import { Heading, List, ListItem, Typography } from "@repo/ui";
+import { useTranslation } from "react-i18next";
+import { usePostsList } from "@/features/posts/hooks/usePostsList";
 
 export function PostsListPage() {
-	const { t } = useTranslation()
-	const { posts, isLoading, isError } = usePostsList()
+	const { t } = useTranslation();
+	const { posts, isLoading, isError } = usePostsList();
 
 	return (
 		<main className="page-wrap px-4 py-12">
@@ -23,9 +23,12 @@ export function PostsListPage() {
 					</Typography>
 				)}
 
-				{!isLoading && !isError && posts !== undefined && posts.length === 0 && (
-					<Typography variant="muted">{t("posts.list.empty")}</Typography>
-				)}
+				{!isLoading &&
+					!isError &&
+					posts !== undefined &&
+					posts.length === 0 && (
+						<Typography variant="muted">{t("posts.list.empty")}</Typography>
+					)}
 
 				{!isLoading && !isError && posts !== undefined && posts.length > 0 && (
 					<List>
@@ -38,5 +41,5 @@ export function PostsListPage() {
 				)}
 			</div>
 		</main>
-	)
+	);
 }

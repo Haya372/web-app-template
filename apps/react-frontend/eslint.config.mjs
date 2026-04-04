@@ -8,6 +8,7 @@ import reactPlugin from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import unicornPlugin from "eslint-plugin-unicorn";
 import tseslint from "typescript-eslint";
+import { formattingRulesOff } from "../../eslint.config.base.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const featuresDir = join(__dirname, "src/features");
@@ -172,19 +173,8 @@ export default tseslint.config(
 
 	// ── Formatting rules OFF (Biome is the formatter) ────────────────────────
 	// Biome owns all formatting concerns: indentation, quotes, semicolons, etc.
-	// Disable any ESLint rules that would duplicate or conflict with Biome.
-	{
-		rules: {
-			indent: "off",
-			quotes: "off",
-			semi: "off",
-			"comma-dangle": "off",
-			"max-len": "off",
-			"object-curly-spacing": "off",
-			"arrow-parens": "off",
-			"space-before-function-paren": "off",
-		},
-	},
+	// Shared across all workspaces via the root eslint.config.base.mjs.
+	formattingRulesOff,
 
 	// ── Feature boundary imports (architecture enforcement) ───────────────────
 	...featureBoundaryConfigs,

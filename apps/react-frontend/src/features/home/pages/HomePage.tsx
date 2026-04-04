@@ -4,7 +4,7 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@repo/ui"
+} from "@repo/ui";
 
 export function HomePage() {
 	return (
@@ -12,7 +12,9 @@ export function HomePage() {
 			<Card>
 				<CardHeader>
 					<CardTitle>TODO: Home page</CardTitle>
-					<CardDescription>Post-login home page content goes here.</CardDescription>
+					<CardDescription>
+						Post-login home page content goes here.
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<p className="text-sm text-muted-foreground">
@@ -21,5 +23,5 @@ export function HomePage() {
 				</CardContent>
 			</Card>
 		</main>
-	)
+	);
 }
