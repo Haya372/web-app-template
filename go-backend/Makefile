@@ -11,6 +11,7 @@ setup:
 .PHONY: clean-generated
 clean-generated:
 	rm -rf internal/infrastructure/sqlc
+	rm -rf internal/infrastructure/grpc/gen
 	rm -rf internal/infrastructure/http/generated
 	rm -rf test/integration/client/generated
 	rm -f  internal/infrastructure/di/wire_gen.go
@@ -50,6 +51,10 @@ generate-di-container:
 	rm -f test/integration/wire_gen.go
 	wire gen ./...
 
+.PHONY: generate-proto
+generate-proto: ## Generate Go server stubs and TS client stubs from proto files
+	cd $(CURDIR)/.. && buf generate
+
 .PHONY: generate-api
 generate-api:
 	rm -rf internal/infrastructure/http/generated
@@ -59,11 +64,11 @@ generate-api:
 	oapi-codegen -config oapi-codegen-server.yaml ../openapi/openapi.yaml
 	oapi-codegen -config oapi-codegen-client.yaml ../openapi/openapi.yaml
 
-# Execution order: sqlc -> oapi-codegen -> mockgen -> wire
+# Execution order: sqlc -> buf -> oapi-codegen -> mockgen -> wire
 # wire_gen.go is deleted before go generate so that its embedded //go:generate
 # directive does not trigger a redundant second wire run.
-.PHONY: generate generate-db-client generate-api generate-di-container
-generate: generate-db-client generate-api
+.PHONY: generate generate-db-client generate-proto generate-api generate-di-container
+generate: generate-db-client generate-proto generate-api
 	rm -f internal/infrastructure/di/wire_gen.go
 	rm -f test/integration/wire_gen.go
 	git ls-files --others --ignored --exclude-standard $(MOCK_DIR)/ | xargs -r rm -f
