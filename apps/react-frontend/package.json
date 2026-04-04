@@ -13,16 +13,15 @@
     "test": "vitest run",
     "test:agent": "vitest run --reporter=agent",
     "lint": "run-s lint:*",
-    "lint:biome": "biome check",
+    "lint:biome": "biome check src",
     "lint:eslint": "eslint src",
     "lint:knip": "knip",
     "lint-staged": "lint-staged",
     "fmt": "run-s fmt:*",
-    "fmt:biome": "biome check --write",
+    "fmt:biome": "biome check --write src",
     "fmt:eslint": "eslint --fix src",
     "fmt:knip": "knip --fix",
-    "typecheck": "tsc --noEmit",
-    "check": "biome check"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hey-api/openapi-ts": "0.94.5",

@@ -1,68 +1,68 @@
 {
-  "signup": {
-    "title": "アカウント作成",
-    "name": {
-      "label": "名前",
-      "placeholder": "お名前"
-    },
-    "email": {
-      "label": "メールアドレス",
-      "placeholder": "your@email.com"
-    },
-    "password": {
-      "label": "パスワード",
-      "placeholder": "パスワード"
-    },
-    "submit": "登録する",
-    "submitting": "登録中…",
-    "error": {
-      "emailAlreadyRegistered": "このメールアドレスはすでに登録されています",
-      "generic": "登録に失敗しました。もう一度お試しください。"
-    },
-    "validation": {
-      "nameRequired": "名前を入力してください",
-      "emailRequired": "メールアドレスを入力してください",
-      "emailInvalid": "有効なメールアドレスを入力してください",
-      "passwordRequired": "パスワードを入力してください"
-    }
-  },
-  "posts": {
-    "new": {
-      "title": "新規投稿",
-      "label": "内容",
-      "submit": "投稿する",
-      "charCount": "{{current}} / {{max}}",
-      "success": "投稿しました",
-      "validation": {
-        "contentRequired": "内容を入力してください",
-        "contentTooLong": "内容は280文字以内で入力してください"
-      },
-      "error": {
-        "generic": "投稿に失敗しました。もう一度お試しください。"
-      }
-    }
-  },
-  "login": {
-    "title": "ログイン",
-    "email": {
-      "label": "メールアドレス",
-      "placeholder": "your@email.com"
-    },
-    "password": {
-      "label": "パスワード",
-      "placeholder": "パスワード"
-    },
-    "submit": "ログイン",
-    "submitting": "ログイン中…",
-    "error": {
-      "invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
-      "generic": "ログインに失敗しました。もう一度お試しください。"
-    },
-    "validation": {
-      "emailRequired": "メールアドレスを入力してください",
-      "emailInvalid": "有効なメールアドレスを入力してください",
-      "passwordRequired": "パスワードを入力してください"
-    },
-    "signupLink": "アカウントをお持ちでない方はこちら"
-  }
+	"signup": {
+		"title": "アカウント作成",
+		"name": {
+			"label": "名前",
+			"placeholder": "お名前"
+		},
+		"email": {
+			"label": "メールアドレス",
+			"placeholder": "your@email.com"
+		},
+		"password": {
+			"label": "パスワード",
+			"placeholder": "パスワード"
+		},
+		"submit": "登録する",
+		"submitting": "登録中…",
+		"error": {
+			"emailAlreadyRegistered": "このメールアドレスはすでに登録されています",
+			"generic": "登録に失敗しました。もう一度お試しください。"
+		},
+		"validation": {
+			"nameRequired": "名前を入力してください",
+			"emailRequired": "メールアドレスを入力してください",
+			"emailInvalid": "有効なメールアドレスを入力してください",
+			"passwordRequired": "パスワードを入力してください"
+		}
+	},
+	"posts": {
+		"new": {
+			"title": "新規投稿",
+			"label": "内容",
+			"submit": "投稿する",
+			"charCount": "{{current}} / {{max}}",
+			"success": "投稿しました",
+			"validation": {
+				"contentRequired": "内容を入力してください",
+				"contentTooLong": "内容は280文字以内で入力してください"
+			},
+			"error": {
+				"generic": "投稿に失敗しました。もう一度お試しください。"
+			}
+		}
+	},
+	"login": {
+		"title": "ログイン",
+		"email": {
+			"label": "メールアドレス",
+			"placeholder": "your@email.com"
+		},
+		"password": {
+			"label": "パスワード",
+			"placeholder": "パスワード"
+		},
+		"submit": "ログイン",
+		"submitting": "ログイン中…",
+		"error": {
+			"invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
+			"generic": "ログインに失敗しました。もう一度お試しください。"
+		},
+		"validation": {
+			"emailRequired": "メールアドレスを入力してください",
+			"emailInvalid": "有効なメールアドレスを入力してください",
+			"passwordRequired": "パスワードを入力してください"
+		},
+		"signupLink": "アカウントをお持ちでない方はこちら"
+	}
 }
