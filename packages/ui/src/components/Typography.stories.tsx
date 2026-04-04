@@ -38,11 +38,21 @@ export const Blockquote: Story = {
 export const AllVariants: Story = {
 	render: () => (
 		<div className="flex flex-col gap-4">
-			<Typography variant="p">Paragraph: The quick brown fox jumps over the lazy dog.</Typography>
-			<Typography variant="lead">Lead: The quick brown fox jumps over the lazy dog.</Typography>
-			<Typography variant="muted">Muted: The quick brown fox jumps over the lazy dog.</Typography>
-			<Typography variant="small">Small: The quick brown fox jumps over the lazy dog.</Typography>
-			<Typography variant="blockquote">Blockquote: Design is not just what it looks like.</Typography>
+			<Typography variant="p">
+				Paragraph: The quick brown fox jumps over the lazy dog.
+			</Typography>
+			<Typography variant="lead">
+				Lead: The quick brown fox jumps over the lazy dog.
+			</Typography>
+			<Typography variant="muted">
+				Muted: The quick brown fox jumps over the lazy dog.
+			</Typography>
+			<Typography variant="small">
+				Small: The quick brown fox jumps over the lazy dog.
+			</Typography>
+			<Typography variant="blockquote">
+				Blockquote: Design is not just what it looks like.
+			</Typography>
 		</div>
 	),
 };
