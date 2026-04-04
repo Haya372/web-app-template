@@ -43,6 +43,7 @@
         "api.github.com",
         "api.anthropic.com"
       ]
-    }
+    },
+    "enableWeakerNetworkIsolation": true
   }
 }
