@@ -22,11 +22,12 @@ runs:
         go-version: ${{ inputs.go-version }}
         cache-dependency-path: go-backend/go.sum
     - name: Setup buf
-      uses: bufbuild/buf-setup-action@v1
+      uses: bufbuild/buf-action@fd21066df7214747548607aaa45548ba2b9bc1ff # v1.4.0
       with:
         version: ${{ inputs.buf-version }}
+        setup_only: true
     - name: Setup sqlc
-      uses: sqlc-dev/setup-sqlc@c0209b9199cd1cce6a14fc27cabcec491b651761 # v4
+      uses: sqlc-dev/setup-sqlc@c0209b9199cd1cce6a14fc27cabcec491b651761 # v4.0.0
       with:
         sqlc-version: ${{ inputs.sqlc-version }}
     - name: Install mockgen
