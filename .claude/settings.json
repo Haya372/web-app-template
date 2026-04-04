@@ -9,15 +9,40 @@
     "typescript-lsp@claude-plugins-official": true
   },
   "permissions": {
+    "allow": [
+      "Bash(pnpm *)"
+    ],
     "deny": [
-      "Bash(gh config:*)",
-      "Bash(gh auth:*)",
-      "Bash(gh secret:*)",
-      "Bash(gh project:*)",
-      "Bash(gh release:*)",
-      "Bash(gh repo:*)",
-      "Bash(gh ssh-key:*)",
-      "Bash(gh codespace:*)"
+      "Bash(gh config *)",
+      "Bash(gh auth *)",
+      "Bash(gh secret *)",
+      "Bash(gh project *)",
+      "Bash(gh release *)",
+      "Bash(gh repo *)",
+      "Bash(gh ssh-key *)",
+      "Bash(gh codespace *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm i *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm update *)",
+      "Bash(pnpm up *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(yarn *)",
+      "Bash(go install *)"
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": true,
+    "excludedCommands": ["git", "gh", "docker"],
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "api.anthropic.com"
+      ]
+    }
   }
 }

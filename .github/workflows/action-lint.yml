@@ -4,15 +4,21 @@ on:
     paths:
       - .github/**.yml
 
+permissions:
+  contents: read
+
 jobs:
   actionlint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-      - name: Download actionlint
-        id: get_actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/62c50a97a146fe36a8951a2a365158c4a4795ba8/scripts/download-actionlint.bash)
-        shell: bash
-      - name: Check workflow files
-        run: ${{ steps.get_actionlint.outputs.executable }} -color
-        shell: bash
+        with:
+          persist-credentials: false
+      - name: Run actionlint
+        uses: reviewdog/action-actionlint@5eaffa19a1991ecc52b11eddcdd57760d1ac7e3d # v1.65.2
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@71321a20a9ded102f6e9ce5718a2fcec2c4f70d8 # v0.5.2
+        with:
+          advanced-security: false

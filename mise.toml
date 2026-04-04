@@ -1,10 +1,13 @@
 [tools]
+actionlint = "1.7.12"
 buf = "1.66.1"
 go = "1.25.6"
 golangci-lint = "2.8.0"
 node = "24.14.0"
 pnpm = "10.30.3"
 psqldef = "3.9.7"
+shellcheck = "0.11.0"
+zizmor = "1.23.1"
 
 [env]
 _.file = '.env.local'

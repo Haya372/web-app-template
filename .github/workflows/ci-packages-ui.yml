@@ -9,10 +9,15 @@ on:
       - ".github/actions/setup-pnpm-workspace/**"
       - "!**.md"
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: packages/ui
@@ -20,6 +25,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          persist-credentials: false
       - name: Setup pnpm workspace
         uses: ./.github/actions/setup-pnpm-workspace
       - name: Lint
@@ -29,6 +36,8 @@ jobs:
     name: build-storybook
     needs: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: packages/ui
@@ -36,6 +45,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          persist-credentials: false
       - name: Setup pnpm workspace
         uses: ./.github/actions/setup-pnpm-workspace
       - name: Build Storybook

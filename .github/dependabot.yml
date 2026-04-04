@@ -19,6 +19,8 @@ updates:
           - "*"
     commit-message:
       prefix: "chore(go-backend)"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "docker-compose"
     directory: "/"
@@ -34,6 +36,8 @@ updates:
           - "*"
     commit-message:
       prefix: "chore(docker)"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "docker"
     directory: "/"
@@ -49,6 +53,8 @@ updates:
           - "*"
     commit-message:
       prefix: "chore(docker)"
+    cooldown:
+      default-days: 7
 
   # TODO: fix　to suit your requirements
   - package-ecosystem: "github-actions"
@@ -65,6 +71,8 @@ updates:
           - "*"
     commit-message:
       prefix: "chore(github-actions)"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "npm"
     directory: "/"
@@ -100,3 +108,5 @@ updates:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
+    cooldown:
+      default-days: 7

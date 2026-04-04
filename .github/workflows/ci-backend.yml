@@ -42,6 +42,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          persist-credentials: false
       - name: Setup backend
         uses: ./.github/actions/setup-backend
         with:
@@ -78,6 +80,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          persist-credentials: false
       - name: Setup backend
         uses: ./.github/actions/setup-backend
         with:
@@ -110,6 +114,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          persist-credentials: false
       - uses: fgrosse/go-coverage-report@ba3f798d6f32b9b16faea37cc7192261bb25b192 # v1.1.1
         with:
           coverage-artifact-name: "backend-code-coverage"

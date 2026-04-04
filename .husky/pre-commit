@@ -5,7 +5,6 @@ ROOT=$(pwd)
 
 if git diff --cached --name-only | grep -q "^apps/react-frontend/"; then
   cd "$ROOT/apps/react-frontend" && pnpm lint-staged
-  pnpm lint
   cd "$ROOT"
 fi
 
