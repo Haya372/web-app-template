@@ -13,12 +13,12 @@
     "test": "vitest run",
     "test:agent": "vitest run --reporter=agent",
     "lint": "run-s lint:*",
-    "lint:biome": "biome lint",
+    "lint:biome": "biome check",
     "lint:eslint": "eslint src",
     "lint:knip": "knip",
     "lint-staged": "lint-staged",
     "fmt": "run-s fmt:*",
-    "fmt:biome": "biome lint --write ./src",
+    "fmt:biome": "biome check --write",
     "fmt:eslint": "eslint --fix src",
     "fmt:knip": "knip --fix",
     "typecheck": "tsc --noEmit",
@@ -68,7 +68,7 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
       "pnpm eslint --fix",
-      "pnpm biome lint --write"
+      "pnpm biome check --write"
     ]
   }
 }

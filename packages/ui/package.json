@@ -10,8 +10,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "typecheck": "tsc --noEmit",
-    "format": "biome format",
-    "lint": "biome lint",
+    "format": "biome check --write",
+    "lint": "biome check",
     "check": "biome check"
   },
   "dependencies": {
@@ -51,7 +51,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "pnpm biome lint --write"
+      "pnpm biome check --write"
     ]
   }
 }
