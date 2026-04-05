@@ -3,26 +3,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "generate": "run-p generate:*",
+    "dev": "vp dev",
+    "generate": "pnpm generate:api && pnpm generate:route",
     "generate:api": "openapi-ts",
     "generate:route": "tsr generate",
-    "build": "vite build",
-    "prebuild": "run-s generate typecheck",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:agent": "vitest run --reporter=agent",
-    "lint": "run-s lint:*",
-    "lint:biome": "biome lint",
-    "lint:eslint": "eslint src",
-    "lint:knip": "knip",
-    "lint-staged": "lint-staged",
-    "fmt": "run-s fmt:*",
-    "fmt:biome": "biome lint --write ./src",
-    "fmt:eslint": "eslint --fix src",
-    "fmt:knip": "knip --fix",
-    "typecheck": "tsc --noEmit",
-    "check": "biome check"
+    "build": "vp build",
+    "prebuild": "pnpm generate",
+    "preview": "vp preview",
+    "test": "vp test",
+    "test:agent": "vp test --reporter=agent",
+    "check": "vp check",
+    "check:knip": "knip",
+    "fmt": "vp fmt"
   },
   "dependencies": {
     "@hey-api/openapi-ts": "0.94.5",
@@ -38,8 +30,6 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.9",
-    "@eslint/compat": "2.0.3",
     "@tailwindcss/typography": "0.5.19",
     "@tailwindcss/vite": "4.2.2",
     "@tanstack/react-router-devtools": "1.166.11",
@@ -48,27 +38,12 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.2.0",
-    "eslint": "10.1.0",
-    "eslint-plugin-import-x": "4.16.2",
-    "eslint-plugin-jsx-a11y": "6.10.2",
-    "eslint-plugin-react": "7.37.5",
-    "eslint-plugin-react-hooks": "7.0.1",
-    "eslint-plugin-unicorn": "63.0.0",
     "jsdom": "28.1.0",
     "knip": "5.88.1",
-    "lint-staged": "16.4.0",
-    "npm-run-all2": "8.0.4",
     "tailwindcss": "4.2.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.57.2",
     "vite": "8.0.3",
-    "vite-tsconfig-paths": "5.1.4",
-    "vitest": "4.1.2"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "pnpm eslint --fix",
-      "pnpm biome lint --write"
-    ]
+    "vite-plus": "0.1.15",
+    "vite-tsconfig-paths": "5.1.4"
   }
 }

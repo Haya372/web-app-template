@@ -23,24 +23,23 @@ Run from `apps/react-frontend/`:
 
 ```bash
 # Development server (http://localhost:3000)
-pnpm dev
+pnpm dev  # vp dev
 
-# Type checking
-pnpm typecheck
+# Format, lint, and type check (Oxfmt + Oxlint + tsc via vite-plus)
+pnpm check        # vp check — all checks in one command
+pnpm fmt          # vp fmt  — auto-format only
+pnpm check:knip   # knip    — dead code detection (separate from vp check)
 
-# Generate route tree (run after adding/removing route files)
-pnpm generate:route
-
-# Format and lint
-pnpm fmt          # biome lint --write + knip --fix
-pnpm lint         # biome lint + eslint + knip (read-only check)
-pnpm check        # biome check (format + lint combined)
+# Generate code (OpenAPI client + TanStack Router route tree)
+pnpm generate:api    # openapi-ts
+pnpm generate:route  # tsr generate
 
 # Tests
-pnpm test:agent   # vitest run (single pass, no DB needed)
+pnpm test         # vp test (single pass, no DB needed)
+pnpm test:agent   # vp test --reporter=agent
 
 # Build
-pnpm build        # prebuild (generate + typecheck) then vite build
+pnpm build        # prebuild (generate) then vp build
 pnpm preview      # preview the production build locally
 ```
 
@@ -53,7 +52,7 @@ pnpm preview      # preview the production build locally
 
 ## Architecture
 
-The app uses TanStack Start (SSR-capable React meta-framework) built on TanStack Router:
+The app uses TanStack Router (file-based React routing):
 
 ```
 src/
@@ -96,29 +95,19 @@ src/
 
 ## Coding Style
 
-- Use Biome for formatting (tabs, double quotes for JSX strings) and linting; always pass `pnpm lint` before pushing.
-- ESLint enforces additional quality rules beyond Biome:
-  - **`eslint-plugin-react`** + **`eslint-plugin-react-hooks`** — JSX correctness and Rules of Hooks.
-  - **`eslint-plugin-jsx-a11y`** — accessibility best practices for JSX elements.
-  - **`eslint-plugin-import-x`** — detects self-imports, cycles, and duplicate imports. Resolution-based rules (`no-unresolved`, `namespace`, `default`) are disabled — TypeScript is the authoritative resolver.
-  - **`eslint-plugin-unicorn`** — modern JavaScript idioms. Several rules are intentionally disabled with comments in `eslint.config.mjs`:
-    - `unicorn/prevent-abbreviations` — project uses common abbreviations (`props`, `fn`, `ref`, …)
-    - `unicorn/filename-case` — allows PascalCase (components) and camelCase (hooks/utils)
-    - `unicorn/no-null` — React APIs and API types legitimately use `null`
-    - `unicorn/prefer-global-this` — pure browser app; `window` is idiomatic
-    - `unicorn/require-module-specifiers` — TypeScript `export {}` module declaration pattern
-    - See `eslint.config.mjs` for the full list and rationale
+- Use **vite-plus** (`vp check`) for formatting (Oxfmt) and linting (Oxlint + tsc); always pass `pnpm check` before pushing.
+- Formatting: tabs, double quotes for JSX strings (configured in `vite.config.ts` `fmt` block).
+- ⚠️ **Feature boundary imports are temporarily unenforced** (ESLint was removed in #131; tracked in follow-up issue): files inside `src/features/<A>/` must not import from `src/features/<B>/`. This constraint is still valid — Oxlint enforcement will be added in a follow-up. Shared utilities belong in `src/utils/`, `src/hooks/`, or `src/components/`.
 - Use `@/*` import alias for cross-feature and shared-module imports; relative paths are fine within the same feature directory.
 - Component filenames and function names use **PascalCase** (`Header.tsx`, `function Header()`).
 - Non-component TypeScript files use **camelCase** (`router.tsx`, `useTheme.ts`).
 - Hooks must start with `use`; place in `src/features/<feature>/hooks/` if feature-specific, or `src/hooks/` if shared.
-- `any` is forbidden; use `unknown` and narrow with type guards or zod. `as` casts are strongly discouraged — `as any` is unconditionally forbidden. Non-null assertions (`!`) are also forbidden (`style/noNonNullAssertion`).
-- **Feature boundary imports are enforced by ESLint** (`eslint.config.mjs`): files inside `src/features/<A>/` must not import from `src/features/<B>/`. Shared utilities belong in `src/utils/`, `src/hooks/`, or `src/components/`.
+- `any` is forbidden; use `unknown` and narrow with type guards or zod. `as` casts are strongly discouraged — `as any` is unconditionally forbidden. Non-null assertions (`\!`) are also forbidden.
 - Avoid inline styles; express all visual variations via Tailwind utility classes or CSS variables.
 
 ## Testing
 
-- Use **Vitest** with **jsdom** environment for unit and component tests.
+- Use **vite-plus/test** (via `vp test`) with **jsdom** environment for unit and component tests.
 - Place test files adjacent to the source file: `Header.test.tsx` next to `Header.tsx`.
 - Use table-driven tests for utility functions with boundary and error cases.
 - There is no integration test setup; focus unit tests on pure logic and component rendering.

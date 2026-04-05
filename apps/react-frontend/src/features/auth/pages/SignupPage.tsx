@@ -8,18 +8,18 @@ import {
   FormMessage,
   Heading,
   Input,
-} from '@repo/ui'
-import { useTranslation } from 'react-i18next'
-import { useSignupForm } from '@/features/auth/hooks/useSignupForm'
+} from "@repo/ui";
+import { useTranslation } from "react-i18next";
+import { useSignupForm } from "@/features/auth/hooks/useSignupForm";
 
 export function SignupPage() {
-  const { t } = useTranslation()
-  const { form, onSubmit, errorMessage } = useSignupForm()
+  const { t } = useTranslation();
+  const { form, onSubmit, errorMessage } = useSignupForm();
 
   return (
     <main className="page-wrap flex min-h-[60vh] items-center justify-center px-4 py-12">
       <section className="island-shell w-full max-w-sm rounded-2xl p-6 sm:p-8">
-        <Heading level={1}>{t('signup.title')}</Heading>
+        <Heading level={1}>{t("signup.title")}</Heading>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
@@ -29,11 +29,11 @@ export function SignupPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('signup.name.label')}</FormLabel>
+                    <FormLabel>{t("signup.name.label")}</FormLabel>
                     <FormControl>
                       <Input
                         type="text"
-                        placeholder={t('signup.name.placeholder')}
+                        placeholder={t("signup.name.placeholder")}
                         autoComplete="name"
                         {...field}
                       />
@@ -50,11 +50,11 @@ export function SignupPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('signup.email.label')}</FormLabel>
+                    <FormLabel>{t("signup.email.label")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder={t('signup.email.placeholder')}
+                        placeholder={t("signup.email.placeholder")}
                         autoComplete="email"
                         {...field}
                       />
@@ -71,11 +71,11 @@ export function SignupPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('signup.password.label')}</FormLabel>
+                    <FormLabel>{t("signup.password.label")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder={t('signup.password.placeholder')}
+                        placeholder={t("signup.password.placeholder")}
                         autoComplete="new-password"
                         {...field}
                       />
@@ -94,14 +94,12 @@ export function SignupPage() {
 
             <div className="w-full">
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting
-                  ? t('signup.submitting')
-                  : t('signup.submit')}
+                {form.formState.isSubmitting ? t("signup.submitting") : t("signup.submit")}
               </Button>
             </div>
           </form>
         </Form>
       </section>
     </main>
-  )
+  );
 }

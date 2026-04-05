@@ -8,19 +8,19 @@ import {
   FormMessage,
   Heading,
   Input,
-} from '@repo/ui'
-import { Link } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
-import { useLoginForm } from '@/features/auth/hooks/useLoginForm'
+} from "@repo/ui";
+import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import { useLoginForm } from "@/features/auth/hooks/useLoginForm";
 
 export function LoginPage() {
-  const { t } = useTranslation()
-  const { form, onSubmit } = useLoginForm()
+  const { t } = useTranslation();
+  const { form, onSubmit } = useLoginForm();
 
   return (
     <main className="page-wrap flex min-h-[60vh] items-center justify-center px-4 py-12">
       <section className="island-shell w-full max-w-sm rounded-2xl p-6 sm:p-8">
-        <Heading level={1}>{t('login.title')}</Heading>
+        <Heading level={1}>{t("login.title")}</Heading>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
@@ -30,11 +30,11 @@ export function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('login.email.label')}</FormLabel>
+                    <FormLabel>{t("login.email.label")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder={t('login.email.placeholder')}
+                        placeholder={t("login.email.placeholder")}
                         autoComplete="email"
                         {...field}
                       />
@@ -51,11 +51,11 @@ export function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('login.password.label')}</FormLabel>
+                    <FormLabel>{t("login.password.label")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder={t('login.password.placeholder')}
+                        placeholder={t("login.password.placeholder")}
                         autoComplete="current-password"
                         {...field}
                       />
@@ -68,18 +68,16 @@ export function LoginPage() {
 
             <div className="w-full">
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting
-                  ? t('login.submitting')
-                  : t('login.submit')}
+                {form.formState.isSubmitting ? t("login.submitting") : t("login.submit")}
               </Button>
             </div>
           </form>
         </Form>
 
         <p className="mt-4 text-center text-sm">
-          <Link to="/signup">{t('login.signupLink')}</Link>
+          <Link to="/signup">{t("login.signupLink")}</Link>
         </p>
       </section>
     </main>
-  )
+  );
 }

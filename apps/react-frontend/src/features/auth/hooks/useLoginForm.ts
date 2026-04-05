@@ -1,51 +1,49 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate } from '@tanstack/react-router'
-import { toast } from '@repo/ui'
-import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
-import { postV1UsersLogin } from '@/generated/sdk.gen'
-import { useAuth } from '@/features/auth/hooks/useAuth'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "@tanstack/react-router";
+import { toast } from "@repo/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
+import { postV1UsersLogin } from "@/generated/sdk.gen";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 function useLoginFormSchema() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   return z.object({
-    email: z.email(t('login.validation.emailInvalid')),
-    password: z.string().min(1, t('login.validation.passwordRequired')),
-  })
+    email: z.email(t("login.validation.emailInvalid")),
+    password: z.string().min(1, t("login.validation.passwordRequired")),
+  });
 }
 
-type LoginFormValues = z.infer<ReturnType<typeof useLoginFormSchema>>
+type LoginFormValues = z.infer<ReturnType<typeof useLoginFormSchema>>;
 
 export function useLoginForm() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const schema = useLoginFormSchema()
-  const { login } = useAuth()
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const schema = useLoginFormSchema();
+  const { login } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: '', password: '' },
-  })
+    defaultValues: { email: "", password: "" },
+  });
 
   async function onSubmit(values: LoginFormValues) {
     try {
       const { data, error, response } = await postV1UsersLogin({
         body: { email: values.email, password: values.password },
         baseUrl: import.meta.env.VITE_API_BASE_URL,
-      })
-      if (error || !data) throw new Error(String(response.status))
-      login(data.token)
-      navigate({ to: '/' })
+      });
+      if (error || !data) throw new Error(String(response.status));
+      login(data.token);
+      navigate({ to: "/" });
     } catch (error) {
-      const message = error instanceof Error ? error.message : ''
+      const message = error instanceof Error ? error.message : "";
       toast.error(
-        message === '401'
-          ? t('login.error.invalidCredentials')
-          : t('login.error.generic'),
-      )
+        message === "401" ? t("login.error.invalidCredentials") : t("login.error.generic"),
+      );
     }
   }
 
-  return { form, onSubmit }
+  return { form, onSubmit };
 }

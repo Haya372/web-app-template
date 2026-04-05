@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "inputs": ["$TURBO_DEFAULT$", "../../openapi/openapi.yaml"]
-    }
-  }
+      "inputs": ["$TURBO_DEFAULT$", "../../openapi/openapi.yaml"],
+    },
+  },
 }
