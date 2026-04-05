@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: lint
+  check:
+    name: check
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,12 +29,12 @@ jobs:
           persist-credentials: false
       - name: Setup pnpm workspace
         uses: ./.github/actions/setup-pnpm-workspace
-      - name: Lint
-        run: pnpm lint
+      - name: Check
+        run: pnpm check
 
   build-storybook:
     name: build-storybook
-    needs: lint
+    needs: check
     runs-on: ubuntu-latest
     permissions:
       contents: read
