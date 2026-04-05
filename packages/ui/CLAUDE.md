@@ -7,11 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Run from `packages/ui/`:
 
 ```bash
-# Lint (read-only)
-pnpm lint         # biome lint
-
-# Format and auto-fix
-pnpm check        # biome check --write
+# Format, lint, and type check (Oxfmt + Oxlint via vite-plus)
+pnpm check        # vp check
+pnpm fmt          # vp fmt
+pnpm lint         # vp lint
 
 # Storybook (component explorer)
 pnpm storybook    # dev server at http://localhost:6006
@@ -42,10 +41,10 @@ Components must **not** accept a `className` prop. Design variations are express
 ```tsx
 // good
 type ButtonProps = Omit<ComponentProps<"button">, "className"> &
-  VariantProps<typeof buttonVariants> & { asChild?: boolean }
+  VariantProps<typeof buttonVariants> & { asChild?: boolean };
 
 // bad — exposes className and allows ad-hoc overrides
-type ButtonProps = ComponentProps<"button"> & VariantProps<typeof buttonVariants>
+type ButtonProps = ComponentProps<"button"> & VariantProps<typeof buttonVariants>;
 ```
 
 If a new visual pattern is needed in an app, add a new `variant` to the component here rather than overriding styles from the outside.
@@ -61,7 +60,7 @@ const buttonVariants = cva("/* base classes */", {
     size: { default: "...", sm: "...", lg: "..." },
   },
   defaultVariants: { variant: "default", size: "default" },
-})
+});
 ```
 
 ### Radix UI for interactive primitives
@@ -74,8 +73,8 @@ For components that need to render as a different element, support the `asChild`
 
 ```tsx
 function Button({ asChild = false, ...props }: ButtonProps) {
-  const Comp = asChild ? Slot : "button"
-  return <Comp className={buttonVariants({ variant, size })} {...props} />
+  const Comp = asChild ? Slot : "button";
+  return <Comp className={buttonVariants({ variant, size })} {...props} />;
 }
 ```
 
@@ -92,7 +91,7 @@ Use `satisfies Meta<typeof Component>` for type-safe story metadata.
 
 ## Coding Style
 
-- Biome for formatting (tabs, double quotes) and linting; always pass `pnpm lint`
+- **vite-plus** (`vp check`) for formatting (Oxfmt: tabs, double quotes) and linting (Oxlint); always pass `pnpm check` before pushing
 - Named exports only (no default exports except story `default meta`)
 - `interface` for props that extend HTML element props; `type` for union / CVA variant intersection types
 - `any` is forbidden; `as` casts are strongly discouraged — `as any` is unconditionally forbidden
