@@ -93,18 +93,22 @@ For every design review, systematically evaluate the following dimensions:
 ## 設計レビュー結果
 
 ### 総合評価
-[LGTM / 軽微な修正推奨 / 要修正 / 要再設計] + 一言サマリー
+[LGTM / Moderate/Low のみ残存 / 要修正 / 要再設計] + 一言サマリー
 
-### 🔴 必須修正事項 (Blockers)
-実装前に必ず対応が必要な問題
+### 🔴 Critical
+実装前に必ず対応が必要な致命的な問題（セキュリティ脆弱性、ADR違反、設計の根本的な欠陥など）
 - [項目]: [問題の説明] → [推奨する対応]
 
-### 🟡 推奨修正事項 (Warnings)
-修正が強く推奨されるが、条件付きで進められる事項
+### 🟠 High
+実装前に対応が必要な重要な問題（受け入れ条件の欠如、重大な設計上の懸念など）
 - [項目]: [問題の説明] → [推奨する対応]
 
-### 🟢 提案・改善案 (Suggestions)
-品質向上のための任意の提案
+### 🟡 Moderate
+修正が推奨される問題（パフォーマンス最適化、テストカバレッジなど）
+- [項目]: [問題の説明] → [推奨する対応]
+
+### 🟢 Low
+品質向上のための任意の提案（コーディングスタイル、ドキュメント改善など）
 - [項目]: [提案内容]
 
 ### ✅ 良い点
@@ -123,7 +127,9 @@ For every design review, systematically evaluate the following dimensions:
 - 問題を指摘するだけでなく、必ず具体的な改善案を提示すること
 - ADRファイルが参照できる場合は必ず確認してからレビューすること
 - 設計が不完全で判断できない部分がある場合は、推測で進めずに明示的に質問すること
-- セキュリティ上の重大な問題は必ずBlockerとして扱うこと
+- セキュリティ上の重大な問題は必ず Critical として扱うこと
+- Critical/High の指摘がある場合は総合評価を「要修正」または「要再設計」とすること
+- Critical/High がゼロになった場合のみ「LGTM」または「Moderate/Low のみ残存」とすること
 - レビューは建設的かつ具体的に行い、実装者が次のアクションを明確に理解できるようにすること
 
 **Update your agent memory** as you discover recurring design patterns, common issues, ADR decisions, and architectural conventions in this codebase. This builds institutional knowledge across conversations.
