@@ -33,10 +33,46 @@ Issueの内容・対象の層に応じて不要なセクションは省略して
 **新規/変更するドメインモデル（シグネチャレベル）:**
 ```go
 type Foo struct {
-    ID   FooID
-    Name string
+    ID     FooID
+    Name   string
+    Status FooStatus
+}
+
+// コンストラクタ: 生成時の不変条件・バリデーションをここで保証する
+func NewFoo(name string) (*Foo, error) {
+    // バリデーション例（ここに記載するルールが実装の仕様になる）
+    if name == "" {
+        return nil, ErrFooNameRequired
+    }
+    if len(name) > 100 {
+        return nil, ErrFooNameTooLong
+    }
+    return &Foo{ID: NewFooID(), Name: name, Status: FooStatusActive}, nil
 }
 ```
+
+**ドメインメソッド設計:**
+
+| メソッド | シグネチャ | 責務 | 実装するロジック / バリデーション |
+|---------|-----------|------|--------------------------------|
+| DoSomething | `(f *Foo) DoSomething(arg Type) error` | <何をするか> | <状態遷移ルール・事前条件チェック・副作用など> |
+
+```go
+// メソッドのシグネチャと主要ロジックを示す
+func (f *Foo) DoSomething(arg Type) error {
+    // 事前条件（不変条件の維持）
+    if f.Status != FooStatusActive {
+        return ErrFooNotActive
+    }
+    // ビジネスロジック
+    // ...
+    return nil
+}
+```
+
+**バリデーション・不変条件まとめ:**
+- <フィールド/操作>: <ルール> — 例: `Name` は空文字不可・100文字以内
+- <フィールド/操作>: <ルール> — 例: `Publish()` は `Status == Draft` のときのみ呼び出し可
 
 **DBスキーマ (`go-backend/db/`):**
 ```sql
@@ -98,7 +134,7 @@ sequenceDiagram
 }
 ```
 
-#### フロントエンド (`react-frontend/`)
+#### フロントエンド (`apps/react-frontend/`)
 
 **ページ一覧:**
 
@@ -126,6 +162,36 @@ stateDiagram-v2
 - **詳細ページ (`/xxx/:id`)**
   - [ ] <できること1>
   - [ ] <できること2>
+
+**UIコンポーネント設計:**
+
+各ページで使用するコンポーネントを `packages/ui` の既存コンポーネントから選定する。
+既存コンポーネントで要件を満たせない場合は `packages/ui` に新規追加し、その設計もここに記載する。
+
+| UI要素 | 使用コンポーネント | 出典 | 備考 |
+|--------|------------------|------|------|
+| 一覧テーブル | `<DataTable>` | `@repo/ui` 既存 | ソート・ページネーション付き |
+| 作成ボタン | `<Button variant="default">` | `@repo/ui` 既存 | |
+| <UI要素名> | `<NewComponent>` | `@repo/ui` **新規追加** | 既存にないため追加 |
+
+**新規追加コンポーネント（`packages/ui` への追加が必要な場合）:**
+
+> 既存コンポーネントで対応できる場合はこのブロックを省略する。
+
+```tsx
+// packages/ui/src/components/new-component.tsx
+
+// Props 定義
+type NewComponentProps = {
+  // ...
+}
+
+// 使用例
+<NewComponent prop="value" />
+```
+
+- **追加理由:** <既存コンポーネントでは対応できない理由>
+- **Radix UI プリミティブ:** <使用する Radix プリミティブ（例: `@radix-ui/react-dialog`）、不要なら省略>
 
 #### インフラ層 (`go-backend/internal/infrastructure/`)
 
