@@ -1,5 +1,6 @@
 ---
 name: create-pr
+model: sonnet
 description: This skill should be used when the user wants to create a pull request for the current branch. It gathers context, validates the branch state, and opens a PR following this repository's conventions.
 allowed-tools: Bash, Read, Glob, Grep
 ---

@@ -1,7 +1,7 @@
 ---
 name: code-implementer
 description: "Use this agent when you need to implement a feature, function, module, or system component based on a specification, requirement, or description. This includes writing new code from scratch, filling in stubs or TODOs, translating pseudocode into working code, or building out functionality described in plain language or technical specs.\\n\\n<example>\\nContext: The user has described a feature they want built.\\nuser: \"I need a rate limiter middleware for my Express app that limits requests to 100 per minute per IP address\"\\nassistant: \"I'll use the code-implementer agent to build this rate limiter middleware for you.\"\\n<commentary>\\nThe user is requesting a new implementation. Launch the code-implementer agent to design and write the solution.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The user has a function stub with a docstring but no body.\\nuser: \"Can you implement this function? // TODO: implement binary search\"\\nassistant: \"Let me use the code-implementer agent to implement this binary search function.\"\\n<commentary>\\nThere is a clear implementation task with a stub and no body. The code-implementer agent should handle this.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: A planning or design session has produced a spec and now code needs to be written.\\nuser: \"Here is the spec for the user authentication module. Now write it.\"\\nassistant: \"I'll invoke the code-implementer agent to translate this spec into working code.\"\\n<commentary>\\nA spec exists and execution is needed. The code-implementer agent is the right tool.\\n</commentary>\\n</example>"
-model: inherit
+model: sonnet
 color: green
 memory: project
 ---
