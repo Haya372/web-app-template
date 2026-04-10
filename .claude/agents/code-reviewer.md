@@ -2,7 +2,7 @@
 name: code-reviewer
 description: "Use this agent when a pull request is being prepared OR when the user explicitly requests a code review. Do NOT trigger this agent automatically after every implementation step or because code was recently written. Only launch on: (1) explicit user request (e.g. 'review my code', 'can you review this'), or (2) during /create-pr skill execution.\\n\\n<example>\\nContext: The user explicitly asks for a review.\\nuser: \"Can you review my refactored database query module?\"\\nassistant: \"Absolutely, I'll launch the code-reviewer agent to give your refactored module a thorough review.\"\\n<commentary>\\nThe user explicitly requested a code review. Launch the code-reviewer agent.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The /create-pr skill is running and needs a final review before opening a PR.\\nassistant: \"Before opening the PR, let me run a final code review.\"\\n<commentary>\\nPR preparation is one of the two approved trigger conditions. Launch the code-reviewer agent.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The assistant just finished implementing a feature (no explicit review request).\\nuser: \"Implement the login endpoint\"\\nassistant: [implements the code]\\n<commentary>\\nDo NOT launch the code-reviewer agent here. The user did not request a review, and the implementation phase is not a trigger condition.\\n</commentary>\\n</example>"
 tools: Glob, Grep, Read, WebFetch, WebSearch, mcp__ide__getDiagnostics, mcp__ide__executeCode
-model: sonnet
+model: haiku
 color: purple
 memory: project
 ---

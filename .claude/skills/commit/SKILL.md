@@ -1,5 +1,6 @@
 ---
 name: commit
+model: sonnet
 description: Analyze git changes, split them into logical commits at appropriate granularity, and execute them following this repository's conventions. Use this skill whenever the user says "commit", "コミット", "変更をコミット", "commit my changes", "save my work to git", or asks to create a git commit — even if they don't say "commit" explicitly but clearly want to save their changes to git history.
 ---
 

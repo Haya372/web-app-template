@@ -1,5 +1,6 @@
 ---
 name: create-ticket
+model: opus
 description: "Create a well-structured GitHub Issue following the project ticket template in docs/guidelines/task-progress-guide.md. Use when the user wants to file a bug report, feature request, or task."
 argument-hint: "<description of the ticket to create>"
 user-invocable: true

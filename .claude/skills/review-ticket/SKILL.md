@@ -2,6 +2,7 @@
 name: review-ticket
 description: "Review a GitHub Issue or Sub-Issue for quality: clear acceptance criteria, appropriate scope, no ambiguity. Reports deficiencies and suggests improvements. Use when you want to validate a ticket before starting implementation, or when refining requirements."
 argument-hint: "<issue-number>"
+model: haiku
 user-invokable: true
 ---
 

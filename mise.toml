@@ -13,6 +13,10 @@ zizmor = "1.23.1"
 _.file = '.env.local'
 
 # cspell:ignore worktree worktrees
+[tasks."generate"]
+description = "Run code generation for the specified layer: backend / frontend / all (default: all)"
+run = "bash scripts/generate.sh {{arg(name='layer', default='all')}}"
+
 [tasks."ports:init"]
 description = "Initialize and register this worktree's port offset"
 run = "bash scripts/ports-init.sh"
