@@ -10,7 +10,13 @@
   },
   "permissions": {
     "allow": [
-      "Bash(pnpm *)"
+      "Bash(pnpm *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git merge *)",
+      "Bash(git rebase *)",
+      "Bash(git push *)",
+      "Bash(gh pr create *)"
     ],
     "deny": [
       "Bash(gh config *)",
@@ -36,7 +42,7 @@
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "allowUnsandboxedCommands": true,
-    "excludedCommands": ["git", "gh", "docker"],
+    "excludedCommands": ["git", "gh", "docker", "pnpm", "mise", "make"],
     "network": {
       "allowedDomains": [
         "github.com",
