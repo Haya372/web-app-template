@@ -3,6 +3,7 @@ module github.com/Haya372/web-app-template/go-backend
 go 1.25.0
 
 require (
+	connectrpc.com/connect v1.19.1
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0
 	github.com/getkin/kin-openapi v0.134.0
 	github.com/go-chi/chi/v5 v5.2.5
@@ -26,6 +27,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.42.0
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.49.0
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
@@ -94,6 +96,5 @@ require (
 	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	google.golang.org/grpc v1.79.3 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
