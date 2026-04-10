@@ -16,6 +16,8 @@
       "Bash(git merge *)",
       "Bash(git rebase *)",
       "Bash(git push *)",
+      "Bash(git log *)",
+      "Bash(git rm *)",
       "Bash(gh pr create *)"
     ],
     "deny": [
@@ -35,7 +37,23 @@
       "Bash(npm *)",
       "Bash(npx *)",
       "Bash(yarn *)",
-      "Bash(go install *)"
+      "Bash(go install *)",
+      "Bash(git commit * --amend *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); skill=$(echo \"$input\" | jq -r '.tool_input.skill // empty'); [ \"$skill\" = \"implement-tdd\" ] || exit 0; args=$(echo \"$input\" | jq -r '.tool_input.args // empty'); layer=$(echo \"$args\" | awk '{print tolower($1)}'); mise run generate \"${layer:-all}\"",
+            "timeout": 120,
+            "statusMessage": "Running code generation..."
+          }
+        ]
+      }
     ]
   },
   "sandbox": {
