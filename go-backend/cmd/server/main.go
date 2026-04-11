@@ -14,23 +14,30 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		slog.Error("server error", "error", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	ctx := context.Background()
 
 	servers, err := di.InitializeServers(ctx)
-	if err \!= nil {
-		panic(err)
+	if err != nil {
+		return err
 	}
 
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	shutdown, err := telemetry.SetupOTelSDK(ctx)
-	if err \!= nil {
-		panic(err)
+	if err != nil {
+		return err
 	}
 
 	defer func() {
-		if err := shutdown(ctx); err \!= nil {
+		if err := shutdown(ctx); err != nil {
 			slog.Error("failed to shutdown telemetry", "error", err)
 		}
 	}()
@@ -47,8 +54,5 @@ func main() {
 		return servers.GRPC.Start(gCtx)
 	})
 
-	if err := g.Wait(); err \!= nil {
-		slog.Error("server error", "error", err)
-		os.Exit(1)
-	}
+	return g.Wait()
 }
