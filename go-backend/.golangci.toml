@@ -54,6 +54,7 @@ default-signifies-exhaustive = true
     {pkg = "database/sql", desc = "domain must not import database/sql; DB access belongs in the infrastructure layer (ADR-0004)"},
     {pkg = "github.com/Haya372/web-app-template/go-backend/internal/usecase", desc = "domain must not depend on usecase; dependency must flow inward only (ADR-0004)"},
     {pkg = "github.com/Haya372/web-app-template/go-backend/internal/infrastructure", desc = "domain must not depend on infrastructure; dependency must flow inward only (ADR-0004)"},
+    {pkg = "connectrpc.com/connect", desc = "domain must not import Connect-RPC types; connectrpc must stay in the infrastructure layer (ADR-0004)"},
   ]
 
 [linters.settings.depguard.rules.usecase-no-framework]
@@ -66,4 +67,5 @@ default-signifies-exhaustive = true
     {pkg = "github.com/jackc/pgtype", desc = "usecase must not import pgtype (ADR-0004)"},
     {pkg = "database/sql", desc = "usecase must not import database/sql; DB access belongs in the infrastructure layer (ADR-0004)"},
     {pkg = "github.com/Haya372/web-app-template/go-backend/internal/infrastructure", desc = "usecase must not depend on infrastructure; dependency must flow inward only (ADR-0004)"},
+    {pkg = "connectrpc.com/connect", desc = "usecase must not import Connect-RPC types; connectrpc must stay in the infrastructure layer (ADR-0004)"},
   ]

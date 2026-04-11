@@ -37,7 +37,7 @@ ENV_FILE=".env.local"
 ENV_TMP="${ENV_FILE}.tmp.$$"
 
 if [ -f "$ENV_FILE" ]; then
-  grep -v '^WORKTREE_OFFSET=\|^APP_PORT=\|^VITE_PORT=\|^DB_PORT=\|^CORS_ALLOW_ORIGINS=' "$ENV_FILE" > "$ENV_TMP" || true
+  grep -v '^WORKTREE_OFFSET=\|^APP_PORT=\|^APP_GRPC_PORT=\|^VITE_PORT=\|^DB_PORT=\|^CORS_ALLOW_ORIGINS=' "$ENV_FILE" > "$ENV_TMP" || true
 else
   > "$ENV_TMP"
 fi
@@ -45,10 +45,11 @@ fi
 {
   echo "WORKTREE_OFFSET=$OFFSET"
   echo "APP_PORT=$((8080 + OFFSET))"
+  echo "APP_GRPC_PORT=$((8081 + OFFSET))"
   echo "VITE_PORT=$((3000 + OFFSET))"
   echo "DB_PORT=$((55432 + OFFSET))"
   echo "CORS_ALLOW_ORIGINS=http://localhost:$((3000 + OFFSET))"
 } >> "$ENV_TMP"
 
 mv "$ENV_TMP" "$ENV_FILE"
-echo "Done: APP_PORT=$((8080+OFFSET)) VITE_PORT=$((3000+OFFSET)) DB_PORT=$((55432+OFFSET))"
+echo "Done: APP_PORT=$((8080+OFFSET)) APP_GRPC_PORT=$((8081+OFFSET)) VITE_PORT=$((3000+OFFSET)) DB_PORT=$((55432+OFFSET))"
