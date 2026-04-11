@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/di"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/telemetry"
 )
@@ -14,8 +16,8 @@ import (
 func main() {
 	ctx := context.Background()
 
-	server, err := di.InitializeServer(ctx)
-	if err != nil {
+	servers, err := di.InitializeServers(ctx)
+	if err \!= nil {
 		panic(err)
 	}
 
@@ -23,18 +25,30 @@ func main() {
 	defer stop()
 
 	shutdown, err := telemetry.SetupOTelSDK(ctx)
-	if err != nil {
+	if err \!= nil {
 		panic(err)
 	}
 
 	defer func() {
-		err := shutdown(ctx)
-		if err != nil {
+		if err := shutdown(ctx); err \!= nil {
 			slog.Error("failed to shutdown telemetry", "error", err)
 		}
 	}()
 
-	if err := server.Start(ctx); err != nil {
-		slog.Error("failed to start server", "error", err)
+	// Start both servers concurrently. If one fails, the shared context is
+	// cancelled, which triggers a graceful shutdown of the other.
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		return servers.REST.Start(gCtx)
+	})
+
+	g.Go(func() error {
+		return servers.GRPC.Start(gCtx)
+	})
+
+	if err := g.Wait(); err \!= nil {
+		slog.Error("server error", "error", err)
+		os.Exit(1)
 	}
 }
