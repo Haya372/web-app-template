@@ -19,25 +19,24 @@ func main() {
 }
 
 func run() error {
-	// Initialization uses a plain context; shutdown context is signal-driven.
-	shutdownCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	shutdown, err := telemetry.SetupOTelSDK(context.Background())
+	shutdown, err := telemetry.SetupOTelSDK(ctx)
 	if err != nil {
 		return err
 	}
 
 	defer func() {
-		if err := shutdown(context.Background()); err != nil {
+		if err := shutdown(ctx); err != nil {
 			slog.Error("failed to shutdown telemetry", "error", err)
 		}
 	}()
 
-	server, err := di.InitializeGRPCServer(context.Background())
+	server, err := di.InitializeGRPCServer(ctx)
 	if err != nil {
 		return err
 	}
 
-	return server.Start(shutdownCtx)
+	return server.Start(ctx)
 }
