@@ -75,6 +75,15 @@ generate: generate-db-client generate-proto generate-api
 	go generate ./...
 	$(MAKE) generate-di-container
 
+.PHONY: build-http build-grpc build
+build-http:
+	go build -o bin/http-server ./cmd/http
+
+build-grpc:
+	go build -o bin/grpc-server ./cmd/grpc
+
+build: build-http build-grpc
+
 .PHONY: migrate-local
 migrate-local:
 	psqldef -U postgres -W postgres -h localhost -p $${DB_PORT:-55432} backend --apply < db/schema/schema.sql

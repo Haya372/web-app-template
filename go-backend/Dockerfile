@@ -23,17 +23,30 @@ COPY proto/ /repo/proto/
 COPY buf.gen.yaml /repo/
 
 RUN make generate
-RUN go build -o server ./cmd/server/main.go
+RUN go build -o http-server ./cmd/http
+RUN go build -o grpc-server ./cmd/grpc
 
-FROM alpine:3.21
+FROM alpine:3.21 AS runtime-base
 
 RUN apk --no-cache add ca-certificates tzdata && \
     addgroup -S appuser && adduser -S appuser -G appuser
 
+FROM runtime-base AS runtime-http
+
 WORKDIR /app
-COPY --from=builder --chown=appuser:appuser /repo/go-backend/server .
+COPY --from=builder --chown=appuser:appuser /repo/go-backend/http-server .
 
 USER appuser
 
 EXPOSE 8080
-CMD ["./server"]
+CMD ["./http-server"]
+
+FROM runtime-base AS runtime-grpc
+
+WORKDIR /app
+COPY --from=builder --chown=appuser:appuser /repo/go-backend/grpc-server .
+
+USER appuser
+
+EXPOSE 8081
+CMD ["./grpc-server"]
