@@ -19,16 +19,6 @@ import (
 	"github.com/google/wire"
 )
 
-// Servers holds both the REST and Connect-RPC servers.
-type Servers struct {
-	REST *http.Server
-	GRPC *connectrpc.Server
-}
-
-func newServers(rest *http.Server, grpc *connectrpc.Server) *Servers {
-	return &Servers{REST: rest, GRPC: grpc}
-}
-
 var repositorySet = wire.NewSet(
 	repository.NewUserRepository,
 	repository.NewPostRepository,
@@ -71,7 +61,7 @@ var connectRPCSet = wire.NewSet(
 	connectrpc.NewServer,
 )
 
-// InitializeServer initialises the REST server only (preserved for backward compatibility).
+// InitializeServer initialises the REST server only.
 func InitializeServer(ctx context.Context) (*http.Server, error) {
 	wire.Build(
 		repositorySet,
@@ -85,18 +75,10 @@ func InitializeServer(ctx context.Context) (*http.Server, error) {
 	return nil, nil
 }
 
-// InitializeServers initialises both the REST and Connect-RPC servers.
-func InitializeServers(ctx context.Context) (*Servers, error) {
-	wire.Build(
-		repositorySet,
-		authSet,
-		usecaseSet,
-		querySet,
-		dbSet,
-		httpSet,
-		connectRPCSet,
-		newServers,
-	)
+// InitializeGRPCServer initialises the Connect-RPC server only.
+// HealthHandler has no DB dependencies so only connectRPCSet is required.
+func InitializeGRPCServer(ctx context.Context) (*connectrpc.Server, error) {
+	wire.Build(connectRPCSet)
 
 	return nil, nil
 }

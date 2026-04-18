@@ -7,8 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/di"
 	"github.com/Haya372/web-app-template/go-backend/internal/infrastructure/telemetry"
 )
@@ -21,14 +19,7 @@ func main() {
 }
 
 func run() error {
-	ctx := context.Background()
-
-	servers, err := di.InitializeServers(ctx)
-	if err != nil {
-		return err
-	}
-
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	shutdown, err := telemetry.SetupOTelSDK(ctx)
@@ -42,17 +33,10 @@ func run() error {
 		}
 	}()
 
-	// Start both servers concurrently. If one fails, the shared context is
-	// cancelled, which triggers a graceful shutdown of the other.
-	g, gCtx := errgroup.WithContext(ctx)
+	server, err := di.InitializeServer(ctx)
+	if err != nil {
+		return err
+	}
 
-	g.Go(func() error {
-		return servers.REST.Start(gCtx)
-	})
-
-	g.Go(func() error {
-		return servers.GRPC.Start(gCtx)
-	})
-
-	return g.Wait()
+	return server.Start(ctx)
 }
