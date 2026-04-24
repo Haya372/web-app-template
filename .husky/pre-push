@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# シークレット漏洩チェック（exit code 1 でプッシュをブロック）
-# --staged: ステージ済みファイルを含めてスキャン
-# --redact: ターミナルへのシークレット本文の出力を抑制
-# --verbose: 検出時に該当ファイル・行・ルール名を表示
-# .gitleaksignore が存在する場合、fingerprint に一致した finding は自動的に無視される
-gitleaks protect --staged --redact --verbose
+# Scan commits not yet on any remote for leaked secrets and block the push on detection.
+# --not --remotes: limits git log to local-only commits (new branch or new commits)
+# --redact:        suppress secret values in terminal output
+# --verbose:       show file, line, and rule name on detection
+# .gitleaksignore: findings matching a known fingerprint are silently skipped
+gitleaks git --log-opts="--not --remotes" --redact --verbose --config .gitleaks.toml
