@@ -8,6 +8,7 @@ See `go-backend/CLAUDE.md`.
 
 ```
 Agent: code-implementer
+Model: sonnet
 Prompt: "Implement the minimum code to make the failing tests pass.
 Task: <task subject and description>. Issue context: <issue body excerpt>.
 Follow the repository architecture in go-backend/CLAUDE.md. Tests are
@@ -28,6 +29,7 @@ make test-integration
 
 ```
 Agent: code-reviewer
+Model: sonnet
 Prompt: "Review the implementation for this task. Check: correctness,
 security (OWASP top 10), performance (N+1, timeouts), readability, adherence
 to repository guidelines in docs/guidelines/backend-coding-guideline.md, and

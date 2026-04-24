@@ -8,6 +8,7 @@ See `apps/react-frontend/CLAUDE.md` and `docs/guidelines/frontend-coding-guideli
 
 ```
 Agent: code-implementer
+Model: sonnet
 Prompt: "Implement the minimum code to make the failing tests pass.
 Task: <task subject and description>. Issue context: <issue body excerpt>.
 Follow the repository architecture in apps/react-frontend/CLAUDE.md and
@@ -34,6 +35,7 @@ pnpm test:agent src/features/auth/pages/LoginPage.test.tsx -t "renders an email 
 
 ```
 Agent: code-reviewer
+Model: sonnet
 Prompt: "Review the implementation for this task. Check: correctness,
 security (XSS, CSRF), accessibility, performance, readability, adherence
 to repository guidelines in docs/guidelines/frontend-coding-guideline.md, and

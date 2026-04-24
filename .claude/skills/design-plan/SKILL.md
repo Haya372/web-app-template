@@ -51,6 +51,7 @@ Issueの本文が空またはあいまいすぎる場合は止まってユーザ
 
 ```
 Agent: codebase-explorer (subagent_type=codebase-explorer)
+Model: haiku
 Prompt: "以下の目的のために既存のコードベースを調査してください。
 目的: <Issueの概要>
 
@@ -87,6 +88,7 @@ Issueの内容・対象の層に応じて不要なセクションは省略して
 
 ```
 Agent: design-reviewer
+Model: opus
 Prompt: "以下の実装設計書をレビューしてください。
 
 Issue: #<ISSUE_NUMBER> — <Issueタイトル>
