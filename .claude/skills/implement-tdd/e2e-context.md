@@ -12,6 +12,7 @@ See `docs/guidelines/e2e-testing.md`.
 
 ```
 Agent: test-writer
+Model: sonnet
 Prompt: "Write an E2E test spec for the following feature using Playwright.
 Place it in e2e/tests/<feature>.spec.ts. Follow the conventions in
 docs/guidelines/e2e-testing.md:
