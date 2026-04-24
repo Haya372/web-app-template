@@ -1,0 +1,30 @@
+name: Secret Scan
+
+on:
+  pull_request:
+    # gitleaks は全ファイルをスキャン対象とするため paths を指定しない
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: gitleaks-scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write # gitleaks-action が PR に check run を報告するために必要
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0 # PR の全コミット履歴をスキャンするために必要
+          persist-credentials: false
+
+      - name: Scan for secrets with gitleaks
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # PR check run の報告に必要
+        with:
+          config-path: .gitleaks.toml
+          verbose: true
