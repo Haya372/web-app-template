@@ -1,0 +1,10 @@
+# .gitleaksignore
+# gitleaks の false positive を fingerprint 単位で管理するファイル。
+#
+# 追加方法（詳細は docs/guidelines/secret-detection.md を参照）:
+#   1. gitleaks detect --report-format json --report-path /tmp/report.json
+#   2. cat /tmp/report.json | jq '.[].Fingerprint' で fingerprint を確認
+#   3. このファイルに追記し、refs PR #xxx 形式でコメントを付ける
+#   4. PR を作成してレビューを受ける（security review として扱う）
+#
+# フォーマット: <fingerprint>  # refs PR #<番号>
