@@ -28,13 +28,6 @@ gitleaks version      # バージョンが表示されること
 - シークレット検出時: プッシュがブロックされ、ファイル・行番号・ルール名が表示される
 - 検出なし: プッシュが通常通り完了する
 
-### CI（GitHub Actions）
-
-PR の作成・更新時に `gitleaks detect` が自動実行される。
-
-- シークレット検出時: `gitleaks-scan` ジョブが FAIL し、PR の check run に結果が表示される
-- 検出なし: ジョブが PASS する
-
 ## false positive（誤検出）の対応手順
 
 誤検出が発生した場合は `.gitleaksignore` に fingerprint を追記して PR を作成する。
