@@ -42,6 +42,19 @@
     ]
   },
   "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Review this conversation. If the task involved significant failures worth documenting—repeated failed attempts, unexpected errors, or approaches that did not work before reaching a solution—create a GitHub Issue to capture the lessons learned. Run: gh issue create --title 'Lessons Learned: [brief description]' --body '[markdown body: what was attempted, what failed and why, how it was resolved]'. Only create an issue for genuine non-trivial failures. Do NOT create one for clean first-attempt successes or simple Q&A sessions.",
+            "timeout": 120,
+            "model": "claude-haiku-4-5-20251001",
+            "statusMessage": "Reviewing task for lessons learned..."
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Skill",
@@ -59,7 +72,7 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
-    "allowUnsandboxedCommands": true,
+    "allowUnsandboxedCommands": false,
     "excludedCommands": ["git", "gh", "docker", "pnpm", "mise", "make"],
     "network": {
       "allowedDomains": [
