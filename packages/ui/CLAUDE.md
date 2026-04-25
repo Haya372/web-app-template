@@ -8,7 +8,9 @@ Run from `packages/ui/`:
 
 ```bash
 # Lint (read-only)
-pnpm lint         # biome lint
+pnpm lint         # biome + eslint (react-hooks, jsx-a11y, import-x, unicorn)
+pnpm lint:biome   # biome only
+pnpm lint:eslint  # eslint only
 
 # Format and auto-fix
 pnpm check        # biome check --write

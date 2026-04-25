@@ -92,6 +92,7 @@ func TestServer_Start_AlreadyCancelledContext(t *testing.T) {
 // conflict on macOS.
 func TestServer_Start_PortAlreadyBound(t *testing.T) {
 	// Bind on all interfaces with an OS-assigned random port.
+	// nosemgrep: go.lang.security.audit.net.bind_all.avoid-bind-to-all-interfaces
 	ln, err := net.Listen("tcp", ":0") //nolint:gosec // test-only ephemeral listener
 	require.NoError(t, err)
 

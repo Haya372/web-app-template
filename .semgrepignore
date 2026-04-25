@@ -1,0 +1,18 @@
+# Dependency directories
+node_modules/
+vendor/
+dist/
+storybook-static/
+
+# Generated files (glob pattern)
+*.gen.ts
+*.gen.go
+
+# Backend generated paths
+go-backend/internal/infrastructure/sqlc/
+go-backend/internal/infrastructure/di/wire_gen.go
+go-backend/internal/infrastructure/grpc/gen/
+go-backend/test/integration/wire_gen.go
+
+# Frontend generated
+apps/react-frontend/src/generated/
