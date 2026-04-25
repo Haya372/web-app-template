@@ -5,6 +5,7 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - "packages/ui/**"
+      - "eslint.config.base.mjs"
       - ".github/workflows/ci-packages-ui.yml"
       - ".github/actions/setup-pnpm-workspace/**"
       - "!**.md"
