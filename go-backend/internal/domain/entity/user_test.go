@@ -19,6 +19,8 @@ func TestUser_HappyCase(t *testing.T) {
 		password  string
 		name      string
 		createdAt time.Time
+		wantEmail string
+		wantName  string
 	}{
 		{
 			testName:  "Success to create User",
@@ -26,6 +28,26 @@ func TestUser_HappyCase(t *testing.T) {
 			password:  "password",
 			name:      "Test",
 			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+			wantEmail: "test@example.com",
+			wantName:  "Test",
+		},
+		{
+			testName:  "email domain is normalised to lowercase",
+			email:     "Test@EXAMPLE.COM",
+			password:  "password",
+			name:      "Test",
+			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+			wantEmail: "Test@example.com",
+			wantName:  "Test",
+		},
+		{
+			testName:  "name with surrounding whitespace is trimmed",
+			email:     "test@example.com",
+			password:  "password",
+			name:      " Alice ",
+			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+			wantEmail: "test@example.com",
+			wantName:  "Alice",
 		},
 	}
 
@@ -34,9 +56,9 @@ func TestUser_HappyCase(t *testing.T) {
 			user, err := entity.NewUser(tt.email, tt.password, tt.name, tt.createdAt)
 
 			require.NoError(t, err)
-			assert.Equal(t, user.Name(), tt.name)
-			assert.Equal(t, user.Email(), tt.email)
-			assert.Equal(t, user.CreatedAt(), tt.createdAt)
+			assert.Equal(t, tt.wantName, user.Name())
+			assert.Equal(t, tt.wantEmail, user.Email())
+			assert.Equal(t, tt.createdAt, user.CreatedAt())
 			assert.Equal(t, vo.UserStatusActive, user.Status())
 
 			err = bcrypt.CompareHashAndPassword(user.PasswordHash(), []byte(tt.password))
@@ -65,6 +87,27 @@ func TestUser_FailureCase(t *testing.T) {
 			email:     "test@example.com",
 			password:  "password",
 			name:      "",
+			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			testName:  "whitespace-only name is rejected",
+			email:     "test@example.com",
+			password:  "password",
+			name:      "   ",
+			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			testName:  "invalid email format is rejected",
+			email:     "not-an-email",
+			password:  "password",
+			name:      "Test",
+			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			testName:  "empty email is rejected",
+			email:     "",
+			password:  "password",
+			name:      "Test",
 			createdAt: time.Date(2026, 1, 18, 0, 0, 0, 0, time.UTC),
 		},
 	}
