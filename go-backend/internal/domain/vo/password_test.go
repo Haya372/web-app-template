@@ -1,6 +1,7 @@
 package vo_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Haya372/web-app-template/go-backend/internal/domain/vo"
@@ -14,8 +15,16 @@ func TestPassword_HappyCase(t *testing.T) {
 		input string
 	}{
 		{
-			name:  "correct password",
-			input: "password",
+			name:  "boundary: exactly 8 chars (minimum)",
+			input: "pass1234",
+		},
+		{
+			name:  "boundary: exactly 72 bytes (maximum ASCII)",
+			input: strings.Repeat("a", 72),
+		},
+		{
+			name:  "boundary: 8 multi-byte runes satisfies minimum",
+			input: strings.Repeat("あ", 8), // 8 runes = 24 bytes, passes rune-based min check
 		},
 	}
 
@@ -38,6 +47,14 @@ func TestPassword_FailureCase(t *testing.T) {
 			name:  "password length under 8 characters",
 			input: "passwor",
 		},
+		{
+			name:  "too long: 73 bytes exceeds maximum",
+			input: strings.Repeat("a", 73),
+		},
+		{
+			name:  "too long: multi-byte input exceeds 72 bytes even if fewer runes",
+			input: strings.Repeat("あ", 25), // 25 runes = 75 bytes, exceeds byte limit
+		},
 	}
 
 	for _, tt := range tests {
@@ -46,6 +63,26 @@ func TestPassword_FailureCase(t *testing.T) {
 
 			require.Error(t, err)
 			assert.Nil(t, password)
+
+			var voErr vo.Error
+			require.ErrorAs(t, err, &voErr)
+			assert.Equal(t, vo.ValidationErrorCode, voErr.Code())
 		})
 	}
+}
+
+func TestPassword_MaxLengthErrorDetails(t *testing.T) {
+	_, err := vo.NewPassword(strings.Repeat("a", 73))
+
+	require.Error(t, err)
+
+	var voErr vo.Error
+	require.ErrorAs(t, err, &voErr)
+	assert.Equal(t, map[string]any{"max_length": 72}, voErr.Details())
+}
+
+func TestPassword_String(t *testing.T) {
+	password, err := vo.NewPassword("password")
+	require.NoError(t, err)
+	assert.Equal(t, "[REDACTED]", password.String())
 }
