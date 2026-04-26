@@ -10,6 +10,9 @@ permissions:
 
 jobs:
   semgrep:
+    # Disabled: Semgrep fetches remote rulesets (p/golang, p/typescript, etc.) on each run,
+    # which poses a risk of unintended external data transmission.
+    if: false
     name: semgrep-sast
     runs-on: ubuntu-latest
     container:
