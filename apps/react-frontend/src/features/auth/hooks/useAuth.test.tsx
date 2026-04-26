@@ -151,9 +151,9 @@ describe("useAuth — inside AuthProvider", () => {
 
 describe("useAuth — outside AuthProvider", () => {
 	it("throws 'useAuth must be used within AuthProvider' when called without a provider", async () => {
-		// `thrown` is defined inside the test so BadComponent closes over it,
-		// which prevents unicorn/consistent-function-scoping from flagging it.
-		const thrown: { error: Error | undefined } = { error: undefined };
+		// `onError` is a spy so BadComponent can report the caught error without
+		// mutating a closed-over variable (react-hooks/immutability).
+		const onError = vi.fn<(error: Error) => void>();
 
 		function BadComponent(): React.ReactElement {
 			try {
@@ -161,7 +161,7 @@ describe("useAuth — outside AuthProvider", () => {
 				useAuth();
 			} catch (error) {
 				if (error instanceof Error) {
-					thrown.error = error;
+					onError(error);
 				}
 			}
 			return React.createElement("span", null, "bad");
@@ -183,8 +183,9 @@ describe("useAuth — outside AuthProvider", () => {
 
 		console.error = originalConsoleError;
 
-		expect(thrown.error).toBeInstanceOf(Error);
-		expect(thrown.error?.message).toBe(
+		expect(onError).toHaveBeenCalledOnce();
+		expect(onError.mock.calls[0][0]).toBeInstanceOf(Error);
+		expect(onError.mock.calls[0][0].message).toBe(
 			"useAuth must be used within AuthProvider",
 		);
 	});
