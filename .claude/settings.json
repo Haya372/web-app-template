@@ -47,10 +47,10 @@
         "hooks": [
           {
             "type": "agent",
-            "prompt": "Review this conversation. If the task involved significant failures worth documenting—repeated failed attempts, unexpected errors, or approaches that did not work before reaching a solution—create a GitHub Issue to capture the lessons learned. Run: gh issue create --title 'Lessons Learned: [brief description]' --body '[markdown body: what was attempted, what failed and why, how it was resolved]'. Only create an issue for genuine non-trivial failures. Do NOT create one for clean first-attempt successes or simple Q&A sessions.",
+            "prompt": "このセッションの会話を日本語でレビューしてください。繰り返しの失敗・予期せぬエラー・解決前に機能しなかったアプローチなど、記録に値する重大な失敗があった場合のみ、以下の手順で親Issueに追記します。単純な一発成功やQ&Aセッションは対象外です。\n\n手順:\n1. `gh issue list --search 'Lessons Learned まとめ' --state open --json number,title` で親Issueを検索する。\n2. 親Issueが存在しない場合: `gh issue create --title 'Lessons Learned まとめ'` で作成し、以下のbodyを設定する:\n```\n## Claude Code セッション教訓一覧\n\n| 状態 | 意味 |\n|------|------|\n| 🔴 `- [ ]` | 未対応 |\n| 🟡 `- [ ]` | 対応策発見済み（docs/rules/skillへの反映が未完了） |\n| 🟢 `- [x]` | docs・rules・skillに反映して再発予防済み |\n\n---\n\n```\n3. 親Issueの本文を取得: `gh issue view <number> --json body -q .body`\n4. 以下の形式で新しい🔴（未対応）項目を本文末尾に追加し、`gh issue edit <number> --body \"<更新された本文>\"` で更新する。\n\nチェックボックスの形式（新規追加は必ず🔴・未チェック）:\n- [ ] 🔴 **[YYYY-MM-DD] 教訓タイトル** - 何を試みたか、何が失敗したか、どう解決したか（簡潔に1〜2文）",
             "timeout": 120,
             "model": "claude-haiku-4-5-20251001",
-            "statusMessage": "Reviewing task for lessons learned..."
+            "statusMessage": "セッションを教訓として記録中..."
           }
         ]
       }
