@@ -11,10 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var (
-	errIllegalName = errors.New("illegal name")
-)
-
 type User interface {
 	ID() uuid.UUID
 	Email() string
@@ -83,11 +79,15 @@ func NewUser(email, rawPassword, name string, createdAt time.Time) (User, error)
 		return nil, err
 	}
 
-	if len(name) == 0 {
-		return nil, vo.NewValidationError("name is required", nil, errIllegalName)
+	e, err := vo.NewEmail(email)
+	if err != nil {
+		return nil, err
 	}
 
-	// TODO: implement email validation
+	n, err := vo.NewName(name)
+	if err != nil {
+		return nil, err
+	}
 
 	password, err := vo.NewPassword(rawPassword)
 	if err != nil {
@@ -101,9 +101,9 @@ func NewUser(email, rawPassword, name string, createdAt time.Time) (User, error)
 
 	return &userImpl{
 		id:           id,
-		email:        email,
+		email:        e.String(),
 		passwordHash: passwordHash,
-		name:         name,
+		name:         n.String(),
 		createdAt:    createdAt,
 		status:       vo.UserStatusActive,
 	}, nil

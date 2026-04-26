@@ -23,8 +23,8 @@ var (
 )
 
 type listPostsUseCaseImpl struct {
-	tracer          trace.Tracer
-	logger          common.Logger
+	tracer           trace.Tracer
+	logger           common.Logger
 	postQueryService PostQueryService
 }
 
