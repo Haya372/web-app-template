@@ -17,12 +17,12 @@ already written — make them green."
 
 Run tests:
 ```bash
-make test-unit
+cd go-backend && go test ./...
 ```
 
 If integration paths were changed:
 ```bash
-make test-integration
+cd go-backend && go test ./... -tags=integration
 ```
 
 ## Review prompt (Refactor)
@@ -42,18 +42,18 @@ Design constraints: <ADR references and architectural constraints>"
 ## Quality gate
 
 ```bash
-make fmt && make lint && make test-unit
+cd go-backend && golangci-lint run -c .golangci.toml --fix && golangci-lint run -c .golangci.toml && go test ./...
 ```
 
 If integration paths were changed:
 ```bash
-make test-integration
+cd go-backend && go test ./... -tags=integration
 ```
 
 ## Coverage check
 
 ```bash
-make test-coverage
+cd go-backend && go test ./... -tags=integration -coverprofile=coverage.out && grep -F -v -f .coverageignore coverage.out > coverage.tmp && mv coverage.tmp coverage.out
 ```
 
 If any package touched by this PR shows decreased coverage compared to `main`, add tests before proceeding.

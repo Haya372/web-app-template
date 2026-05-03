@@ -56,6 +56,11 @@
       }
     ]
   },
+  "env": {
+    "GOCACHE": "/tmp/claude/gocache",
+    "SEMGREP_LOG_FILE": "/tmp/claude/semgrep.log",
+    "SEMGREP_VERSION_CACHE_PATH": "/tmp/claude/semgrep_cache"
+  },
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
