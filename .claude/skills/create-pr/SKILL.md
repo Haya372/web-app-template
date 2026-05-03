@@ -34,16 +34,16 @@ Infer the following from the commit history and diff:
 
 ### 3. Check test evidence
 
-Identify which `make` targets are relevant to the changes:
+Identify which commands are relevant to the changes:
 
-| Changed area | Required targets |
+| Changed area | Required commands |
 |---|---|
-| Go source code | `make fmt && make lint && make test-unit` |
-| Integration paths | `make test-integration` |
-| DB schema / queries | `make generate && make migrate-local` |
-| Frontend (React) | `pnpm lint && pnpm test` (run from `apps/react-frontend/`) |
+| Go source code | `cd go-backend && golangci-lint run -c .golangci.toml --fix && golangci-lint run -c .golangci.toml && go test ./...` |
+| Integration paths | `cd go-backend && go test ./... -tags=integration` |
+| DB schema / queries | `cd go-backend && make generate && make migrate-local` |
+| Frontend (React) | `cd apps/react-frontend && pnpm lint && pnpm test` |
 
-Run the relevant targets and report the results. If a target fails, fix the issue before creating the PR. Do **not** prompt the user for permission to run tests — execute them autonomously.
+Run the relevant commands and report the results. If a command fails, fix the issue before creating the PR. Do **not** prompt the user for permission to run tests — execute them autonomously.
 
 ### 4. Handle breaking API changes
 
