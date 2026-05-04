@@ -1,22 +1,11 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Commands
 
 Run from `packages/ui/`:
 
 ```bash
-# Lint (read-only)
-pnpm lint         # biome + eslint (react-hooks, jsx-a11y, import-x, unicorn)
-pnpm lint:biome   # biome only
-pnpm lint:eslint  # eslint only
+# Lint
+pnpm fmt        # biome + eslint (react-hooks, jsx-a11y, import-x, unicorn)
 
-# Format and auto-fix
-pnpm check        # biome check --write
-
-# Storybook (component explorer)
-pnpm storybook    # dev server at http://localhost:6006
 pnpm build-storybook  # static build
 ```
 
@@ -33,7 +22,6 @@ src/
 
 - Package name: `@repo/ui`
 - Apps import from `@repo/ui` (e.g. `import { Button } from "@repo/ui"`)
-- Components are built on **Radix UI** primitives + **Tailwind CSS v4** + **class-variance-authority (CVA)**
 
 ## Component Design Rules
 
@@ -97,4 +85,3 @@ Use `satisfies Meta<typeof Component>` for type-safe story metadata.
 - Biome for formatting (tabs, double quotes) and linting; always pass `pnpm lint`
 - Named exports only (no default exports except story `default meta`)
 - `interface` for props that extend HTML element props; `type` for union / CVA variant intersection types
-- `any` is forbidden; `as` casts are strongly discouraged — `as any` is unconditionally forbidden

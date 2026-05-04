@@ -1,35 +1,20 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Commands
 
 Run from `go-backend/`:
 
 ```bash
-# Code generation (sqlc + wire + go generate)
+# Code generation
+# When `make` is unavailable, see `go-backend/Makefile` for full sequence
 make generate
 
-# Format and lint
-make fmt
-make lint
+golangci-lint run -c .golangci.toml --fix # Format and lint
 
 # Tests
-make test-unit          # go test ./... (no DB needed)
-make test-integration   # requires Postgres container running
-make test-coverage      # integration tests + coverage profile
+go test ./...          # go test ./... (no DB needed)
+go test ./... -tags=integration   # requires Postgres container running
+# integration tests + coverage profile
+go test ./... -tags=integration -coverprofile=coverage.out && grep -F -v -f .coverageignore coverage.out > coverage.tmp && mv coverage.tmp coverage.out
 ```
-
-### make target equivalents (use when `make` is unavailable)
-
-| make target | Direct command |
-|---|---|
-| `make fmt` | `golangci-lint run -c .golangci.toml --fix` |
-| `make lint` | `golangci-lint run -c .golangci.toml` |
-| `make test-unit` | `go test ./...` |
-| `make test-integration` | `go test ./... -tags=integration` |
-| `make test-coverage` | `go test ./... -tags=integration -coverprofile=coverage.out && grep -F -v -f .coverageignore coverage.out > coverage.tmp && mv coverage.tmp coverage.out` |
-| `make generate` | See `go-backend/Makefile` for full sequence (sqlc → buf → oapi-codegen → mockgen → wire) |
 
 ## Design Principles
 
@@ -60,26 +45,22 @@ infrastructure (adapters) → usecase → domain
 
 **Key constraints (enforced by ADRs):**
 
-- Echo types must not leak into `usecase` or `domain` layers (ADR-0004)
-- Public API routes: `/v{major}/resource-names` with lowercase kebab-case plural nouns (ADR-0005)
-- HTTP error responses: `application/problem+json` with stable `type`/`title`/`status` fields; no internal diagnostics in public payloads (ADR-0006)
-- Transactions start in `usecase` via `TransactionManager.Do`, propagate via `context`; nested `TransactionManager.Do` calls are forbidden (ADR-0007)
-- `wire` is used only at the composition root (`cmd/`)
-- **depguard enforces import boundaries at lint time** — violations in `internal/domain` or `internal/usecase` cause `make lint` to fail (see `.golangci.toml` for the full deny list)
+- Public API routes: `/v{major}/resource-names` with lowercase kebab-case plural nouns ([ADR-0005](../docs/decisions/ADR-0005-API-VERSIONING-AND-ROUTE-DESIGN-FOR-GO-BACKEND.md))
+- HTTP error responses: `application/problem+json` with stable `type`/`title`/`status` fields; no internal diagnostics in public payloads ([ADR-0006](../docs/decisions/ADR-0006-ERROR-CONTRACT-AND-MAPPING-POLICY-FOR-GO-BACKEND.md))
+- Transactions start in `usecase` via `TransactionManager.Do`, propagate via `context`; nested `TransactionManager.Do` calls are forbidden ([ADR-0007](../docs/decisions/ADR-0007-TRANSACTION-BOUNDARY-AND-PROPAGATION-FOR-GO-BACKEND.md))
 
 **Code generation:**
 
 - `db/schema/schema.sql` — DDL managed by psqldef
 - `db/query/` — sqlc query inputs; generated client lives under `internal/` (git-ignored)
-- Run `make generate` after schema or query changes; commit schema/query files together with generated output
+- Run `make generate` after schema or query changes
 
 ## Implementation Rules
 
-See [@docs/guidelines/backend-coding-guideline.md](../docs/guidelines/backend-coding-guideline.md) for detailed patterns with code examples (immutability, transaction boundaries, port interfaces, error handling).
+See [@docs/guidelines/backend-coding-guideline.md](../docs/guidelines/backend-coding-guideline.md) for detailed patterns with code examples.
 
 ## Coding Style
 
-- Apply `go fmt` / `goimports` (optionally `gofumpt`) on save; always pass `golangci-lint`
 - Wrap errors with `%w`; use `errors.Is` / `errors.As` for inspection; map error codes to HTTP responses in one place
 - Use Value Objects to keep input validation and type safety inside the domain layer
 - Read config and secrets from environment variables or a Secrets Manager — never hardcode
@@ -94,12 +75,9 @@ See [@docs/guidelines/backend-coding-guideline.md](../docs/guidelines/backend-co
 
 ## Observability
 
-- Every server must emit structured logs with a trace ID for per-request tracing
 - Use OpenTelemetry SDK; initialise Tracer / Logger / Metrics at the composition root (`cmd/`)
 - Expose key metrics: latency, error rate, throughput, DB query count; define SLO/SLA
 
 ## Security
 
-- Validate all input before passing to the domain layer; guard against SQL/command injection and CSRF
-- Use prepared statements or official SDKs for DB and external API access; store credentials in a Secret Store
-- Monitor dependency CVEs regularly; automate updates with Renovate/Dependabot
+See [backend-security-guideline.md](../docs/guidelines/backend-security-guideline.md).
