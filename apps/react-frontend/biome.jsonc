@@ -15,15 +15,21 @@
 	"linter": {
 		"rules": {
 			"style": {
+				// Use proper type narrowing (type guards / zod) instead of non-null assertion (x!)
 				"noNonNullAssertion": "error",
+				// Use import.meta.env in React apps, not process.env
 				"noProcessEnv": "error"
 			},
 			"suspicious": {
+				// Use structured logger; console.log leaks to production bundles
 				"noConsole": "warn",
+				// Circular imports cause module loading failures and are hard to debug
 				"noImportCycles": "error"
 			},
 			"nursery": {
+				// All async operations must be awaited or explicitly handled (.catch / void)
 				"noFloatingPromises": "error",
+				// Prevents passing async functions where sync callbacks are expected (e.g., useEffect)
 				"noMisusedPromises": "error"
 			}
 		}

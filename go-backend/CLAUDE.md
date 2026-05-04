@@ -4,27 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-Run from the **repository root** for worktree port setup:
-
-```bash
-# Assign a unique port offset to this worktree (run once per new worktree)
-mise run ports:init
-
-# Show all registered worktree port assignments
-mise run ports:list
-
-# Remove this worktree's registration before deleting it
-mise run ports:clean
-```
-
-See `docs/guidelines/worktree-parallel-dev.md` for details.
-
 Run from `go-backend/`:
 
 ```bash
-# One-time setup: installs sqlc, mockgen, wire
-make setup
-
 # Code generation (sqlc + wire + go generate)
 make generate
 
@@ -36,11 +18,18 @@ make lint
 make test-unit          # go test ./... (no DB needed)
 make test-integration   # requires Postgres container running
 make test-coverage      # integration tests + coverage profile
-
-# Database
-docker compose -f docker-compose.yml up -d db   # start Postgres on :55432
-make migrate-local                               # apply schema.sql via psqldef + seed data
 ```
+
+### make target equivalents (use when `make` is unavailable)
+
+| make target | Direct command |
+|---|---|
+| `make fmt` | `golangci-lint run -c .golangci.toml --fix` |
+| `make lint` | `golangci-lint run -c .golangci.toml` |
+| `make test-unit` | `go test ./...` |
+| `make test-integration` | `go test ./... -tags=integration` |
+| `make test-coverage` | `go test ./... -tags=integration -coverprofile=coverage.out && grep -F -v -f .coverageignore coverage.out > coverage.tmp && mv coverage.tmp coverage.out` |
+| `make generate` | See `go-backend/Makefile` for full sequence (sqlc → buf → oapi-codegen → mockgen → wire) |
 
 ## Design Principles
 
@@ -76,9 +65,7 @@ infrastructure (adapters) → usecase → domain
 - HTTP error responses: `application/problem+json` with stable `type`/`title`/`status` fields; no internal diagnostics in public payloads (ADR-0006)
 - Transactions start in `usecase` via `TransactionManager.Do`, propagate via `context`; nested `TransactionManager.Do` calls are forbidden (ADR-0007)
 - `wire` is used only at the composition root (`cmd/`)
-- **depguard enforces import boundaries at lint time** — violations in `internal/domain` or `internal/usecase` cause `make lint` to fail:
-  - `internal/domain/**` must not import `echo`, `wire`, `pgx`/`pgconn`/`pgtype`, `database/sql`, `internal/usecase`, or `internal/infrastructure`
-  - `internal/usecase/**` must not import `echo`, `wire`, `pgx`/`pgconn`/`pgtype`, `database/sql`, or `internal/infrastructure`
+- **depguard enforces import boundaries at lint time** — violations in `internal/domain` or `internal/usecase` cause `make lint` to fail (see `.golangci.toml` for the full deny list)
 
 **Code generation:**
 
@@ -88,58 +75,7 @@ infrastructure (adapters) → usecase → domain
 
 ## Implementation Rules
 
-**Domain layer — immutability is mandatory:**
-
-```go
-// good: state-change returns a new instance
-func (u User) UpdateStatus(s Status) (User, error) { ... }
-
-// good: VO validates at construction, no external dependencies
-func NewPassword(raw string) (*Password, error) {
-    if len(raw) < 8 {
-        return nil, ErrTooShort
-    }
-    pwd := Password(raw)
-    return &pwd, nil
-}
-
-// bad: domain object issues SQL or knows HTTP types
-func (u *User) Save(ctx context.Context, db *sql.DB) error { ... }
-```
-
-**UseCase layer — orchestrate via interfaces, own transaction boundary:**
-
-```go
-// good
-func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*SignupOutput, error) {
-    return uc.txManager.Do(ctx, func(ctx context.Context) error {
-        user, err := entity.NewUser(...)
-        if err != nil { return err }
-        _, err = uc.userRepository.Create(ctx, user)
-        return err
-    })
-}
-
-// bad: HTTP types, raw SQL, or multiple responsibilities inside a use case
-func (uc *signupUseCaseImpl) Execute(ctx context.Context, req *echo.Context) error { ... }
-```
-
-**Infrastructure layer — implement ports, contain all side effects:**
-
-```go
-// good: implements the repository port, tracing/logging here
-func (r *userRepositoryImpl) Create(ctx context.Context, user entity.User) (entity.User, error) {
-    return runInTx(ctx, func(q sqlc.Queries) error {
-        return q.CreateUser(ctx, mapToParams(user))
-    })
-}
-
-// bad: global variable, no port interface
-var globalDB *sql.DB
-func SaveUser(ctx context.Context, u *entity.User) error { ... }
-```
-
-Even when schema constraints exist, keep defensive validation when converting DB rows to Value Objects for early detection of unexpected data.
+See [@docs/guidelines/backend-coding-guideline.md](../docs/guidelines/backend-coding-guideline.md) for detailed patterns with code examples (immutability, transaction boundaries, port interfaces, error handling).
 
 ## Coding Style
 
