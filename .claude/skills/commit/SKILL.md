@@ -61,6 +61,8 @@ For each group, apply the format:
 
 **Issue number:** use from `$ARGUMENTS` if provided; otherwise infer from branch name (e.g. `feature/42-auth` → `#42`); omit if unknown.
 
+**Checkpoint prefix:** if `$ARGUMENTS` contains `checkpoint:`, the summary **must** include `checkpoint:` as a prefix (e.g. `feat(go-backend): checkpoint: add user entity`). This allows `git log --grep="checkpoint"` to detect completed tasks when resuming a session.
+
 ### Step 4: Execute commits in order
 
 Execute each commit sequentially without waiting for user approval:
