@@ -10,7 +10,9 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "typecheck": "tsc --noEmit",
-    "format": "biome check --write src/*",
+    "fmt": "run-s fmt:*",
+    "fmt:biome": "biome check --write src",
+    "fmt:eslint": "eslint --fix src",
     "lint": "run-s lint:*",
     "lint:biome": "biome check src",
     "lint:eslint": "eslint src/"
