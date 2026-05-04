@@ -15,17 +15,6 @@ This monorepo contains a Go backend, a React frontend, a shared UI library, and 
 - `docs/guidelines/` — coding guidelines
 - `mise.toml` — pins toolchain versions (see file for details)
 
-See each workspace's `CLAUDE.md` for workspace-specific commands and architecture:
-- `go-backend/CLAUDE.md`
-- `apps/react-frontend/CLAUDE.md`
-- `packages/ui/CLAUDE.md`
-
-## Commit & PR conventions
-
-Format: `<type>(optional-scope): summary (#issue)` — e.g., `feat: add telemetry (#12)`
-
-PR descriptions must include: motivation, test evidence (make targets or equivalent commands run), linked issues, and any ADR/docs updates. Breaking API changes require a note in `docs/operations`.
-
 ## Sandbox environment notes
 
 Claude Code runs in a sandboxed environment. Use these workarounds for known constraints:

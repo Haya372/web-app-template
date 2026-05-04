@@ -75,58 +75,7 @@ infrastructure (adapters) → usecase → domain
 
 ## Implementation Rules
 
-**Domain layer — immutability is mandatory:**
-
-```go
-// good: state-change returns a new instance
-func (u User) UpdateStatus(s Status) (User, error) { ... }
-
-// good: VO validates at construction, no external dependencies
-func NewPassword(raw string) (*Password, error) {
-    if len(raw) < 8 {
-        return nil, ErrTooShort
-    }
-    pwd := Password(raw)
-    return &pwd, nil
-}
-
-// bad: domain object issues SQL or knows HTTP types
-func (u *User) Save(ctx context.Context, db *sql.DB) error { ... }
-```
-
-**UseCase layer — orchestrate via interfaces, own transaction boundary:**
-
-```go
-// good
-func (uc *signupUseCaseImpl) Execute(ctx context.Context, input SignupInput) (*SignupOutput, error) {
-    return uc.txManager.Do(ctx, func(ctx context.Context) error {
-        user, err := entity.NewUser(...)
-        if err != nil { return err }
-        _, err = uc.userRepository.Create(ctx, user)
-        return err
-    })
-}
-
-// bad: HTTP types, raw SQL, or multiple responsibilities inside a use case
-func (uc *signupUseCaseImpl) Execute(ctx context.Context, req *echo.Context) error { ... }
-```
-
-**Infrastructure layer — implement ports, contain all side effects:**
-
-```go
-// good: implements the repository port, tracing/logging here
-func (r *userRepositoryImpl) Create(ctx context.Context, user entity.User) (entity.User, error) {
-    return runInTx(ctx, func(q sqlc.Queries) error {
-        return q.CreateUser(ctx, mapToParams(user))
-    })
-}
-
-// bad: global variable, no port interface
-var globalDB *sql.DB
-func SaveUser(ctx context.Context, u *entity.User) error { ... }
-```
-
-Even when schema constraints exist, keep defensive validation when converting DB rows to Value Objects for early detection of unexpected data.
+See [@docs/guidelines/backend-coding-guideline.md](../docs/guidelines/backend-coding-guideline.md) for detailed patterns with code examples (immutability, transaction boundaries, port interfaces, error handling).
 
 ## Coding Style
 
