@@ -4,27 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-Run from the **repository root** for worktree port setup:
-
-```bash
-# Assign a unique port offset to this worktree (run once per new worktree)
-mise run ports:init
-
-# Show all registered worktree port assignments
-mise run ports:list
-
-# Remove this worktree's registration before deleting it
-mise run ports:clean
-```
-
-See `docs/guidelines/worktree-parallel-dev.md` for details.
-
 Run from `go-backend/`:
 
 ```bash
-# One-time setup: installs sqlc, mockgen, wire
-make setup
-
 # Code generation (sqlc + wire + go generate)
 make generate
 
@@ -36,11 +18,18 @@ make lint
 make test-unit          # go test ./... (no DB needed)
 make test-integration   # requires Postgres container running
 make test-coverage      # integration tests + coverage profile
-
-# Database
-docker compose -f docker-compose.yml up -d db   # start Postgres on :55432
-make migrate-local                               # apply schema.sql via psqldef + seed data
 ```
+
+### make target equivalents (use when `make` is unavailable)
+
+| make target | Direct command |
+|---|---|
+| `make fmt` | `golangci-lint run -c .golangci.toml --fix` |
+| `make lint` | `golangci-lint run -c .golangci.toml` |
+| `make test-unit` | `go test ./...` |
+| `make test-integration` | `go test ./... -tags=integration` |
+| `make test-coverage` | `go test ./... -tags=integration -coverprofile=coverage.out && grep -F -v -f .coverageignore coverage.out > coverage.tmp && mv coverage.tmp coverage.out` |
+| `make generate` | See `go-backend/Makefile` for full sequence (sqlc → buf → oapi-codegen → mockgen → wire) |
 
 ## Design Principles
 
@@ -76,9 +65,7 @@ infrastructure (adapters) → usecase → domain
 - HTTP error responses: `application/problem+json` with stable `type`/`title`/`status` fields; no internal diagnostics in public payloads (ADR-0006)
 - Transactions start in `usecase` via `TransactionManager.Do`, propagate via `context`; nested `TransactionManager.Do` calls are forbidden (ADR-0007)
 - `wire` is used only at the composition root (`cmd/`)
-- **depguard enforces import boundaries at lint time** — violations in `internal/domain` or `internal/usecase` cause `make lint` to fail:
-  - `internal/domain/**` must not import `echo`, `wire`, `pgx`/`pgconn`/`pgtype`, `database/sql`, `internal/usecase`, or `internal/infrastructure`
-  - `internal/usecase/**` must not import `echo`, `wire`, `pgx`/`pgconn`/`pgtype`, `database/sql`, or `internal/infrastructure`
+- **depguard enforces import boundaries at lint time** — violations in `internal/domain` or `internal/usecase` cause `make lint` to fail (see `.golangci.toml` for the full deny list)
 
 **Code generation:**
 

@@ -13,9 +13,7 @@ This monorepo contains a Go backend, a React frontend, a shared UI library, and 
 - `openapi/` — OpenAPI schema (single source of truth for API contract)
 - `docs/decisions/` — Architecture Decision Records (ADRs) that are mandatory implementation constraints
 - `docs/guidelines/` — coding guidelines
-- `mise.toml` — pins toolchain: Go 1.25.6, Node 24.14.0, pnpm 10.30.3, golangci-lint 2.8.0, psqldef 3.9.7
-
-Run `mise install` once per machine before developing.
+- `mise.toml` — pins toolchain versions (see file for details)
 
 See each workspace's `CLAUDE.md` for workspace-specific commands and architecture:
 - `go-backend/CLAUDE.md`
@@ -40,13 +38,4 @@ Claude Code runs in a sandboxed environment. Use these workarounds for known con
 | `make` may fail to find Makefile when CWD ≠ repo root | Use `cd go-backend && make ...` or run direct commands below |
 | Go test cache write denied | `GOCACHE=/tmp/claude/gocache` is set in `.claude/settings.json` |
 
-### make target equivalents (run from `go-backend/`)
-
-| make target | Direct command |
-|---|---|
-| `make fmt` | `golangci-lint run -c .golangci.toml --fix` |
-| `make lint` | `golangci-lint run -c .golangci.toml` |
-| `make test-unit` | `go test ./...` |
-| `make test-integration` | `go test ./... -tags=integration` |
-| `make test-coverage` | `go test ./... -tags=integration -coverprofile=coverage.out && grep -F -v -f .coverageignore coverage.out > coverage.tmp && mv coverage.tmp coverage.out` |
-| `make generate` | See `go-backend/Makefile` for full sequence (sqlc → buf → oapi-codegen → mockgen → wire) |
+See `go-backend/CLAUDE.md` for make target equivalents when `make` is unavailable.
