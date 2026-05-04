@@ -278,6 +278,10 @@ export function UserProfile({ userId }: UserProfileProps) {
 - フックは `use` プレフィックス必須
 - 静的解析ツール（ESLint / Biome 等）のルールは常にパスした状態を維持する
 
+## コメント方針
+
+詳細は [comment-guideline.md](./comment-guideline.md) を参照。
+
 ## 開発コマンドと品質ゲート
 
 各プロジェクトは以下のスクリプトを定義し、`CLAUDE.md` にコマンドを明記する。
@@ -305,10 +309,7 @@ export function UserProfile({ userId }: UserProfileProps) {
 
 ## セキュリティ
 
-- API エンドポイント・トークン・シークレットは環境変数で管理し、リポジトリにハードコードしない
-- ユーザー入力を DOM に挿入する前にサニタイズし、XSS を防止する
-- 外部リンクには `rel="noopener noreferrer"` を付与する
-- 依存ライブラリの CVE を定期的に確認し、Renovate/Dependabot で更新を自動化する
+詳細は [frontend-security-guideline.md](./frontend-security-guideline.md) を参照。
 
 ## 運用フロー
 

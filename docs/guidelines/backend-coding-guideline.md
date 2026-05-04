@@ -82,13 +82,17 @@ func (uc *signupUseCaseImpl) Execute(ctx context.Context, req *echo.Context) err
 ```
 
 ### Infrastructure 層
-- **Good:** Port の実装として副作用を閉じ込め、トレーシング・ロギングを行う
+- **Good:** Port の実装として副作用を閉じ込め、トレーシング・ロギングを行う。トランザクション境界は UseCase の `TransactionManager.Do` が担う。Repository は `DbManager.QueriesFunc` を呼ぶだけでよく、Tx の開始・コミット・ロールバックは一切行わない（`DbManager.QueriesFunc` が context 内の Tx を自動的に利用する）
 
 ```go
 func (r *userRepositoryImpl) Create(ctx context.Context, user entity.User) (entity.User, error) {
-    return runInTx(ctx, func(q sqlc.Queries) error {
-        return q.CreateUser(ctx, mapToParams(user))
+    err := r.dbManager.QueriesFunc(ctx, func(ctx context.Context, queries sqlc.Queries) error {
+        return queries.CreateUser(ctx, mapToParams(user))
     })
+    if err != nil {
+        return nil, err
+    }
+    return user, nil
 }
 ```
 
@@ -209,6 +213,10 @@ func (h *userHandler) Signup(c echo.Context) error {
 - コンフィグ値・秘密情報は環境変数や Secrets Manager から受け取り、リポジトリにハードコードしない
 - ソースコード内のコメント・テストケース名・テスト文言は英語で記述し、国際化や他チーム連携時も一貫して理解できるようにする
 
+## コメント方針
+
+詳細は [comment-guideline.md](./comment-guideline.md) を参照。
+
 ## テストと品質
 - Domain/UseCase 層はユニットテストを必須とし、テーブルドリブンで境界条件・例外系を明示する
 - Infrastructure 層は外部依存（DB, HTTP, Queue 等）との統合を確認するインテグレーションテストを実装する。Testcontainers やローカルモックサーバーで実際の接続を再現する
@@ -221,9 +229,8 @@ func (h *userHandler) Signup(c echo.Context) error {
 - 主要メトリクス（レイテンシ、エラー率、スループット、DB クエリ数など）を可視化し、SLO/SLA を定義して監視する
 
 ## セキュリティ
-- 入力値はドメイン層に渡す前に検証し、SQL/コマンドインジェクションや CSRF など基本的な攻撃ベクトルを防ぐ
-- DB や外部 API へのアクセスはプリペアドステートメントや公式 SDK を用い、資格情報は Secret Store で管理する
-- 依存ライブラリの CVE を定期的に確認し、Renovate/Dependabot などを使って更新を自動化する
+
+詳細は [backend-security-guideline.md](./backend-security-guideline.md) を参照。
 
 ## 運用フロー
 - main ブランチに変更を取り込む際は Pull Request + レビュー + 自動テスト成功を必須とする
