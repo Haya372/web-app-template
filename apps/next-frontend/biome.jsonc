@@ -1,0 +1,32 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.9/schema.json",
+	"extends": ["../../biome.jsonc"],
+	"files": {
+		"includes": [
+			"src/**/*",
+			"next.config.ts",
+			"postcss.config.mjs",
+			"vitest.config.ts",
+			"eslint.config.mjs",
+			"!src/app/globals.css",
+			"!next-env.d.ts",
+			"!.next/**"
+		]
+	},
+	"linter": {
+		"rules": {
+			"style": {
+				"noNonNullAssertion": "error",
+				"noProcessEnv": "error"
+			},
+			"suspicious": {
+				"noConsole": "warn",
+				"noImportCycles": "error"
+			},
+			"nursery": {
+				"noFloatingPromises": "error",
+				"noMisusedPromises": "error"
+			}
+		}
+	}
+}
