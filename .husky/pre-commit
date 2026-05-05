@@ -8,6 +8,11 @@ if git diff --cached --name-only | grep -q "^apps/react-frontend/"; then
   cd "$ROOT"
 fi
 
+if git diff --cached --name-only | grep -q "^apps/next-frontend/"; then
+  cd "$ROOT/apps/next-frontend" && pnpm lint-staged
+  cd "$ROOT"
+fi
+
 if git diff --cached --name-only | grep -q "^packages/ui/"; then
   cd "$ROOT/packages/ui" && pnpm lint-staged
   cd "$ROOT"

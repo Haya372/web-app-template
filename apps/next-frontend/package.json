@@ -16,7 +16,8 @@
     "fmt": "run-s fmt:*",
     "fmt:biome": "biome check --write src",
     "fmt:eslint": "eslint --fix src",
-    "fmt:knip": "knip --fix"
+    "fmt:knip": "knip --fix",
+    "lint-staged": "lint-staged"
   },
   "dependencies": {
     "next": "16.2.4",
@@ -43,10 +44,17 @@
     "eslint-plugin-unicorn": "63.0.0",
     "jsdom": "28.1.0",
     "knip": "5.88.1",
+    "lint-staged": "16.4.0",
     "npm-run-all2": "8.0.4",
     "tailwindcss": "4.2.4",
     "typescript": "6.0.3",
     "typescript-eslint": "8.59.0",
     "vitest": "4.1.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "pnpm eslint --fix",
+      "pnpm biome check --write"
+    ]
   }
 }
