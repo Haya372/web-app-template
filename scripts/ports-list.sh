@@ -12,5 +12,5 @@ fi
 
 echo "Registered worktrees:"
 while IFS='=' read -r path offset; do
-  echo "  [offset=$offset] APP_PORT=$((8080+offset)) VITE_PORT=$((3000+offset)) DB_PORT=$((55432+offset))  $path"
+  echo "  [offset=$offset] APP_PORT=$((8080+offset)) APP_GRPC_PORT=$((8081+offset)) VITE_PORT=$((3000+offset)) NEXT_PORT=$((3001+offset)) DB_PORT=$((55432+offset))  $path"
 done < "$REGISTRY"
