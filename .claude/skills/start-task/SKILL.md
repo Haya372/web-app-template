@@ -39,7 +39,7 @@ git branch --show-current
 1. ブランチ作成をスキップ（Step 3 不要）
 2. Step 1 + Step 2 は通常通り実行する（Issue取得・設計書読み込み）
 3. `git log --oneline --grep="checkpoint"` で完了済みタスクのコミットメッセージを取得する
-   - チェックポイントコミットは implement-tdd の Step 7 で `checkpoint: <task description>` 形式で作成される
+   - チェックポイントコミットは implement-tdd の Step 8 で `checkpoint: <task description>` 形式で作成される
    - 例: `feat(skills): checkpoint: implement field validation for user profile`
 4. Step 2 で取得した設計書の「実装順序」タスクリストと突合する
    - コミットメッセージ中の `checkpoint:` 以降のテキストとタスク説明を照合する

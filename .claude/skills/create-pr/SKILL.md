@@ -31,6 +31,7 @@ Infer the following from the commit history and diff:
 - **Linked issues** — Identify issue numbers from commit messages (e.g., `#12`) or branch name (e.g. `feature/42-foo` → `#42`). If none are found, omit the `Closes` line.
 - **Breaking changes** — Check if any API routes, response shapes, or public interfaces changed. Breaking changes require a note in `docs/operations/`.
 - **ADR/docs updates** — Check whether `docs/decisions/` or `docs/guidelines/` files were added or modified.
+- **Domain knowledge updates** — Check whether `docs/context/domains/` or `docs/context/glossary.md` files were added or modified. If domain concepts, business rules, or ubiquitous language changed in code but the docs were not touched, stop and ask the user whether the docs should be updated before opening the PR.
 
 ### 3. Check test evidence
 
@@ -76,6 +77,10 @@ Closes #<issue-number>
 ## ADR / ドキュメント更新
 
 <追加・更新した ADR やガイドラインへの参照、または「なし」。>
+
+## ドメイン知識更新
+
+<追加・更新した `docs/context/domains/*.md` や `docs/context/glossary.md` への参照、または「なし（ドメイン概念の変更なし）」。>
 
 ## 破壊的変更
 
