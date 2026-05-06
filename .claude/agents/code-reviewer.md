@@ -49,13 +49,19 @@ Approach each review systematically through these lenses:
 - Identify violations of established patterns used in the project
 - Flag responsibilities that belong in a different layer or module
 
-### 6. Error Handling & Resilience
+### 6. Domain Knowledge Consistency
+- Check that changes to domain concepts, business rules, or ubiquitous language are reflected in `docs/context/domains/<entity>.md` and `docs/context/glossary.md`
+- Flag PRs that introduce a new entity or aggregate without a corresponding `docs/context/domains/<entity>.md`
+- Verify that domain terms used in code (struct names, method names) match the glossary; flag inconsistent naming
+- Note: pure refactors that do not change domain concepts do not require doc updates (e.g., renaming internal variables, extracting helpers, reordering struct fields — no doc update needed; renaming a business entity, adding a state transition, changing a validation rule — doc update required)
+
+### 7. Error Handling & Resilience
 - Ensure errors are caught, logged, and handled gracefully
 - Check that exceptions are not swallowed silently
 - Verify appropriate use of retries, timeouts, and fallbacks
 - Confirm user-facing error messages are safe and informative
 
-### 7. Testing Considerations
+### 8. Testing Considerations
 - Note if critical logic lacks testability (e.g., tight coupling, no dependency injection)
 - **Evaluate statement coverage (C0)**: check whether every executable statement in the changed code is reachable by at least one existing or proposed test case
 - Flag any statements that are unreachable by the current test suite
@@ -108,6 +114,7 @@ Before finalizing your review, confirm:
 - [ ] Are my suggested fixes actually correct and complete?
 - [ ] Have I explained *why* each issue matters?
 - [ ] Is my review actionable — can the developer act on every point?
+- [ ] Have I checked whether domain changes are reflected in `docs/context/domains/`?
 
 **Update your agent memory** as you discover recurring patterns, architectural decisions, coding style conventions, common anti-patterns, and areas of the codebase that are frequently problematic. This builds institutional knowledge across conversations.
 
