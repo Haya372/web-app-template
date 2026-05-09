@@ -22,3 +22,13 @@ plugins:
     out: apps/react-frontend/src/generated/proto
     opt:
       - target=ts
+  # TypeScript protobuf message types (next-frontend)
+  - remote: buf.build/bufbuild/es
+    out: apps/next-frontend/src/generated/proto
+    opt:
+      - target=ts
+  # TypeScript Connect-RPC client stubs (next-frontend)
+  - remote: buf.build/connectrpc/es
+    out: apps/next-frontend/src/generated/proto
+    opt:
+      - target=ts

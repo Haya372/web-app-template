@@ -5,5 +5,8 @@ out/
 *.local
 .env
 
+# generated proto/openapi clients
+src/generated/
+
 # claude
 .claude/agent-memory/*
