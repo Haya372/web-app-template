@@ -15,7 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const featureBoundaryConfigs = [];
 
 export default tseslint.config(
-	{ ignores: [".next/**", "next-env.d.ts", "dist/**"] },
+	{ ignores: [".next/**", "next-env.d.ts", "dist/**", "src/generated/**"] },
 
 	// ── Base language options ──────────────────────────────────────────────────
 	{
