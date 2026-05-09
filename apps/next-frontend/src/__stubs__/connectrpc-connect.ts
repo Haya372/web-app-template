@@ -1,4 +1,7 @@
-// Stub for @connectrpc/connect — replaced by real package after pnpm install
-// Used only in Vitest environment (see vitest.config.ts resolve.alias).
+// Stub for @connectrpc/connect — replaced by real package after pnpm install.
+// Remove tsconfig paths entry and these stubs after running `pnpm install`.
 export type Client<_T> = Record<string, unknown>;
-export const createClient = (): Client<unknown> => ({});
+export const createClient = (
+	_service: unknown,
+	_transport: unknown,
+): Client<unknown> => ({});
