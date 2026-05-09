@@ -23,6 +23,11 @@ export default defineConfig({
 			"@connectrpc/connect-node": stub(
 				"./src/__stubs__/connectrpc-connect-node.ts",
 			),
+			// @repo/ui is a workspace package whose deps live in packages/ui/node_modules.
+			// Remove after running `pnpm install`.
+			"@repo/ui": fileURLToPath(
+				new URL("../../packages/ui/src/index.ts", import.meta.url),
+			),
 		},
 	},
 });

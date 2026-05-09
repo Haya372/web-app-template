@@ -8,7 +8,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@connectrpc/connect": ["./src/__stubs__/connectrpc-connect.ts"],
-      "@connectrpc/connect-node": ["./src/__stubs__/connectrpc-connect-node.ts"]
+      "@connectrpc/connect-node": ["./src/__stubs__/connectrpc-connect-node.ts"],
+      "@repo/ui": ["../../packages/ui/src/index.ts"]
     },
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "plugins": [{ "name": "next" }],
