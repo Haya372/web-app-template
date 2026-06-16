@@ -4,7 +4,10 @@ on:
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
+      - "buf.gen.yaml"
+      - "proto/**"
       - "apps/next-frontend/**"
+      - "packages/ui/**"
       - ".github/workflows/ci-apps-next-frontend.yml"
       - ".github/actions/setup-pnpm-workspace/**"
       - "!**.md"
@@ -69,5 +72,7 @@ jobs:
           persist-credentials: false
       - name: Setup pnpm workspace
         uses: ./.github/actions/setup-pnpm-workspace
+      - name: Generate proto
+        run: pnpm generate:proto
       - name: Build
         run: pnpm build
