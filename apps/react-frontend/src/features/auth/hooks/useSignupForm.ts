@@ -39,7 +39,7 @@ export function useSignupForm() {
 				},
 				baseUrl: import.meta.env.VITE_API_BASE_URL,
 			});
-			if (error || !data) throw new Error(String(response.status));
+			if (error || !data) throw new Error(String(response?.status));
 			navigate({ to: "/login" });
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "";

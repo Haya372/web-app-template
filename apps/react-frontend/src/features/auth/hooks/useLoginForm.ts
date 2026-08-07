@@ -34,7 +34,7 @@ export function useLoginForm() {
 				body: { email: values.email, password: values.password },
 				baseUrl: import.meta.env.VITE_API_BASE_URL,
 			});
-			if (error || !data) throw new Error(String(response.status));
+			if (error || !data) throw new Error(String(response?.status));
 			login(data.token);
 			navigate({ to: "/" });
 		} catch (error) {
