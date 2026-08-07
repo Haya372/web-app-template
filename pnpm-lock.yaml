@@ -285,7 +285,7 @@ importers:
         version: 19.2.7(react@19.2.7)
       react-hook-form:
         specifier: '>=7.0.0'
-        version: 7.74.0(react@19.2.7)
+        version: 7.80.0(react@19.2.7)
       sonner:
         specifier: 2.0.7
         version: 2.0.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -3463,10 +3463,6 @@ packages:
     resolution: {integrity: sha512-H0dkQoCa3b2VEeKQBOxFph+JAbcrQdE7KC0UkqwpLmv2EC4P41QXP+rqo9wYodACiG5/WM5s9oDApTU8utwj9g==}
     engines: {node: '>= 0.4'}
 
-  jiti@2.6.1:
-    resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
-    hasBin: true
-
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
@@ -3712,11 +3708,6 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  nanoid@3.3.12:
-    resolution: {integrity: sha512-ZB9RH/39qpq5Vu6Y+NmUaFhQR6pp+M2Xt76XBnEwDaGcVAqhlvxrl3B2bKS5D3NH3QR76v3aSrKaF/Kiy7lEtQ==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
   nanoid@3.3.15:
     resolution: {integrity: sha512-y7Wygv/7mEOvxTuEQDB8StXdMRBWf1kR/tlhAzBRUFkB2jfcLOAxO/SHmOO2zgz1pVgK29/kyupn059/bCHdjA==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -3961,12 +3952,6 @@ packages:
     peerDependencies:
       react: ^19.2.7
 
-  react-hook-form@7.74.0:
-    resolution: {integrity: sha512-yR6wHr99p9wFv686jhRWVSFhUvDvNbdUf2dKlbno8/VKOCuoNobDGC6S+M2dua9A9Yo8vpcrp8assIYbsZCQ9g==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      react: ^16.8.0 || ^17 || ^18 || ^19
-
   react-hook-form@7.80.0:
     resolution: {integrity: sha512-4P+fk6oXsxY+6xSj7Euhc2sumQD8zQqCuVHoJwoyp9EchP+IUW9OESB7uHFJOKsIBQ4MQqYE84INJFqUCYNoOg==}
     engines: {node: '>=18.0.0'}
@@ -4142,11 +4127,6 @@ packages:
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
-    hasBin: true
-
-  semver@7.7.4:
-    resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
-    engines: {node: '>=10'}
     hasBin: true
 
   semver@7.8.4:
@@ -4765,9 +4745,6 @@ packages:
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
-  zod@4.3.6:
-    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
@@ -6039,7 +6016,7 @@ snapshots:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       enhanced-resolve: 5.21.0
-      jiti: 2.6.1
+      jiti: 2.7.0
       lightningcss: 1.32.0
       magic-string: 0.30.21
       source-map-js: 1.2.1
@@ -6190,7 +6167,7 @@ snapshots:
       '@tanstack/router-core': 1.168.16
       '@tanstack/router-utils': 1.161.7
       '@tanstack/virtual-file-routes': 1.161.7
-      jiti: 2.6.1
+      jiti: 2.7.0
       magic-string: 0.30.21
       prettier: 3.8.3
       zod: 3.25.76
@@ -6406,7 +6383,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.59.0
       debug: 4.4.3
       minimatch: 10.2.5
-      semver: 7.7.4
+      semver: 7.8.5
       tinyglobby: 0.2.16
       ts-api-utils: 2.5.0(typescript@6.0.3)
       typescript: 6.0.3
@@ -7170,7 +7147,7 @@ snapshots:
       eslint-import-context: 0.1.9(unrs-resolver@1.11.1)
       is-glob: 4.0.3
       minimatch: 10.2.5
-      semver: 7.7.4
+      semver: 7.8.5
       stable-hash-x: 0.2.0
       unrs-resolver: 1.11.1
     optionalDependencies:
@@ -7203,8 +7180,8 @@ snapshots:
       '@babel/parser': 7.29.3
       eslint: 10.2.1(jiti@2.7.0)
       hermes-parser: 0.25.1
-      zod: 4.3.6
-      zod-validation-error: 4.0.2(zod@4.3.6)
+      zod: 4.4.3
+      zod-validation-error: 4.0.2(zod@4.4.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -7247,7 +7224,7 @@ snapshots:
       pluralize: 8.0.0
       regexp-tree: 0.1.27
       regjsparser: 0.13.1
-      semver: 7.7.4
+      semver: 7.8.5
       strip-indent: 4.1.1
 
   eslint-scope@9.1.2:
@@ -7723,8 +7700,6 @@ snapshots:
       has-symbols: 1.1.0
       set-function-name: 2.0.2
 
-  jiti@2.6.1: {}
-
   jiti@2.7.0: {}
 
   joi@18.1.2:
@@ -7799,7 +7774,7 @@ snapshots:
       '@types/node': 24.12.2
       fast-glob: 3.3.3
       formatly: 0.3.0
-      jiti: 2.6.1
+      jiti: 2.7.0
       minimist: 1.2.8
       oxc-resolver: 11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.2)
       picocolors: 1.1.1
@@ -7809,7 +7784,7 @@ snapshots:
       typescript: 6.0.3
       unbash: 2.2.0
       yaml: 2.8.4
-      zod: 4.3.6
+      zod: 4.4.3
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -7964,8 +7939,6 @@ snapshots:
   minipass@7.1.3: {}
 
   ms@2.1.3: {}
-
-  nanoid@3.3.12: {}
 
   nanoid@3.3.15: {}
 
@@ -8191,7 +8164,7 @@ snapshots:
 
   postcss@8.5.13:
     dependencies:
-      nanoid: 3.3.12
+      nanoid: 3.3.15
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
@@ -8247,10 +8220,6 @@ snapshots:
     dependencies:
       react: 19.2.7
       scheduler: 0.27.0
-
-  react-hook-form@7.74.0(react@19.2.7):
-    dependencies:
-      react: 19.2.7
 
   react-hook-form@7.80.0(react@19.2.7):
     dependencies:
@@ -8473,12 +8442,9 @@ snapshots:
 
   semver@6.3.1: {}
 
-  semver@7.7.4: {}
-
   semver@7.8.4: {}
 
-  semver@7.8.5:
-    optional: true
+  semver@7.8.5: {}
 
   seroval-plugins@1.5.4(seroval@1.5.4):
     dependencies:
@@ -8624,7 +8590,7 @@ snapshots:
       esbuild: 0.27.7
       open: 10.2.0
       recast: 0.23.11
-      semver: 7.7.4
+      semver: 7.8.5
       use-sync-external-store: 1.6.0(react@19.2.7)
       ws: 8.20.0
     optionalDependencies:
@@ -9128,12 +9094,10 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod-validation-error@4.0.2(zod@4.3.6):
+  zod-validation-error@4.0.2(zod@4.4.3):
     dependencies:
-      zod: 4.3.6
+      zod: 4.4.3
 
   zod@3.25.76: {}
-
-  zod@4.3.6: {}
 
   zod@4.4.3: {}
