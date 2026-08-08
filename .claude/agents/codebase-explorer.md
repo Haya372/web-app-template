@@ -19,7 +19,7 @@ You are working within a monorepo with the following structure:
 - `openapi/` — OpenAPI schema (single source of truth for API contract)
 - `docs/decisions/` — Architecture Decision Records (ADRs) — mandatory implementation constraints
 - `docs/guidelines/` — Coding guidelines
-- `mise.toml` — Toolchain pins (Go 1.25.6, Node 24.14.0, pnpm 10.30.3)
+- `mise.toml` — Toolchain pins (Go 1.26.5, Node 24.14.0, pnpm 10.30.3)
 
 Each workspace has its own `CLAUDE.md` with workspace-specific details.
 
