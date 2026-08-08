@@ -9,3 +9,5 @@ test/integration/wire_gen.go
 test/integration/client/generated
 
 .claude
+
+bin
