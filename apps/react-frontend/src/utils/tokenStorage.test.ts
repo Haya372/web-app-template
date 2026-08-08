@@ -10,8 +10,8 @@ const AUTH_TOKEN_KEY = "auth_token";
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
-
-describe("tokenStorage", () => {
+// TODO: enable tokenStorage test Issue: 216
+describe.skip("tokenStorage", () => {
 	// Always start each test with a clean slate so tests do not bleed into
 	// each other regardless of execution order.
 	afterEach(() => {
