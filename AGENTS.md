@@ -4,7 +4,7 @@ This repository is a template that pairs shared documentation and tooling at the
 
 ## Workspace Layout
 - `docs/` houses ADRs, runbooks, and operational references (`docs/decisions`, `docs/operations`, etc.). Update the relevant note whenever behavior or architecture shifts.
-- `mise.toml` pins the toolchain. Run `mise install` once per machine to install Go 1.26.5, golangci-lint 2.8.0, and psqldef 3.9.7 before touching submodules.
+- `mise.toml` pins the toolchain. Run `mise install` once per machine to install Go 1.26.5, golangci-lint 2.12.2, and psqldef 3.9.7 before touching submodules.
 - Service-specific contributor instructions live in `go-backend/AGENTS.md`; cross-link it in downstream READMEs when the Go service is used.
 
 ## Root Tooling & Environments
