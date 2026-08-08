@@ -15,7 +15,8 @@ disable = [
   "exhaustruct",
   "paralleltest",
   "varnamelen",
-  "funlen"
+  "funlen",
+  "goconst" # TODO: fix Issue 212
 ]
 
 [linters.exclusions]
