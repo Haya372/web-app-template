@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "playwright install chromium",
     "pretest:e2e": "run-s docker:clean docker:up docker:wait",
     "test:e2e": "playwright test",
     "posttest:e2e": "docker compose down -v",
