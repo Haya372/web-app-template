@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "playwright install chromium",
     "pretest:e2e": "run-s docker:clean docker:up docker:wait",
     "test:e2e": "playwright test",
     "posttest:e2e": "docker compose down -v",
@@ -22,7 +21,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.13",
     "@playwright/test": "1.59.1",
-    "@types/node": "24.12.2",
+    "@types/node": "26.1.0",
     "knip": "5.88.1",
     "lint-staged": "16.4.0",
     "npm-run-all2": "8.0.4",

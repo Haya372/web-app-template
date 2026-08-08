@@ -54,7 +54,7 @@ export function useCreatePostForm() {
 				baseUrl: import.meta.env.VITE_API_BASE_URL,
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			});
-			if (error || !data) throw new Error(String(response.status));
+			if (error || !data) throw new Error(String(response?.status));
 			toast.success(t("posts.new.success"));
 			form.reset();
 		} catch (error) {

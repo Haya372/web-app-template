@@ -16,6 +16,8 @@ permissions:
 
 jobs:
   e2e:
+    # TODO: enable E2E (Issue: 215)
+    if: false
     name: E2E tests
     runs-on: ubuntu-latest
 

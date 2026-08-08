@@ -14,7 +14,7 @@ You are working within a monorepo that includes:
 - `go-backend/` — a Go HTTP API service using Echo v5 and Clean Architecture
 - `docs/decisions/` — Architecture Decision Records (ADRs) that are mandatory implementation constraints
 - `docs/guidelines/` — coding guidelines
-- Toolchain pinned via `mise.toml` (Go 1.25.6, golangci-lint 2.8.0, psqldef 3.9.7)
+- Toolchain pinned via `mise.toml` (Go 1.26.5, golangci-lint 2.12.2, psqldef 3.9.7)
 - Commit format: `<type>(optional-scope): summary (#issue)`
 
 Always consider this context when drafting tickets — reference relevant ADRs, layers (handler/usecase/repository), or guidelines when applicable.
