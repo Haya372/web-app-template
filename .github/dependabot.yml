@@ -87,23 +87,6 @@ updates:
       prefix: "chore"
       include: "scope"
 
-    groups:
-      production:
-        dependency-type: "production"
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
-          - "minor"
-
-      development:
-        dependency-type: "development"
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
-          - "minor"
-
     ignore:
       - dependency-name: "*"
         update-types:
